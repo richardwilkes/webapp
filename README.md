@@ -1,1 +1,3 @@
-# webapp
+## Framework for displaying a web view within a Go application
+
+Currently only supports macOS. Windows coming soon...
