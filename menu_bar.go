@@ -89,22 +89,44 @@ func (bar *MenuBar) SetupSpecialMenu(which SpecialMenuType, menu *Menu) {
 // bar.
 func (bar *MenuBar) InstallAppMenu() (appMenu *Menu, aboutItem, prefsItem *MenuItem) {
 	appMenu = NewMenu(cmdline.AppName)
-
 	aboutItem = NewMenuItem(fmt.Sprintf(i18n.Text("About %s"), cmdline.AppName))
 	appMenu.AppendItem(aboutItem)
-
 	appMenu.AppendItem(NewMenuSeparator())
 	prefsItem = NewMenuItemWithKey(i18n.Text("Preferences…"), keys.VirtualKeyComma)
 	appMenu.AppendItem(prefsItem)
-
 	bar.platformFillAppMenu(appMenu)
-
 	appMenu.AppendItem(NewMenuSeparator())
-	quitItem := NewMenuItemWithKey(fmt.Sprintf(i18n.Text("Quit %s"), cmdline.AppName), keys.VirtualKeyQ)
-	quitItem.Handler = AttemptQuit
-	appMenu.AppendItem(quitItem)
-
+	appMenu.AppendItem(NewQuitItem())
 	bar.InsertMenu(appMenu, 0)
-
 	return appMenu, aboutItem, prefsItem
+}
+
+// InstallEditMenu adds a standard 'Edit' menu to the end of the menu bar.
+func (bar *MenuBar) InstallEditMenu() {
+	editMenu := NewMenu(i18n.Text("Edit"))
+	editMenu.AppendItem(NewCutItem())
+	editMenu.AppendItem(NewCopyItem())
+	editMenu.AppendItem(NewPasteItem())
+	editMenu.AppendItem(NewMenuSeparator())
+	editMenu.AppendItem(NewDeleteItem())
+	editMenu.AppendItem(NewSelectAllItem())
+	bar.AppendMenu(editMenu)
+}
+
+// InstallWindowMenu adds a standard 'Window' menu to the end of the menu bar.
+func (bar *MenuBar) InstallWindowMenu() {
+	windowMenu := NewMenu(i18n.Text("Window"))
+	windowMenu.AppendItem(NewMinimizeWindowItem())
+	windowMenu.AppendItem(NewZoomWindowItem())
+	windowMenu.AppendItem(NewMenuSeparator())
+	windowMenu.AppendItem(NewBringAllWindowsToFrontItem())
+	bar.AppendMenu(windowMenu)
+	bar.SetupSpecialMenu(WindowSpecialMenu, windowMenu)
+}
+
+// InstallHelpMenu adds a standard 'Help' menu to the end of the menu bar.
+func (bar *MenuBar) InstallHelpMenu() {
+	helpMenu := NewMenu(i18n.Text("Help"))
+	bar.AppendMenu(helpMenu)
+	bar.SetupSpecialMenu(HelpSpecialMenu, helpMenu)
 }
