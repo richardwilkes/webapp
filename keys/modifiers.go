@@ -16,7 +16,8 @@ const (
 	AllModifiers       = CapsLockModifier | NonStickyModifiers
 )
 
-// Modifiers contains flags indicating which modifier keys were down when an event occurred.
+// Modifiers contains flags indicating which modifier keys were down when an
+// event occurred.
 type Modifiers int
 
 // CapsLockDown returns true if the caps lock key is being pressed.
@@ -44,7 +45,8 @@ func (m Modifiers) CommandDown() bool {
 	return m&CommandModifier == CommandModifier
 }
 
-// PlatformMenuModifier returns the platform's standard menu command key modifier.
+// PlatformMenuModifier returns the platform's standard menu command key
+// modifier.
 func PlatformMenuModifier() Modifiers {
 	if runtime.GOOS == "darwin" {
 		return CommandModifier
@@ -52,7 +54,8 @@ func PlatformMenuModifier() Modifiers {
 	return ControlModifier
 }
 
-// PlatformMenuModifierDown returns true if the platform's menu command key is being pressed.
+// PlatformMenuModifierDown returns true if the platform's menu command key is
+// being pressed.
 func (m Modifiers) PlatformMenuModifierDown() bool {
 	mask := PlatformMenuModifier()
 	return m&mask == mask

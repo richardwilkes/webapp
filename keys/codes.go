@@ -4,9 +4,10 @@ import (
 	"fmt"
 )
 
-// These are platform-independent key codes used by this framework. Keys in the printable space map
-// to their ASCII equivalent. Should the framework encounter a scan code not present in this list,
-// it will create a new key code for it outside the range 0-255.
+// These are platform-independent key codes used by this framework. Keys in
+// the printable space map to their ASCII equivalent. Should the framework
+// encounter a scan code not present in this list, it will create a new key
+// code for it outside the range 0-255.
 const (
 	VirtualKeyUp             = 1
 	VirtualKeyLeft           = 2
@@ -131,7 +132,8 @@ const (
 	VirtualKeyF19            = 219
 )
 
-// Mapping provides a mapping between key codes and the rune they represent, if any.
+// Mapping provides a mapping between key codes and the rune they represent,
+// if any.
 type Mapping struct {
 	KeyCode int
 	KeyChar rune
@@ -145,8 +147,8 @@ var (
 	keyCodeToMapping  = make(map[int]*Mapping)
 )
 
-// InsertMapping inserts a mapping for the specified scanCode into the map used by
-// MappingForScanCode and MappingForKeyCode.
+// InsertMapping inserts a mapping for the specified scanCode into the map
+// used by MappingForScanCode and MappingForKeyCode.
 func InsertMapping(scanCode int, mapping *Mapping) {
 	scanCodeToMapping[scanCode] = mapping
 	insertKeyCodeMapping(mapping)
@@ -174,14 +176,14 @@ func MappingForKeyCode(keyCode int) *Mapping {
 	return nil
 }
 
-// IsControlAction returns true if the keyCode should trigger a control, such as a button, that is
-// focused.
+// IsControlAction returns true if the keyCode should trigger a control, such
+// as a button, that is focused.
 func IsControlAction(keyCode int) bool {
 	return keyCode == VirtualKeyReturn || keyCode == VirtualKeyNumPadEnter || keyCode == VirtualKeySpace
 }
 
-// Transform a scan code into a key code and character. If the scan code has no
-// mapping or the mapping is dynamic, the first character of chars will be
+// Transform a scan code into a key code and character. If the scan code has
+// no mapping or the mapping is dynamic, the first character of chars will be
 // returned as the character, if available.
 func Transform(scanCode int, chars string) (code int, ch rune) {
 	extract := true
