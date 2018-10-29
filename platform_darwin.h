@@ -36,7 +36,7 @@ MenuItem menuItem(Menu menu, int index);
 void insertMenuItem(Menu menu, MenuItem item, int index);
 void removeMenuItem(Menu menu, int index);
 
-MenuItem newMenuItem(const char *title, const char *key, int modifiers);
+MenuItem newMenuItem(const char *title, const char *selector, const char *key, int modifiers, bool needDelegate);
 Menu subMenu(MenuItem item);
 void setSubMenu(MenuItem item, Menu subMenu);
 MenuItem newMenuSeparator();

@@ -189,7 +189,7 @@ func (item *MenuItem) platformInitMenuSeparator() {
 	menuItemMap[item.item] = item
 }
 
-func (item *MenuItem) platformInitMenuItem() {
+func (item *MenuItem) platformInitMenuItem(kind MenuItemKind) {
 	var keyCodeStr string
 	if item.keyCode != 0 {
 		mapping := keys.MappingForKeyCode(item.keyCode)
@@ -199,7 +199,9 @@ func (item *MenuItem) platformInitMenuItem() {
 	}
 	cTitle := C.CString(item.title)
 	cKey := C.CString(keyCodeStr)
-	item.item = C.newMenuItem(cTitle, cKey, C.int(item.keyModifiers))
+	cSelector := C.CString(kind.selector())
+	item.item = C.newMenuItem(cTitle, cSelector, cKey, C.int(item.keyModifiers), kind == NormalKind)
+	C.free(unsafe.Pointer(cSelector))
 	C.free(unsafe.Pointer(cKey))
 	C.free(unsafe.Pointer(cTitle))
 	menuItemMap[item.item] = item

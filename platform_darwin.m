@@ -146,14 +146,16 @@ void removeMenuItem(Menu menu, int index) {
 	[((NSMenu *)menu) removeItemAtIndex:index];
 }
 
-MenuItem newMenuItem(const char *title, const char *key, int modifiers) {
-	NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:title] action:@selector(handleMenuItem:) keyEquivalent:[NSString stringWithUTF8String:key]] retain];
+MenuItem newMenuItem(const char *title, const char *selector, const char *key, int modifiers, bool needDelegate) {
+	NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:title] action:NSSelectorFromString([NSString stringWithUTF8String:selector]) keyEquivalent:[NSString stringWithUTF8String:key]] retain];
 	// macOS uses the same modifier mask bit order as we do, but it is shifted up by 16 bits
 	[item setKeyEquivalentModifierMask:modifiers << 16];
-	if (!itemDelegate) {
-		itemDelegate = [ItemDelegate new];
+	if (needDelegate) {
+		if (!itemDelegate) {
+			itemDelegate = [ItemDelegate new];
+		}
+		[item setTarget:itemDelegate];
 	}
-	[item setTarget:itemDelegate];
 	return item;
 }
 

@@ -104,12 +104,12 @@ func (bar *MenuBar) InstallAppMenu() (appMenu *Menu, aboutItem, prefsItem *MenuI
 // InstallEditMenu adds a standard 'Edit' menu to the end of the menu bar.
 func (bar *MenuBar) InstallEditMenu() {
 	editMenu := NewMenu(i18n.Text("Edit"))
-	editMenu.AppendItem(NewCutItem())
-	editMenu.AppendItem(NewCopyItem())
-	editMenu.AppendItem(NewPasteItem())
+	editMenu.AppendItem(NewSpecialMenuItem(CutKind))
+	editMenu.AppendItem(NewSpecialMenuItem(CopyKind))
+	editMenu.AppendItem(NewSpecialMenuItem(PasteKind))
 	editMenu.AppendItem(NewMenuSeparator())
-	editMenu.AppendItem(NewDeleteItem())
-	editMenu.AppendItem(NewSelectAllItem())
+	editMenu.AppendItem(NewSpecialMenuItem(DeleteKind))
+	editMenu.AppendItem(NewSpecialMenuItem(SelectAllKind))
 	bar.AppendMenu(editMenu)
 }
 

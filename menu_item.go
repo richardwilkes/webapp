@@ -41,7 +41,18 @@ func NewMenuItemWithKeyAndModifiers(title string, keyCode int, modifiers keys.Mo
 		keyModifiers: modifiers,
 		enabled:      true,
 	}
-	item.platformInitMenuItem()
+	item.platformInitMenuItem(NormalKind)
+	return item
+}
+
+// NewSpecialMenuItem creates a new menu item that has special handling.
+func NewSpecialMenuItem(kind MenuItemKind) *MenuItem {
+	item := &MenuItem{
+		title:        kind.title(),
+		keyCode:      kind.keyCode(),
+		keyModifiers: kind.modifiers(),
+	}
+	item.platformInitMenuItem(kind)
 	return item
 }
 
