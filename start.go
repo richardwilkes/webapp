@@ -1,14 +1,9 @@
 package webapp
 
-import (
-	"runtime"
-)
-
-// Start the user interface. Locks the calling goroutine to its current OS
-// thread. Does not return. This should be called as early as possible in your
-// main(), before any goroutines are started.
+// Start the user interface. This should only be called on the main OS thread
+// and a call to runtime.LockOSThread() should have already been made. Does
+// not return.
 func Start() {
-	runtime.LockOSThread()
 	platformStart()
 }
 

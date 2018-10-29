@@ -1,5 +1,5 @@
-#include "platform_darwin.h"
-#include "_cgo_export.h"
+#import "platform_darwin.h"
+#import "_cgo_export.h"
 
 // ----- App section -----
 
@@ -301,4 +301,25 @@ void minimizeWindow(Window window) {
 
 void zoomWindow(Window window) {
 	[((NSWindow *)window) performZoom:nil];
+}
+
+// ----- Displays section -----
+
+Display *displays(unsigned long *qty) {
+	[NSApplication sharedApplication];
+	NSArray *s = [NSScreen screens];
+	unsigned long count = [s count];
+	*qty = count;
+	Display *d = (Display *)malloc(sizeof(Display) * count);
+	for (unsigned int i = 0; i < count; i++) {
+		NSScreen *screen = [s objectAtIndex: i];
+		d[i].scaleFactor = [screen backingScaleFactor];
+		CGDirectDisplayID dID = (CGDirectDisplayID)[[[screen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
+		d[i].bounds = CGDisplayBounds(dID);
+		d[i].usableBounds = [screen visibleFrame];
+		d[i].isMain = CGDisplayIsMain(dID);
+		CGRect b = [screen frame];
+		d[i].usableBounds.origin.y = d[i].bounds.origin.y + (b.origin.y + b.size.height - (d[i].usableBounds.origin.y + d[i].usableBounds.size.height));
+	}
+	return d;
 }

@@ -1,3 +1,4 @@
+#import <Quartz/Quartz.h>
 #import <Cocoa/Cocoa.h>
 #import <WebKit/Webkit.h>
 #import <Security/Security.h>
@@ -6,6 +7,13 @@
 typedef void *Menu;
 typedef void *MenuItem;
 typedef void *Window;
+
+typedef struct {
+	CGRect bounds;
+	CGRect usableBounds;
+	double scaleFactor;
+	int    isMain;
+} Display;
 
 void start();
 void attemptQuit();
@@ -44,3 +52,5 @@ void setWindowBounds(Window window, double x, double y, double width, double hei
 void bringWindowToFront(Window window);
 void minimizeWindow(Window window);
 void zoomWindow(Window window);
+
+Display *displays(unsigned long *qty);
