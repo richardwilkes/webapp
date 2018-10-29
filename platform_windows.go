@@ -1,7 +1,6 @@
 package webapp
 
 import (
-	"C"
 	"time"
 
 	"github.com/richardwilkes/toolbox/xmath/geom"
