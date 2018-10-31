@@ -26,6 +26,9 @@ type Window struct {
 	// be closed. Return true to permit it, false to cancel the operation.
 	// Defaults to always returning true.
 	MayCloseCallback func() bool
+	// DidCloseCallback is called when the Dispose() method is called on this
+	// window, just prior to actual destruction.
+	DidCloseCallback func()
 	// GainedFocus is called when the keyboard focus is gained on this window.
 	GainedFocus func()
 	// LostFocus is called when the keyboard focus is lost from this window.
@@ -63,6 +66,7 @@ func NewWindow(style StyleMask, bounds geom.Rect, url string) *Window {
 	window := &Window{
 		style:            style,
 		MayCloseCallback: func() bool { return true },
+		DidCloseCallback: func() {},
 		GainedFocus:      func() {},
 		LostFocus:        func() {},
 	}
@@ -93,6 +97,7 @@ func (window *Window) Dispose() {
 			break
 		}
 	}
+	window.DidCloseCallback()
 	window.platformClose()
 }
 
