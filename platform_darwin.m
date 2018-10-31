@@ -246,7 +246,7 @@ void disposeMenuItem(MenuItem item) {
 }
 
 -(void)windowWillClose:(NSNotification *)notification {
-	windowDidClose((Window)[notification object]);
+	windowWillClose((Window)[notification object]);
 }
 
 @end

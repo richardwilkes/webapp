@@ -322,10 +322,10 @@ func windowShouldClose(cWindow C.Window) bool {
 	return true
 }
 
-//export windowDidClose
-func windowDidClose(cWindow C.Window) {
+//export windowWillClose
+func windowWillClose(cWindow C.Window) {
 	if window, ok := windowMap[cWindow]; ok {
-		window.Dispose()
+		window.WillCloseCallback()
 	}
 }
 
