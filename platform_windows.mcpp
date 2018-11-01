@@ -1,0 +1,123 @@
+using namespace System;
+using namespace System::Reflection;
+using namespace System::Runtime::InteropServices;
+using namespace WebApp;
+
+#define PLATFORM_WINDOWS_IMPL
+#include "platform_windows.h"
+
+[assembly:AssemblyTitleAttribute(L"Interop")];
+[assembly:AssemblyDescriptionAttribute(L"")];
+[assembly:AssemblyConfigurationAttribute(L"")];
+[assembly:AssemblyCompanyAttribute(L"")];
+[assembly:AssemblyProductAttribute(L"Interop")];
+[assembly:AssemblyCopyrightAttribute(L"")];
+[assembly:AssemblyTrademarkAttribute(L"")];
+[assembly:AssemblyCultureAttribute(L"")];
+[assembly:AssemblyVersionAttribute("1.0.*")];
+[assembly:ComVisible(false)];
+[assembly:CLSCompliantAttribute(true)];
+
+void windowsNewPlatform(platform *platform, voidCallback willFinishStartup, voidCallback didFinishStartup, voidCallback willActivate, voidCallback didActivate, voidCallback willDeactivate, voidCallback didDeactivate, boolCallback quitAfterLastWindowClosed, int32Callback checkQuit) {
+	try {
+		PlatformWindows^ o = gcnew PlatformWindows((IntPtr)willFinishStartup, (IntPtr)didFinishStartup, (IntPtr)willActivate, (IntPtr)didActivate, (IntPtr)willDeactivate, (IntPtr)didDeactivate, (IntPtr)quitAfterLastWindowClosed, (IntPtr)checkQuit);
+		platform->impl = ((IntPtr)GCHandle::Alloc(o)).ToPointer();
+		o->Start();
+	} catch (Exception^ e) {
+		// DR Pass this back somehow
+		Console::WriteLine(e->ToString());
+	}
+}
+
+void windowsPlatformSetMenuBar(platform *platform, menu *menu) {
+	try {
+		((PlatformWindows^)GCHandle::FromIntPtr((IntPtr)platform->impl).Target)->SetMenuBar((MenuBar^)GCHandle::FromIntPtr((IntPtr)menu->impl).Target);
+	} catch (Exception^ e) {
+		// DR Pass this back somehow
+		Console::WriteLine(e->ToString());
+	}
+}
+
+void windowsNewWindow(platform *platform, window *window, int width, int height, const char *url) {
+	try {
+		window->impl = ((IntPtr)GCHandle::Alloc(((PlatformWindows^)GCHandle::FromIntPtr((IntPtr)platform->impl).Target)->NewWindow(width, height, gcnew String(url)))).ToPointer();
+	} catch (Exception^ e) {
+		// DR Pass this back somehow
+		Console::WriteLine(e->ToString());
+	}
+}
+
+void windowsWindowSetTitle(window *window, const char *title) {
+	try {
+		((WebWindow^)GCHandle::FromIntPtr((IntPtr)window->impl).Target)->Text = gcnew String(title);
+	} catch (Exception^ e) {
+		// DR Pass this back somehow
+		Console::WriteLine(e->ToString());
+	}
+}
+
+void windowsNewMenuBar(menu *menu) {
+	try {
+		menu->impl = ((IntPtr)GCHandle::Alloc(gcnew MenuBar())).ToPointer();
+	} catch (Exception^ e) {
+		// DR Pass this back somehow
+		Console::WriteLine(e->ToString());
+	}
+}
+
+void windowsNewMenu(menu *menu, const char *title) {
+	try {
+		menu->impl = ((IntPtr)GCHandle::Alloc(gcnew Menu(gcnew String(title)))).ToPointer();
+	} catch (Exception^ e) {
+		// DR Pass this back somehow
+		Console::WriteLine(e->ToString());
+	}
+}
+
+int windowsMenuGetCount(menu *menu) {
+	try {
+		return ((MenuFuncs^)GCHandle::FromIntPtr((IntPtr)menu->impl).Target)->GetCount();
+	} catch (Exception^ e) {
+		// DR Pass this back somehow
+		Console::WriteLine(e->ToString());
+		return 0;
+	}
+}
+
+void windowsMenuInsertItem(menu *menu, menuItem *menuItem, int index) {
+	try {
+		((MenuFuncs^)GCHandle::FromIntPtr((IntPtr)menu->impl).Target)->InsertItem((System::Windows::Forms::ToolStripItem^)GCHandle::FromIntPtr((IntPtr)menuItem->impl).Target, index);
+	} catch (Exception^ e) {
+		// DR Pass this back somehow
+		Console::WriteLine(e->ToString());
+	}
+}
+
+void windowsNewMenuItem(menuItem *menuItem, const char *title) {
+	try {
+		menuItem->impl = ((IntPtr)GCHandle::Alloc(gcnew Menu(gcnew String(title)))).ToPointer();
+	} catch (Exception^ e) {
+		// DR Pass this back somehow
+		Console::WriteLine(e->ToString());
+	}
+}
+
+void windowsNewMenuItemSeparator(menuItem *menuItem) {
+	try {
+		menuItem->impl = ((IntPtr)GCHandle::Alloc(gcnew MenuItemSeparator())).ToPointer();
+	} catch (Exception^ e) {
+		// DR Pass this back somehow
+		Console::WriteLine(e->ToString());
+	}
+}
+
+void windowsMenuItemHack(menuItem *menuItem, menu *menu) {
+	try {
+		GCHandle::FromIntPtr((IntPtr)menuItem->impl).Free();
+		MenuFuncs^ m = (MenuFuncs^)GCHandle::FromIntPtr((IntPtr)menu->impl).Target;
+		menuItem->impl = ((IntPtr)GCHandle::Alloc(m)).ToPointer();
+	} catch (Exception^ e) {
+		// DR Pass this back somehow
+		Console::WriteLine(e->ToString());
+	}
+}
