@@ -5,6 +5,7 @@ import (
 	// #include <stdlib.h>
 	// #include "platform_windows.h"
 	"C"
+	"syscall"
 	"time"
 	"unsafe"
 
@@ -62,11 +63,13 @@ func checkQuitCallback() int32 {
 }
 
 func platformAttemptQuit() {
-	// Look at quit.go to see what callbacks are expected.
+	C.windowsAttemptQuit()
 }
 
 func platformMayQuitNow(quit bool) {
-	// Look at quit.go to see what callbacks are expected.
+	if quit {
+		C.windowsAttemptQuit()
+	}
 }
 
 func platformInvoke(id uint64) {
@@ -81,6 +84,7 @@ func platformInvokeAfter(id uint64, after time.Duration) {
 
 var (
 	appBar *MenuBar
+	menuItemMap = make(map[unsafe.Pointer]*MenuItem)
 )
 
 // Look at menu_item.go for callbacks (Validator & Handler fields) that are expected
@@ -125,9 +129,8 @@ func (menu *Menu) platformInit() {
 	if menu.title == "" {
 		C.windowsNewMenuBar(&menu._Ctype_struct__menu)
 	} else {
-		cTitle := C.CString(menu.title)
-		C.windowsNewMenu(&menu._Ctype_struct__menu, cTitle)
-		C.free(unsafe.Pointer(cTitle))
+		cTitle := syscall.StringToUTF16Ptr(menu.title)
+		C.windowsNewMenu(&menu._Ctype_struct__menu, unsafe.Pointer(cTitle))
 	}
 }
 
@@ -154,9 +157,9 @@ func (item *MenuItem) platformInitMenuSeparator() {
 }
 
 func (item *MenuItem) platformInitMenuItem(kind MenuItemKind) {
-	cTitle := C.CString(item.title)
-	C.windowsNewMenuItem(&item._Ctype_struct__menuItem, cTitle)
-	C.free(unsafe.Pointer(cTitle))
+	cTitle := syscall.StringToUTF16Ptr(item.title)
+	C.windowsNewMenuItem(&platform, &item._Ctype_struct__menuItem, unsafe.Pointer(cTitle))
+	menuItemMap[item._Ctype_struct__menuItem.impl] = item
 }
 
 func (item *MenuItem) platformSubMenu() *Menu {
@@ -169,6 +172,13 @@ func (item *MenuItem) platformSetSubMenu(subMenu *Menu) {
 }
 
 func (item *MenuItem) platformDispose() {
+}
+
+//export handleMenuItemCallback
+func handleMenuItemCallback(menuItem unsafe.Pointer) {
+	if item, ok := menuItemMap[menuItem]; ok && item.Handler != nil {
+		item.Handler()
+	}
 }
 
 // ----- Window section -----
@@ -187,18 +197,16 @@ func platformKeyWindow() *Window {
 }
 
 func (window *Window) platformInit(bounds geom.Rect, url string) {
-	cURL := C.CString(url)
-	C.windowsNewWindow(&platform, &window._Ctype_struct__window, C.int(bounds.Width), C.int(bounds.Height), cURL)
-	C.free(unsafe.Pointer(cURL))
+	cURL := syscall.StringToUTF16Ptr(url)
+	C.windowsNewWindow(&platform, &window._Ctype_struct__window, C.int(bounds.Width), C.int(bounds.Height), unsafe.Pointer(cURL))
 }
 
 func (window *Window) platformClose() {
 }
 
 func (window *Window) platformSetTitle(title string) {
-	cTitle := C.CString(title)
-	C.windowsWindowSetTitle(&window._Ctype_struct__window, cTitle)
-	C.free(unsafe.Pointer(cTitle))
+	cTitle := syscall.StringToUTF16Ptr(title)
+	C.windowsWindowSetTitle(&window._Ctype_struct__window, unsafe.Pointer(cTitle))
 }
 
 func (window *Window) platformBounds() geom.Rect {

@@ -60,8 +60,7 @@ csc \
 	-target:library \
 	-utf8output \
 	-deterministic+ \
-	platform_windows.cs \
-	$USERPROFILE/AppData/Local/Temp/.NETFramework,Version=v$NETFrameworkVersion.AssemblyAttributes.cs
+	platform_windows.cs
 
 cl \
 	-c \

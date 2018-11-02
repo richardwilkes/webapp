@@ -18,8 +18,7 @@ extern "C" {
 	typedef void(*voidCallback)(void);
 	typedef unsigned char(*boolCallback)(void);
 	typedef int32_t(*int32Callback)(void);
-	typedef void(*voidStringCallback)(const char *);
-	typedef void (*voidMenuCallback)(struct _menu *);
+	typedef void (*voidPointerCallback)(void *);
 
 	typedef struct _platform {
 		void *impl;
@@ -37,15 +36,16 @@ extern "C" {
 		void *impl;
 	} menuItem;
 
-	PLATFORM_WINDOWS_EXPORT void windowsNewPlatform(platform *platform, voidCallback willFinishStartup, voidCallback didFinishStartup, voidCallback willActivate, voidCallback didActivate, voidCallback willDeactivate, voidCallback didDeactivate, boolCallback quitAfterLastWindowClosed, int32Callback checkQuit);
+	PLATFORM_WINDOWS_EXPORT void windowsNewPlatform(platform *platform, voidCallback willFinishStartup, voidCallback didFinishStartup, voidCallback willActivate, voidCallback didActivate, voidCallback willDeactivate, voidCallback didDeactivate, boolCallback quitAfterLastWindowClosed, int32Callback checkQuit, voidPointerCallback handleMenuItem);
 	PLATFORM_WINDOWS_EXPORT void windowsPlatformSetMenuBar(platform *platform, menu *menu);
-	PLATFORM_WINDOWS_EXPORT void windowsNewWindow(platform *platform, window *window, int width, int height, const char *url);
-	PLATFORM_WINDOWS_EXPORT void windowsWindowSetTitle(window *window, const char *title);
+	PLATFORM_WINDOWS_EXPORT void windowsAttemptQuit(void);
+	PLATFORM_WINDOWS_EXPORT void windowsNewWindow(platform *platform, window *window, int width, int height, const void *url);
+	PLATFORM_WINDOWS_EXPORT void windowsWindowSetTitle(window *window, const void *title);
 	PLATFORM_WINDOWS_EXPORT void windowsNewMenuBar(menu *menu);
-	PLATFORM_WINDOWS_EXPORT void windowsNewMenu(menu *menu, const char *title);
+	PLATFORM_WINDOWS_EXPORT void windowsNewMenu(menu *menu, const void *title);
 	PLATFORM_WINDOWS_EXPORT int windowsMenuGetCount(menu *menu);
 	PLATFORM_WINDOWS_EXPORT void windowsMenuInsertItem(menu *menu, menuItem *menuItem, int index);
-	PLATFORM_WINDOWS_EXPORT void windowsNewMenuItem(menuItem *menuItem, const char *title);
+	PLATFORM_WINDOWS_EXPORT void windowsNewMenuItem(platform *platform, menuItem *menuItem, const void *title);
 	PLATFORM_WINDOWS_EXPORT void windowsNewMenuItemSeparator(menuItem *menuItem);
 	PLATFORM_WINDOWS_EXPORT void windowsMenuItemHack(menuItem *menuItem, menu *menu);
 
