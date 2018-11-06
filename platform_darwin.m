@@ -1,4 +1,5 @@
 #import "platform_darwin.h"
+#import "include/cef_application_mac.h"
 #import "_cgo_export.h"
 
 // ----- App section -----
@@ -47,14 +48,39 @@
 
 @end
 
+@interface WebApplication : NSApplication<CefAppProtocol>
+{
+	BOOL handlingSendEvent;
+}
+@end
+
+@implementation WebApplication
+
+- (BOOL)isHandlingSendEvent {
+	return handlingSendEvent;
+}
+
+- (void)setHandlingSendEvent:(BOOL)handling {
+	handlingSendEvent = handling;
+}
+
+- (void)sendEvent:(NSEvent*)event {
+	BOOL handling = handlingSendEvent;
+	handlingSendEvent = YES;
+	[super sendEvent:event];
+	handlingSendEvent = handling;
+}
+
+@end
+
 void prepareForStart() {
 	[[NSAutoreleasePool alloc] init];
-	[NSApplication sharedApplication];
+	[WebApplication sharedApplication];
 	// Required for apps without bundle & Info.plist
-	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+	// [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 	[NSApp setDelegate:[appDelegate new]];
 	// Required to use 'NSApplicationActivateIgnoringOtherApps' otherwise our windows end up in the background.
-	[[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateAllWindows | NSApplicationActivateIgnoringOtherApps];
+	// [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateAllWindows | NSApplicationActivateIgnoringOtherApps];
 }
 
 void attemptQuit() {
@@ -309,7 +335,7 @@ void zoomWindow(Window window) {
 // ----- Displays section -----
 
 Display *displays(unsigned long *qty) {
-	[NSApplication sharedApplication];
+	[WebApplication sharedApplication];
 	NSArray *s = [NSScreen screens];
 	unsigned long count = [s count];
 	*qty = count;
