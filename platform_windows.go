@@ -18,8 +18,8 @@ var (
 	platform _Ctype_struct__platform
 )
 
-func platformStart() {
-	C.windowsInit(&platform)
+func platformPrepareForStart() {
+	C.windowsPrepareForStart(&platform)
 }
 
 //export willFinishStartupCallback
@@ -83,7 +83,7 @@ func platformInvokeAfter(id uint64, after time.Duration) {
 // ----- Menu section -----
 
 var (
-	appBar *MenuBar
+	appBar      *MenuBar
 	menuItemMap = make(map[unsafe.Pointer]*MenuItem)
 )
 

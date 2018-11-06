@@ -49,7 +49,7 @@ extern "C" {
 	PLATFORM_WINDOWS_EXPORT void windowsNewMenuItemSeparator(menuItem *menuItem);
 	PLATFORM_WINDOWS_EXPORT void windowsMenuItemHack(menuItem *menuItem, menu *menu);
 
-	void windowsInit(platform *platform);
+	void windowsPrepareForStart(platform *platform);
 
 #ifdef __cplusplus
 }

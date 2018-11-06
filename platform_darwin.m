@@ -47,16 +47,14 @@
 
 @end
 
-void start() {
-	@autoreleasepool {
-		[NSApplication sharedApplication];
-		// Required for apps without bundle & Info.plist
-		[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-		[NSApp setDelegate:[appDelegate new]];
-		// Required to use 'NSApplicationActivateIgnoringOtherApps' otherwise our windows end up in the background.
-		[[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateAllWindows | NSApplicationActivateIgnoringOtherApps];
-		[NSApp run];
-	}
+void prepareForStart() {
+	[[NSAutoreleasePool alloc] init];
+	[NSApplication sharedApplication];
+	// Required for apps without bundle & Info.plist
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+	[NSApp setDelegate:[appDelegate new]];
+	// Required to use 'NSApplicationActivateIgnoringOtherApps' otherwise our windows end up in the background.
+	[[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateAllWindows | NSApplicationActivateIgnoringOtherApps];
 }
 
 void attemptQuit() {
@@ -181,36 +179,41 @@ void disposeMenuItem(MenuItem item) {
 
 // ----- Web view section -----
 
-@interface NavDelegate : NSObject<WKNavigationDelegate>
+void add_ref_dummyx(cef_base_ref_counted_t *self) {}
+int release_dummyx(cef_base_ref_counted_t *self) { return 1; }
+int has_one_ref_dummyx(cef_base_ref_counted_t *self) { return 1; }
+int has_at_least_one_ref_dummyx(cef_base_ref_counted_t *self) { return 1; }
+
+void init_dummyx_ref_counter(cef_base_ref_counted_t *h) {
+	h->add_ref = add_ref_dummyx;
+	h->release = release_dummyx;
+	h->has_one_ref = has_one_ref_dummyx;
+	h->has_at_least_one_ref = has_at_least_one_ref_dummyx;
+}
+
+@interface EmbeddedWebView : NSView
+{
+	cef_browser_t *webview;
+}
 @end
 
-@implementation NavDelegate
+@implementation EmbeddedWebView
 
-- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error {
-	// RAW: Provide a way to return this to the Go code
-	printf("didFailNavigation: %s\n", [[error domain] UTF8String]);
-}
+- (instancetype)initWithFrame: (NSRect)frameRect url:(const char *)url {
+	self = [super initWithFrame: frameRect];
+	cef_window_info_t *info = (cef_window_info_t *)calloc(1, sizeof(cef_window_info_t));
+	info->parent_view = self;
 
-- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error {
-	// RAW: Provide a way to return this to the Go code
-	printf("didFailProvisionalNavigation: %s\n", [[error localizedDescription] UTF8String]);
-}
+	cef_browser_settings_t *settings = (cef_browser_settings_t *)calloc(1, sizeof(cef_browser_settings_t));
+	settings->size = sizeof(cef_browser_settings_t);
 
-- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
-	decisionHandler(WKNavigationActionPolicyAllow);
-}
-
-- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler {
-	decisionHandler(WKNavigationResponsePolicyAllow);
-}
-
-- (void)webView:(WKWebView *)webView didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler {
-	// Allow everything
-	SecTrustRef serverTrust = challenge.protectionSpace.serverTrust;
-	CFDataRef exceptions = SecTrustCopyExceptions(serverTrust);
-	SecTrustSetExceptions(serverTrust, exceptions);
-	CFRelease(exceptions);
-	completionHandler(NSURLSessionAuthChallengeUseCredential, [NSURLCredential credentialForTrust:serverTrust]);
+	cef_client_t *client = (cef_client_t *)calloc(1, sizeof(cef_client_t));
+	client->base.size = sizeof(cef_client_t);
+	init_dummyx_ref_counter(&client->base);
+	cef_string_t *cefURL = (cef_string_t *)calloc(1, sizeof(cef_string_t));
+	cef_string_from_utf8(url, strlen(url), cefURL);
+	self->webview = cef_browser_host_create_browser_sync(info, client, cefURL, settings, nil);
+	return self;
 }
 
 @end
@@ -263,11 +266,9 @@ Window newWindow(int styleMask, double x, double y, double width, double height,
 	// The styleMask bits match those that Mac OS uses
 	NSRect contentRect = [NSWindow contentRectForFrameRect:NSMakeRect(x, [[NSScreen mainScreen] visibleFrame].size.height - (y + height), width, height) styleMask:styleMask];
 	NSWindow *window = [[KeyableWindow alloc] initWithContentRect:contentRect styleMask:styleMask backing:NSBackingStoreBuffered defer:YES];
-	WKWebView *view = [[WKWebView alloc] initWithFrame:NSMakeRect(0, 0, 0, 0) configuration:[WKWebViewConfiguration new]];
-	[view setNavigationDelegate:[NavDelegate new]];
+	EmbeddedWebView *view = [[EmbeddedWebView alloc] initWithFrame:NSMakeRect(0, 0, 0, 0) url:url];
 	[window setContentView:view];
 	[window setDelegate: [WindowDelegate new]];
-	[view loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithUTF8String:url]]]];
 	return (Window)window;
 }
 

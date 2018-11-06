@@ -1,8 +1,8 @@
 #import <Quartz/Quartz.h>
 #import <Cocoa/Cocoa.h>
-#import <WebKit/Webkit.h>
-#import <Security/Security.h>
 #import <dispatch/dispatch.h>
+#import "include/capi/cef_app_capi.h"
+#import "include/capi/cef_client_capi.h"
 
 typedef void *Menu;
 typedef void *MenuItem;
@@ -15,7 +15,7 @@ typedef struct {
 	int    isMain;
 } Display;
 
-void start();
+void prepareForStart();
 void attemptQuit();
 void mayQuitNow(int quit);
 void hideApp();

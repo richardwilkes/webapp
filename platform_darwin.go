@@ -1,8 +1,8 @@
 package webapp
 
 import (
-	// #cgo CFLAGS: -x objective-c
-	// #cgo LDFLAGS: -framework Cocoa -framework WebKit -framework Security
+	// #cgo CFLAGS: -x objective-c -I cef
+	// #cgo LDFLAGS: -framework Cocoa -F cef/Release -framework "Chromium Embedded Framework"
 	// #include "platform_darwin.h"
 	"C"
 	"fmt"
@@ -19,8 +19,8 @@ import (
 
 // ----- App section -----
 
-func platformStart() {
-	C.start()
+func platformPrepareForStart() {
+	C.prepareForStart()
 }
 
 //export willFinishStartupCallback
