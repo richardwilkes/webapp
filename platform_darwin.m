@@ -76,11 +76,7 @@
 void prepareForStart() {
 	[[NSAutoreleasePool alloc] init];
 	[WebApplication sharedApplication];
-	// Required for apps without bundle & Info.plist
-	// [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 	[NSApp setDelegate:[appDelegate new]];
-	// Required to use 'NSApplicationActivateIgnoringOtherApps' otherwise our windows end up in the background.
-	// [[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateAllWindows | NSApplicationActivateIgnoringOtherApps];
 }
 
 void attemptQuit() {
