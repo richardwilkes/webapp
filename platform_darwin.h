@@ -1,3 +1,7 @@
+#ifndef PLATFORM_DARWIN_H_
+#define PLATFORM_DARWIN_H_
+#pragma once
+
 #import <Quartz/Quartz.h>
 #import <Cocoa/Cocoa.h>
 #import <dispatch/dispatch.h>
@@ -53,3 +57,5 @@ void minimizeWindow(Window window);
 void zoomWindow(Window window);
 
 Display *displays(unsigned long *qty);
+
+#endif // PLATFORM_DARWIN_H_
