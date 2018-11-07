@@ -1,8 +1,7 @@
 #import <Quartz/Quartz.h>
 #import <Cocoa/Cocoa.h>
 #import <dispatch/dispatch.h>
-#import "include/capi/cef_app_capi.h"
-#import "include/capi/cef_client_capi.h"
+#import "platform_common.h"
 
 typedef void *Menu;
 typedef void *MenuItem;

@@ -4,10 +4,10 @@
 
 // ----- App section -----
 
-@interface appDelegate : NSObject<NSApplicationDelegate>
+@interface AppDelegate : NSObject<NSApplicationDelegate>
 @end
 
-@implementation appDelegate
+@implementation AppDelegate
 
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification {
 	willFinishStartupCallback();
@@ -76,7 +76,7 @@
 void prepareForStart() {
 	[[NSAutoreleasePool alloc] init];
 	[WebApplication sharedApplication];
-	[NSApp setDelegate:[appDelegate new]];
+	[NSApp setDelegate:[AppDelegate new]];
 }
 
 void attemptQuit() {
@@ -201,18 +201,6 @@ void disposeMenuItem(MenuItem item) {
 
 // ----- Web view section -----
 
-void add_ref_dummyx(cef_base_ref_counted_t *self) {}
-int release_dummyx(cef_base_ref_counted_t *self) { return 1; }
-int has_one_ref_dummyx(cef_base_ref_counted_t *self) { return 1; }
-int has_at_least_one_ref_dummyx(cef_base_ref_counted_t *self) { return 1; }
-
-void init_dummyx_ref_counter(cef_base_ref_counted_t *h) {
-	h->add_ref = add_ref_dummyx;
-	h->release = release_dummyx;
-	h->has_one_ref = has_one_ref_dummyx;
-	h->has_at_least_one_ref = has_at_least_one_ref_dummyx;
-}
-
 @interface EmbeddedWebView : NSView
 {
 	cef_browser_t *webview;
@@ -223,18 +211,9 @@ void init_dummyx_ref_counter(cef_base_ref_counted_t *h) {
 
 - (instancetype)initWithFrame: (NSRect)frameRect url:(const char *)url {
 	self = [super initWithFrame: frameRect];
-	cef_window_info_t *info = (cef_window_info_t *)calloc(1, sizeof(cef_window_info_t));
+	cef_window_info_t *info = new_cef_window_info();
 	info->parent_view = self;
-
-	cef_browser_settings_t *settings = (cef_browser_settings_t *)calloc(1, sizeof(cef_browser_settings_t));
-	settings->size = sizeof(cef_browser_settings_t);
-
-	cef_client_t *client = (cef_client_t *)calloc(1, sizeof(cef_client_t));
-	client->base.size = sizeof(cef_client_t);
-	init_dummyx_ref_counter(&client->base);
-	cef_string_t *cefURL = (cef_string_t *)calloc(1, sizeof(cef_string_t));
-	cef_string_from_utf8(url, strlen(url), cefURL);
-	self->webview = cef_browser_host_create_browser_sync(info, client, cefURL, settings, nil);
+	self->webview = cef_browser_host_create_browser_sync(info, new_cef_client(), new_cef_string_from_utf8(url), new_cef_browser_settings(), nil);
 	return self;
 }
 
@@ -288,8 +267,7 @@ Window newWindow(int styleMask, double x, double y, double width, double height,
 	// The styleMask bits match those that Mac OS uses
 	NSRect contentRect = [NSWindow contentRectForFrameRect:NSMakeRect(x, [[NSScreen mainScreen] visibleFrame].size.height - (y + height), width, height) styleMask:styleMask];
 	NSWindow *window = [[KeyableWindow alloc] initWithContentRect:contentRect styleMask:styleMask backing:NSBackingStoreBuffered defer:YES];
-	EmbeddedWebView *view = [[EmbeddedWebView alloc] initWithFrame:NSMakeRect(0, 0, 0, 0) url:url];
-	[window setContentView:view];
+	[window setContentView:[[EmbeddedWebView alloc] initWithFrame:NSMakeRect(0, 0, 0, 0) url:url]];
 	[window setDelegate: [WindowDelegate new]];
 	return (Window)window;
 }
