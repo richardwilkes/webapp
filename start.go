@@ -1,10 +1,11 @@
 package webapp
 
 import (
-	// #cgo darwin CFLAGS: -x objective-c -I cef
+	// #cgo CFLAGS: -I cef
+	// #cgo darwin CFLAGS: -x objective-c
 	// #cgo darwin LDFLAGS: -framework Cocoa -F cef/Release -framework "Chromium Embedded Framework"
-	// #include <stdlib.h>
-	// #include "include/capi/cef_app_capi.h"
+	// #cgo windows LDFLAGS: -Lcef/Release -lcef
+	// #include "platform_common.h"
 	"C"
 
 	"github.com/richardwilkes/toolbox/atexit"
