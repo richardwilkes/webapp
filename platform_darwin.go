@@ -19,8 +19,9 @@ import (
 
 // ----- App section -----
 
-func platformPrepareForStart() {
+func platformPrepareForStart() error {
 	C.prepareForStart()
+	return nil
 }
 
 //export willFinishStartupCallback
