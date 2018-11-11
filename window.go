@@ -1,7 +1,10 @@
 package webapp
 
 import (
+	"unsafe"
+
 	"github.com/richardwilkes/toolbox/xmath/geom"
+	"github.com/richardwilkes/webapp/internal/cef"
 )
 
 // StyleMask controls the look and capabilities of a window.
@@ -19,9 +22,9 @@ const (
 
 // Window holds window information.
 type Window struct {
-	platformWindow
-	style StyleMask
-	title string
+	PlatformPtr unsafe.Pointer
+	style       StyleMask
+	title       string
 	// MayCloseCallback is called when the user has requested that the window
 	// be closed. Return true to permit it, false to cancel the operation.
 	// Defaults to always returning true.
@@ -51,13 +54,13 @@ func Windows() []*Window {
 // KeyWindow returns the window that currently has the keyboard focus, or nil
 // if none of your application's windows has the keyboard focus.
 func KeyWindow() *Window {
-	return platformKeyWindow()
+	return driver.KeyWindow()
 }
 
 // AllWindowsToFront attempts to bring all of the application's windows to the
 // foreground.
 func AllWindowsToFront() {
-	platformBringAllWindowsToFront()
+	driver.BringAllWindowsToFront()
 }
 
 // NewWindow creates a new window with a webview as its content.
@@ -69,7 +72,11 @@ func NewWindow(style StyleMask, bounds geom.Rect, url string) *Window {
 		GainedFocus:       func() {},
 		LostFocus:         func() {},
 	}
-	window.platformInit(bounds, url)
+	driver.WindowInit(window, style, bounds)
+	bounds.Size = window.WindowContentSize()
+	bounds.X = 0
+	bounds.Y = 0
+	cef.NewBrowser(cef.NewWindowInfo(driver.WindowBrowserParent(window), bounds), cef.NewClient(), url, cef.NewBrowserSettings())
 	windowList = append(windowList, window)
 	return window
 }
@@ -96,7 +103,7 @@ func (window *Window) Dispose() {
 			break
 		}
 	}
-	window.platformClose()
+	driver.WindowClose(window)
 }
 
 // Title returns the title of this window.
@@ -107,19 +114,24 @@ func (window *Window) Title() string {
 // SetTitle sets the title of this window.
 func (window *Window) SetTitle(title string) {
 	window.title = title
-	window.platformSetTitle(title)
+	driver.WindowSetTitle(window, title)
 }
 
 // Bounds returns the boundaries in display coordinates of the frame of this
 // window (i.e. the area that includes both the content and its border and
 // window controls).
 func (window *Window) Bounds() geom.Rect {
-	return window.platformBounds()
+	return driver.WindowBounds(window)
 }
 
 // SetBounds sets the boundaries of the frame of this window.
 func (window *Window) SetBounds(bounds geom.Rect) {
-	window.platformSetBounds(bounds)
+	driver.WindowSetBounds(window, bounds)
+}
+
+// WindowContentSize returns the size of the windoe's content area.
+func (window *Window) WindowContentSize() geom.Size {
+	return driver.WindowContentSize(window)
 }
 
 // Focused returns true if the window has the current keyboard focus.
@@ -130,17 +142,17 @@ func (window *Window) Focused() bool {
 // ToFront attempts to bring the window to the foreground and give it the
 // keyboard focus.
 func (window *Window) ToFront() {
-	window.platformToFront()
+	driver.WindowToFront(window)
 }
 
 // Minimize performs the platform's minimize function on the window.
 func (window *Window) Minimize() {
-	window.platformMinimize()
+	driver.WindowMinimize(window)
 }
 
 // Zoom performs the platform's zoom function on the window.
 func (window *Window) Zoom() {
-	window.platformZoom()
+	driver.WindowZoom(window)
 }
 
 // Closable returns true if the window was created with the

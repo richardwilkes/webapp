@@ -1,15 +1,17 @@
 package webapp
 
+import "unsafe"
+
 // Menu represents a set of menu items.
 type Menu struct {
-	platformMenu
-	title string
+	PlatformPtr unsafe.Pointer
+	title       string
 }
 
 // NewMenu creates a new menu.
 func NewMenu(title string) *Menu {
 	menu := &Menu{title: title}
-	menu.platformInit()
+	driver.MenuInit(menu)
 	return menu
 }
 
@@ -20,12 +22,12 @@ func (menu *Menu) Title() string {
 
 // Count of menu items in this menu.
 func (menu *Menu) Count() int {
-	return menu.platformItemCount()
+	return driver.MenuCountItems(menu)
 }
 
 // Item at the specified index, or nil.
 func (menu *Menu) Item(index int) *MenuItem {
-	return menu.platformItem(index)
+	return driver.MenuGetItem(menu, index)
 }
 
 // Menu at the specified index, or nil.
@@ -48,7 +50,7 @@ func (menu *Menu) InsertItem(item *MenuItem, index int) {
 	if index < 0 || index > max {
 		index = max
 	}
-	menu.platformInsertItem(item, index)
+	driver.MenuInsertItem(menu, item, index)
 }
 
 // AppendMenu appends a menu item with a sub-menu at the end of this menu.
@@ -60,7 +62,7 @@ func (menu *Menu) AppendMenu(subMenu *Menu) {
 // within this menu. Pass in a negative index to append to the end.
 func (menu *Menu) InsertMenu(subMenu *Menu, index int) {
 	item := NewMenuItem(subMenu.Title())
-	item.platformSetSubMenu(subMenu)
+	driver.MenuItemSetSubMenu(item, subMenu)
 	menu.InsertItem(item, index)
 }
 
@@ -68,7 +70,7 @@ func (menu *Menu) InsertMenu(subMenu *Menu, index int) {
 // dispose of the menu item.
 func (menu *Menu) Remove(index int) {
 	if index >= 0 && index < menu.Count() {
-		menu.platformRemove(index)
+		driver.MenuRemove(menu, index)
 	}
 }
 
@@ -80,5 +82,5 @@ func (menu *Menu) Dispose() {
 			item.Dispose()
 		}
 	}
-	menu.platformDispose()
+	driver.MenuDispose(menu)
 }

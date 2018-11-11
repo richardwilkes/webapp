@@ -1,6 +1,8 @@
 package webapp
 
-import "github.com/richardwilkes/toolbox/xmath/geom"
+import (
+	"github.com/richardwilkes/toolbox/xmath/geom"
+)
 
 // Display holds information about each available active display.
 type Display struct {
@@ -22,5 +24,5 @@ func MainDisplay() *Display {
 
 // Displays returns all displays.
 func Displays() []*Display {
-	return platformDisplays()
+	return driver.Displays()
 }

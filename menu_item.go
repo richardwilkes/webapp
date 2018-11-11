@@ -1,12 +1,14 @@
 package webapp
 
 import (
+	"unsafe"
+
 	"github.com/richardwilkes/webapp/keys"
 )
 
 // MenuItem represents individual actions that can be issued from a menu.
 type MenuItem struct {
-	platformMenuItem
+	PlatformPtr  unsafe.Pointer
 	Validator    func() bool
 	Handler      func()
 	title        string
@@ -18,7 +20,7 @@ type MenuItem struct {
 // NewMenuSeparator creates a new menu separator item.
 func NewMenuSeparator() *MenuItem {
 	item := &MenuItem{}
-	item.platformInitMenuSeparator()
+	driver.MenuItemInitSeparator(item)
 	return item
 }
 
@@ -41,7 +43,7 @@ func NewMenuItemWithKeyAndModifiers(title string, keyCode int, modifiers keys.Mo
 		keyModifiers: modifiers,
 		enabled:      true,
 	}
-	item.platformInitMenuItem(NormalKind)
+	driver.MenuItemInit(item, NormalKind)
 	return item
 }
 
@@ -52,7 +54,7 @@ func NewSpecialMenuItem(kind MenuItemKind) *MenuItem {
 		keyCode:      kind.keyCode(),
 		keyModifiers: kind.modifiers(),
 	}
-	item.platformInitMenuItem(kind)
+	driver.MenuItemInit(item, kind)
 	return item
 }
 
@@ -75,11 +77,21 @@ func (item *MenuItem) KeyModifiers() keys.Modifiers {
 
 // SubMenu returns a sub-menu attached to this item or nil.
 func (item *MenuItem) SubMenu() *Menu {
-	return item.platformSubMenu()
+	return driver.MenuItemSubMenu(item)
 }
 
 // Enabled returns true if this item is enabled.
 func (item *MenuItem) Enabled() bool {
+	return item.enabled
+}
+
+// Validate validates the item, returning true if enabled.
+func (item *MenuItem) Validate() bool {
+	if item.Validator != nil {
+		item.enabled = item.Validator()
+	} else {
+		item.enabled = true
+	}
 	return item.enabled
 }
 
@@ -88,5 +100,5 @@ func (item *MenuItem) Dispose() {
 	if sub := item.SubMenu(); sub != nil {
 		sub.Dispose()
 	}
-	item.platformDispose()
+	driver.MenuItemDispose(item)
 }

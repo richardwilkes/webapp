@@ -60,7 +60,8 @@ func (kind MenuItemKind) modifiers() keys.Modifiers {
 	return keys.PlatformMenuModifier()
 }
 
-func (kind MenuItemKind) selector() string {
+// Selector returns the selector associated with this kind.
+func (kind MenuItemKind) Selector() string {
 	switch kind {
 	case CutKind:
 		return "cut:"

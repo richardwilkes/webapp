@@ -1,35 +1,36 @@
 package webapp
 
 import (
-	// #cgo CFLAGS: -I cef
-	// #cgo darwin CFLAGS: -x objective-c
-	// #cgo darwin LDFLAGS: -framework Cocoa -F cef/Release -framework "Chromium Embedded Framework"
-	// #cgo windows LDFLAGS: -Lcef/Release -lcef
-	// #include "platform_common.h"
-	"C"
+	"os"
 	"runtime"
 
 	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/webapp/internal/cef"
 )
 
+var driver Driver
+
 // Start the user interface. This should only be called on the main OS thread.
-// Only returns if an error occurs during initialization.
-func Start() error {
+// Starting goroutines may cause your code to start executing on a secondary
+// thread, so either make this call prior to starting goroutines, or
+// explicitly call runtime.LockOSThread() as the first thing in main().
+// Only returns if an error occurs during initialization. No other functions
+// within this package should be called before this method.
+func Start(platformDriver Driver) error {
+	if platformDriver == nil {
+		return errs.New("platformDriver may not be nil")
+	}
+	driver = platformDriver
 	runtime.LockOSThread()
-	if err := platformPrepareForStart(); err != nil {
+	if err := driver.PrepareForStart(); err != nil {
 		return err
 	}
-	args := (*C.cef_main_args_t)(C.calloc(1, C.sizeof_struct__cef_main_args_t))
-	settings := (*C.cef_settings_t)(C.calloc(1, C.sizeof_struct__cef_settings_t))
-	settings.size = C.sizeof_struct__cef_settings_t
-	settings.no_sandbox = 1
-	settings.command_line_args_disabled = 1
-	if C.cef_initialize(args, settings, nil, nil) != 1 {
-		return errs.New("Unable to initialize CEF")
+	if err := cef.Initialize(cef.NewMainArgs(os.Args), cef.NewSettings()); err != nil {
+		return err
 	}
-	C.cef_run_message_loop()
-	C.cef_shutdown()
+	cef.RunMessageLoop()
+	cef.Shutdown()
 	atexit.Exit(0)
 	return nil
 }

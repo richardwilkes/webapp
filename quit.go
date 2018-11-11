@@ -17,7 +17,7 @@ var QuitAfterLastWindowClosedCallback = func() bool { return true }
 
 // AttemptQuit initiates the termination sequence.
 func AttemptQuit() {
-	platformAttemptQuit()
+	driver.AttemptQuit()
 }
 
 // CheckQuitCallback is called when termination has been requested. Default
@@ -28,7 +28,7 @@ var CheckQuitCallback = func() QuitResponse { return Now }
 // returned from CheckQuit. Passing in false for the quit parameter will
 // cancel the termination sequence while true will allow it to proceed.
 func MayQuitNow(quit bool) {
-	platformMayQuitNow(quit)
+	driver.MayQuitNow(quit)
 }
 
 // QuittingCallback is called when the app will in fact terminate.
