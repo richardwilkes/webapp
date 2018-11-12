@@ -3,27 +3,14 @@ package cef
 import (
 	// #cgo CFLAGS: -I ${SRCDIR}/../../cef
 	// #cgo darwin LDFLAGS: -framework Cocoa -F ${SRCDIR}/../../cef/Release -framework "Chromium Embedded Framework"
+	// #cgo windows LDFLAGS: -L${SRCDIR}../../cef/Release -lcef
 	// #include "common.h"
 	"C"
-)
-import (
 	"unsafe"
 
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 )
-
-// MainArgs is an alias for the CEF main args type.
-type MainArgs *C.cef_main_args_t
-
-// NewMainArgs creates a new default MainArgs instance.
-func NewMainArgs(args []string) MainArgs {
-	ma := C.new_cef_main_args(C.int(len(args)))
-	for i, s := range args {
-		C.set_cef_main_arg(ma, C.int(i), C.CString(s))
-	}
-	return MainArgs(ma)
-}
 
 // Settings is an alias for the CEF settings type.
 type Settings *C.cef_settings_t
@@ -80,8 +67,8 @@ func NewBrowser(info WindowInfo, client Client, url string, settings BrowserSett
 }
 
 // Initialize CEF.
-func Initialize(args MainArgs, settings Settings) error {
-	if C.cef_initialize(args, settings, nil, nil) != 1 {
+func Initialize(settings Settings) error {
+	if C.cef_initialize((*C.cef_main_args_t)(C.calloc(1, C.sizeof_struct__cef_main_args_t)), settings, nil, nil) != 1 {
 		return errs.New("Unable to initialize CEF")
 	}
 	return nil

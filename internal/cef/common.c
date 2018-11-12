@@ -46,23 +46,11 @@ cef_string_t *new_cef_string_from_utf8(const char *str) {
 	return s;
 }
 
-cef_main_args_t *new_cef_main_args(int count) {
-	cef_main_args_t *args = (cef_main_args_t *)calloc(1, sizeof(cef_main_args_t));
-	args->argc = count;
-	args->argv = (char **)calloc(count, sizeof(char *));
-	return args;
-}
-
-void set_cef_main_arg(cef_main_args_t *args, int index, char *value) {
-	if (index >= 0 && index < args->argc) {
-		args->argv[index] = value;
-	}
-}
-
 cef_settings_t *new_cef_settings() {
 	cef_settings_t *settings = (cef_settings_t *)calloc(1, sizeof(cef_settings_t));
 	settings->size = sizeof(cef_settings_t);
 	settings->no_sandbox = 1;
+	settings->command_line_args_disabled = 1;
 	return settings;
 }
 

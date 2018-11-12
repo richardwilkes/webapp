@@ -1,7 +1,6 @@
 package webapp
 
 import (
-	"os"
 	"runtime"
 
 	"github.com/richardwilkes/toolbox/atexit"
@@ -26,7 +25,7 @@ func Start(platformDriver Driver) error {
 	if err := driver.PrepareForStart(); err != nil {
 		return err
 	}
-	if err := cef.Initialize(cef.NewMainArgs(os.Args), cef.NewSettings()); err != nil {
+	if err := cef.Initialize(cef.NewSettings()); err != nil {
 		return err
 	}
 	cef.RunMessageLoop()

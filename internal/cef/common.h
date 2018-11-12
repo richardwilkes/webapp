@@ -11,8 +11,6 @@
 
 cef_base_ref_counted_t *refcnt_alloc(int size);
 cef_string_t *new_cef_string_from_utf8(const char *str);
-cef_main_args_t *new_cef_main_args(int count);
-void set_cef_main_arg(cef_main_args_t *args, int index, char *value);
 cef_settings_t *new_cef_settings();
 cef_browser_settings_t *new_cef_browser_settings();
 cef_client_t *new_cef_client();
