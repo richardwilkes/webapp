@@ -3,7 +3,7 @@ package cef
 import (
 	// #cgo CFLAGS: -I ${SRCDIR}/../../cef
 	// #cgo darwin LDFLAGS: -framework Cocoa -F ${SRCDIR}/../../cef/Release -framework "Chromium Embedded Framework"
-	// #cgo windows LDFLAGS: -L${SRCDIR}../../cef/Release -lcef
+	// #cgo windows LDFLAGS: -L${SRCDIR}/../../cef/Release -lcef
 	// #include "common.h"
 	"C"
 	"unsafe"
@@ -36,7 +36,7 @@ type WindowInfo *C.cef_window_info_t
 
 // NewWindowInfo creates a new default WindowInfo instance.
 func NewWindowInfo(parent WindowHandle, bounds geom.Rect) WindowInfo {
-	return WindowInfo(C.new_cef_window_info(unsafe.Pointer(parent), C.int(bounds.X), C.int(bounds.Y), C.int(bounds.Width), C.int(bounds.Height)))
+	return WindowInfo(C.new_cef_window_info((C.cef_window_handle_t)(parent), C.int(bounds.X), C.int(bounds.Y), C.int(bounds.Width), C.int(bounds.Height)))
 }
 
 // BrowserSettings is an alias for the CEF browser settings type.
