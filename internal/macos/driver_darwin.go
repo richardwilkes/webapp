@@ -219,8 +219,10 @@ func (d *driver) BringAllWindowsToFront() {
 	C.bringAllWindowsToFront()
 }
 
-func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds geom.Rect) error {
-	w := C.newWindow(C.int(style), C.double(bounds.X), C.double(bounds.Y), C.double(bounds.Width), C.double(bounds.Height))
+func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds geom.Rect, title string) error {
+	cTitle := C.CString(title)
+	w := C.newWindow(C.int(style), C.double(bounds.X), C.double(bounds.Y), C.double(bounds.Width), C.double(bounds.Height), cTitle)
+	C.free(unsafe.Pointer(cTitle))
 	wnd.PlatformPtr = unsafe.Pointer(w)
 	d.windows[w] = wnd
 	return nil

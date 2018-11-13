@@ -142,11 +142,12 @@ void bringAllWindowsToFront() {
 	[[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateAllWindows | NSApplicationActivateIgnoringOtherApps];
 }
 
-CWindowPtr newWindow(int styleMask, double x, double y, double width, double height) {
+CWindowPtr newWindow(int styleMask, double x, double y, double width, double height, const char *title) {
 	// The styleMask bits match those that Mac OS uses
 	NSRect contentRect = [NSWindow contentRectForFrameRect:NSMakeRect(x, [[NSScreen mainScreen] visibleFrame].size.height - (y + height), width, height) styleMask:styleMask];
 	KeyableWindow *window = [[KeyableWindow alloc] initWithContentRect:contentRect styleMask:styleMask backing:NSBackingStoreBuffered defer:YES];
 	[window setDelegate: [WindowDelegate new]];
+	[window setTitle:[NSString stringWithUTF8String:title]];
 	return (CWindowPtr)window;
 }
 

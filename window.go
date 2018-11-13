@@ -64,7 +64,7 @@ func AllWindowsToFront() {
 }
 
 // NewWindow creates a new window with a webview as its content.
-func NewWindow(style StyleMask, bounds geom.Rect, url string) (*Window, error) {
+func NewWindow(style StyleMask, bounds geom.Rect, title, url string) (*Window, error) {
 	window := &Window{
 		style:             style,
 		MayCloseCallback:  func() bool { return true },
@@ -72,7 +72,7 @@ func NewWindow(style StyleMask, bounds geom.Rect, url string) (*Window, error) {
 		GainedFocus:       func() {},
 		LostFocus:         func() {},
 	}
-	if err := driver.WindowInit(window, style, bounds); err != nil {
+	if err := driver.WindowInit(window, style, bounds, title); err != nil {
 		return nil, err
 	}
 	bounds.Size = window.WindowContentSize()

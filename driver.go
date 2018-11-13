@@ -42,7 +42,7 @@ type Driver interface {
 	KeyWindow() *Window
 	BringAllWindowsToFront()
 
-	WindowInit(wnd *Window, style StyleMask, bounds geom.Rect) error
+	WindowInit(wnd *Window, style StyleMask, bounds geom.Rect, title string) error
 	WindowBrowserParent(wnd *Window) cef.WindowHandle
 	WindowClose(wnd *Window)
 	WindowSetTitle(wnd *Window, title string)
