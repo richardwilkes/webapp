@@ -74,6 +74,7 @@ cef_window_info_t *new_cef_window_info(cef_window_handle_t parent, int x, int y,
 	info->parent_view = parent;
 #endif
 #if defined(OS_WIN)
+	info->style = WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_TABSTOP | WS_VISIBLE;
 	info->parent_window = parent;
 #endif
 	return info;
