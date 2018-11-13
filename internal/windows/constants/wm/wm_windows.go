@@ -18,11 +18,11 @@ const (
 	PAINT                       = 0x000F
 	CLOSE                       = 0x0010
 	QUERYENDSESSION             = 0x0011
-	QUERYOPEN                   = 0x0013
-	ENDSESSION                  = 0x0016
 	QUIT                        = 0x0012
+	QUERYOPEN                   = 0x0013
 	ERASEBKGND                  = 0x0014
 	SYSCOLORCHANGE              = 0x0015
+	ENDSESSION                  = 0x0016
 	SHOWWINDOW                  = 0x0018
 	WININICHANGE                = 0x001A
 	SETTINGCHANGE               = WININICHANGE
@@ -95,7 +95,6 @@ const (
 	NCXBUTTONDBLCLK             = 0x00AD
 	INPUT_DEVICE_CHANGE         = 0x00FE
 	INPUT                       = 0x00FF
-	KEYFIRST                    = 0x0100
 	KEYDOWN                     = 0x0100
 	KEYUP                       = 0x0101
 	CHAR                        = 0x0102
@@ -105,11 +104,12 @@ const (
 	SYSCHAR                     = 0x0106
 	SYSDEADCHAR                 = 0x0107
 	UNICHAR                     = 0x0109
-	KEYLAST                     = 0x0109
+	KEYFIRST                    = KEYDOWN
+	KEYLAST                     = UNICHAR
 	IME_STARTCOMPOSITION        = 0x010D
 	IME_ENDCOMPOSITION          = 0x010E
 	IME_COMPOSITION             = 0x010F
-	IME_KEYLAST                 = 0x010F
+	IME_KEYLAST                 = IME_COMPOSITION
 	INITDIALOG                  = 0x0110
 	COMMAND                     = 0x0111
 	SYSCOMMAND                  = 0x0112
@@ -137,7 +137,6 @@ const (
 	CTLCOLORSCROLLBAR           = 0x0137
 	CTLCOLORSTATIC              = 0x0138
 	MN_GETHMENU                 = 0x01E1
-	MOUSEFIRST                  = 0x0200
 	MOUSEMOVE                   = 0x0200
 	LBUTTONDOWN                 = 0x0201
 	LBUTTONUP                   = 0x0202
@@ -153,6 +152,7 @@ const (
 	XBUTTONUP                   = 0x020C
 	XBUTTONDBLCLK               = 0x020D
 	MOUSEHWHEEL                 = 0x020E
+	MOUSEFIRST                  = MOUSEMOVE
 	PARENTNOTIFY                = 0x0210
 	ENTERMENULOOP               = 0x0211
 	EXITMENULOOP                = 0x0212
@@ -228,7 +228,7 @@ const (
 	AFXLAST                     = 0x037F
 	PENWINFIRST                 = 0x0380
 	PENWINLAST                  = 0x038F
-	APP                         = 0x8000
 	USER                        = 0x0400
 	REFLECT                     = USER + 0x1C00
+	APP                         = 0x8000
 )

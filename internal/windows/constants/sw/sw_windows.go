@@ -6,7 +6,7 @@ const (
 	SHOWNORMAL      = 1
 	SHOWMINIMIZED   = 2
 	MAXIMIZE        = 3
-	SHOWMAXIMIZED   = 3
+	SHOWMAXIMIZED   = MAXIMIZE
 	SHOWNOACTIVATE  = 4
 	SHOW            = 5
 	MINIMIZE        = 6
