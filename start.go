@@ -27,6 +27,7 @@ func Initialize(platformDriver Driver) error {
 	}
 	driver = platformDriver
 	runtime.LockOSThread()
+	cef.EnableHighResolutionSupport()
 	return driver.Initialize()
 }
 

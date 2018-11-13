@@ -23,6 +23,7 @@ const (
 // Window holds window information.
 type Window struct {
 	PlatformPtr unsafe.Pointer
+	Browser     cef.Browser
 	style       StyleMask
 	title       string
 	// MayCloseCallback is called when the user has requested that the window
@@ -78,7 +79,7 @@ func NewWindow(style StyleMask, bounds geom.Rect, title, url string) (*Window, e
 	bounds.Size = window.WindowContentSize()
 	bounds.X = 0
 	bounds.Y = 0
-	cef.NewBrowser(cef.NewWindowInfo(driver.WindowBrowserParent(window), bounds), cef.NewClient(), url, cef.NewBrowserSettings())
+	window.Browser = cef.NewBrowser(cef.NewWindowInfo(driver.WindowBrowserParent(window), bounds), cef.NewClient(), url, cef.NewBrowserSettings())
 	windowList = append(windowList, window)
 	return window, nil
 }

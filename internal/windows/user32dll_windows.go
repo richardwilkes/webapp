@@ -9,24 +9,25 @@ import (
 )
 
 var (
-	user32                 = syscall.NewLazyDLL("user32.dll")
-	createWindowExW        = user32.NewProc("CreateWindowExW")
-	defWindowProcW         = user32.NewProc("DefWindowProcW")
-	destroyWindow          = user32.NewProc("DestroyWindow")
-	enumDisplayDevicesW    = user32.NewProc("EnumDisplayDevicesW")
-	enumDisplayMonitors    = user32.NewProc("EnumDisplayMonitors")
-	enumDisplaySettingsExW = user32.NewProc("EnumDisplaySettingsExW")
-	getClientRect          = user32.NewProc("GetClientRect")
-	getMonitorInfoW        = user32.NewProc("GetMonitorInfoW")
-	getWindowRect          = user32.NewProc("GetWindowRect")
-	loadCursorW            = user32.NewProc("LoadCursorW")
-	moveWindow             = user32.NewProc("MoveWindow")
-	postQuitMessage        = user32.NewProc("PostQuitMessage")
-	registerClassExW       = user32.NewProc("RegisterClassExW")
-	setActiveWindow        = user32.NewProc("SetActiveWindow")
-	setWindowPos           = user32.NewProc("SetWindowPos")
-	setWindowTextW         = user32.NewProc("SetWindowTextW")
-	showWindow             = user32.NewProc("ShowWindow")
+	user32                        = syscall.NewLazyDLL("user32.dll")
+	createWindowExW               = user32.NewProc("CreateWindowExW")
+	defWindowProcW                = user32.NewProc("DefWindowProcW")
+	destroyWindow                 = user32.NewProc("DestroyWindow")
+	enumDisplayDevicesW           = user32.NewProc("EnumDisplayDevicesW")
+	enumDisplayMonitors           = user32.NewProc("EnumDisplayMonitors")
+	enumDisplaySettingsExW        = user32.NewProc("EnumDisplaySettingsExW")
+	getClientRect                 = user32.NewProc("GetClientRect")
+	getMonitorInfoW               = user32.NewProc("GetMonitorInfoW")
+	getWindowRect                 = user32.NewProc("GetWindowRect")
+	loadCursorW                   = user32.NewProc("LoadCursorW")
+	moveWindow                    = user32.NewProc("MoveWindow")
+	postQuitMessage               = user32.NewProc("PostQuitMessage")
+	registerClassExW              = user32.NewProc("RegisterClassExW")
+	setActiveWindow               = user32.NewProc("SetActiveWindow")
+	setProcessDpiAwarenessContext = user32.NewProc("SetProcessDpiAwarenessContext")
+	setWindowPos                  = user32.NewProc("SetWindowPos")
+	setWindowTextW                = user32.NewProc("SetWindowTextW")
+	showWindow                    = user32.NewProc("ShowWindow")
 )
 
 // CreateWindowExW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createwindowexw
@@ -165,6 +166,14 @@ func RegisterClassExW(w *WNDCLASSEXW) (uint16, error) {
 func SetActiveWindow(hwnd syscall.Handle) error {
 	if ret, _, err := setActiveWindow.Call(uintptr(hwnd)); ret == 0 {
 		return errs.NewWithCause(setActiveWindow.Name, err)
+	}
+	return nil
+}
+
+// SetProcessDpiAwarenessContext from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setprocessdpiawarenesscontext
+func SetProcessDpiAwarenessContext(value uint32) error {
+	if ret, _, err := setProcessDpiAwarenessContext.Call(uintptr(value)); ret == 0 {
+		return errs.NewWithCause(setProcessDpiAwarenessContext.Name, err)
 	}
 	return nil
 }

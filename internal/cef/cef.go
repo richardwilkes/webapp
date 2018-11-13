@@ -66,12 +66,24 @@ func NewBrowser(info WindowInfo, client Client, url string, settings BrowserSett
 	return Browser(C.cef_browser_host_create_browser_sync(info, client, NewString(url), settings, nil))
 }
 
+// BrowserHost is an alias for the CEF browser host object.
+type BrowserHost *C.cef_browser_host_t
+
+// GetBrowserHost retrieves the BrowserHost.
+func GetBrowserHost(browser Browser) BrowserHost {
+	return BrowserHost(C.get_cef_browser_host((*C.cef_browser_t)(browser)))
+}
+
+// GetWindowHandle returns the WindowHandle for the browser content.
+func GetWindowHandle(host BrowserHost) WindowHandle {
+	return WindowHandle(C.get_cef_window_handle((*C.cef_browser_host_t)(host)))
+}
+
 // Initialize CEF.
 func Initialize(settings Settings) error {
 	if C.cef_initialize((*C.cef_main_args_t)(C.calloc(1, C.sizeof_struct__cef_main_args_t)), settings, nil, nil) != 1 {
 		return errs.New("Unable to initialize CEF")
 	}
-	C.cef_enable_highdpi_support()
 	return nil
 }
 
@@ -88,4 +100,10 @@ func QuitMessageLoop() {
 // Shutdown CEF and the application.
 func Shutdown() {
 	C.cef_shutdown()
+}
+
+// EnableHighResolutionSupport enables CEF's high-resolution support. This
+// should be called before any other CEF function if this support is desired.
+func EnableHighResolutionSupport() {
+	C.cef_enable_highdpi_support()
 }
