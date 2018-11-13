@@ -199,8 +199,8 @@ func (d *driver) BringAllWindowsToFront() {
 	// RAW: Implement
 }
 
-func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds geom.Rect) error {
-	w, err := CreateWindowExW(0, windowClassName, "", ws.OVERLAPPEDWINDOW|ws.CLIPCHILDREN, int32(bounds.X), int32(bounds.Y), int32(bounds.Height), int32(bounds.Width), 0, 0, d.instance)
+func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds geom.Rect, title string) error {
+	w, err := CreateWindowExW(0, windowClassName, title, ws.OVERLAPPEDWINDOW|ws.CLIPCHILDREN, int32(bounds.X), int32(bounds.Y), int32(bounds.Height), int32(bounds.Width), 0, 0, d.instance)
 	if err != nil {
 		return err
 	}
