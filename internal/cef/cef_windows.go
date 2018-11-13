@@ -10,7 +10,6 @@ import (
 
 	"github.com/richardwilkes/toolbox/atexit"
 )
-import "fmt"
 
 // ExecuteProcess is used to start the secondary CEF processes. If this is
 // the main process, this call will do nothing and return. If it is a
@@ -19,8 +18,6 @@ func ExecuteProcess(instance syscall.Handle) {
 	args := (*C.cef_main_args_t)(C.calloc(1, C.sizeof_struct__cef_main_args_t))
 	args.instance = C.HINSTANCE(unsafe.Pointer(instance))
 	if code := C.cef_execute_process(args, nil, nil); code >= 0 {
-		fmt.Println("exiting with code ", code)
 		atexit.Exit(int(code))
 	}
-	fmt.Println("Did not start secondary process")
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/richardwilkes/webapp/internal/cef"
 	"github.com/richardwilkes/webapp/internal/windows/constants/cs"
 	"github.com/richardwilkes/webapp/internal/windows/constants/display"
+	"github.com/richardwilkes/webapp/internal/windows/constants/sw"
 	"github.com/richardwilkes/webapp/internal/windows/constants/ws"
 )
 
@@ -24,12 +25,9 @@ const windowClassName = "wndClass"
 
 type driver struct {
 	instance syscall.Handle
-	windows  map[syscall.Handle]*webapp.Window
 }
 
-var drv = &driver{
-	windows: make(map[syscall.Handle]*webapp.Window),
-}
+var drv = &driver{}
 
 // Driver returns the Windows implementation of the driver.
 func Driver() *driver {
@@ -169,22 +167,22 @@ func (d *driver) Displays() []*webapp.Display {
 			break
 		}
 		if one.Flags&display.DEVICE_ACTIVE != 0 {
-			s, err := EnumDisplaySettingsExW(&one.DeviceName[0], ENUM_CURRENT_SETTINGS, 0)
+			dc, err := CreateDCW(&one.DeviceName[0])
 			if err != nil {
 				jot.Error(err)
 			} else {
 				d := &webapp.Display{}
-				d.Bounds.X = float64(s.X)
-				d.Bounds.Y = float64(s.Y)
-				d.Bounds.Width = float64(s.PelsWidth)
-				d.Bounds.Height = float64(s.PelsHeight)
-				d.UsableBounds.X = float64(s.X)
-				d.UsableBounds.Y = float64(s.Y)
-				d.UsableBounds.Width = float64(s.PelsWidth)
-				d.UsableBounds.Height = float64(s.PelsHeight) // RAW: Account for task bar
-				d.ScaleFactor = 1                             // RAW: Implement
+				d.Bounds.X = 0 // RAW: Implement
+				d.Bounds.Y = 0 // RAW: Implement
+				d.Bounds.Width = float64(GetDeviceCaps(dc, HORZRES))
+				d.Bounds.Height = float64(GetDeviceCaps(dc, VERTRES))
+				d.UsableBounds = d.Bounds // RAW: Account for task bar
+				d.ScaleFactor = 1         // RAW: Implement
 				d.IsMain = one.Flags&display.DEVICE_PRIMARY_DEVICE != 0
 				result = append(result, d)
+				if err = DeleteDC(dc); err != nil {
+					jot.Error(err)
+				}
 			}
 		}
 		devNum++
@@ -207,7 +205,6 @@ func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds g
 		return err
 	}
 	wnd.PlatformPtr = unsafe.Pointer(w)
-	d.windows[w] = wnd
 	return nil
 }
 
@@ -220,7 +217,6 @@ func (d *driver) WindowClose(wnd *webapp.Window) {
 	if err := DestroyWindow(p); err != nil {
 		jot.Error(err)
 	}
-	delete(d.windows, p)
 }
 
 func (d *driver) WindowSetTitle(wnd *webapp.Window, title string) {
@@ -252,15 +248,16 @@ func (d *driver) WindowSetBounds(wnd *webapp.Window, bounds geom.Rect) {
 }
 
 func (d *driver) WindowToFront(wnd *webapp.Window) {
+	ShowWindow(syscall.Handle(wnd.PlatformPtr), sw.SHOWNORMAL)
 	if err := SetActiveWindow(syscall.Handle(wnd.PlatformPtr)); err != nil {
 		jot.Error(err)
 	}
 }
 
 func (d *driver) WindowMinimize(wnd *webapp.Window) {
-	// RAW: Implement
+	ShowWindow(syscall.Handle(wnd.PlatformPtr), sw.MINIMIZE)
 }
 
 func (d *driver) WindowZoom(wnd *webapp.Window) {
-	// RAW: Implement
+	ShowWindow(syscall.Handle(wnd.PlatformPtr), sw.MAXIMIZE)
 }

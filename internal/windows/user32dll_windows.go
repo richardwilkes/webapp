@@ -24,6 +24,7 @@ var (
 	setActiveWindow        = user32.NewProc("SetActiveWindow")
 	setWindowPos           = user32.NewProc("SetWindowPos")
 	setWindowTextW         = user32.NewProc("SetWindowTextW")
+	showWindow             = user32.NewProc("ShowWindow")
 )
 
 // CreateWindowExW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createwindowexw
@@ -70,8 +71,8 @@ func EnumDisplayDevicesW(devNum uint32, flags uint32) (*DISPLAY_DEVICEW, error) 
 }
 
 // EnumDisplaySettingsExW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enumdisplaysettingsexw
-func EnumDisplaySettingsExW(deviceName *uint16, modeNum uint32, flags uint32) (*DEVMODE, error) {
-	var data DEVMODE
+func EnumDisplaySettingsExW(deviceName *uint16, modeNum uint32, flags uint32) (*DEVMODEW, error) {
+	var data DEVMODEW
 	if ret, _, err := enumDisplaySettingsExW.Call(uintptr(unsafe.Pointer(deviceName)), uintptr(modeNum), uintptr(unsafe.Pointer(&data)), uintptr(flags)); ret == 0 {
 		return nil, errs.NewWithCause(enumDisplaySettingsExW.Name, err)
 	}
@@ -168,4 +169,13 @@ func SetWindowTextW(hwnd syscall.Handle, title string) error {
 		return errs.NewWithCause(setWindowTextW.Name, err)
 	}
 	return nil
+}
+
+// ShowWindow from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-showwindow
+func ShowWindow(hwnd syscall.Handle, cmd int) bool {
+	ret, _, _ := showWindow.Call(uintptr(hwnd), uintptr(cmd))
+	if ret == 0 {
+		return false
+	}
+	return true
 }

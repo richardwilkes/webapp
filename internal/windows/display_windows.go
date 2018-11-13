@@ -12,6 +12,16 @@ const (
 	EDS_RAWMODE     = 0x00000004
 )
 
+// Constatns that may be passed as the index param to GetDeviceCaps
+const (
+	HORZRES        = 8
+	VERTRES        = 10
+	LOGPIXELSX     = 88
+	LOGPIXELSY     = 90
+	SCALINGFACTORX = 114
+	SCALINGFACTORY = 115
+)
+
 // DISPLAY_DEVICEW is defined here:
 // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicew
 type DISPLAY_DEVICEW struct {
@@ -23,9 +33,9 @@ type DISPLAY_DEVICEW struct {
 	DeviceKey    [128]uint16
 }
 
-// DEVMODE is defined here:
+// DEVMODEW is defined here:
 // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_devicemodew
-type DEVMODE struct {
+type DEVMODEW struct {
 	DeviceName    [32]uint16
 	SpecVersion   uint16
 	DriverVersion uint16
