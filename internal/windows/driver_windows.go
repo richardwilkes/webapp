@@ -5,7 +5,6 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xmath/geom"
@@ -82,8 +81,7 @@ func (d *driver) AttemptQuit() {
 	case webapp.Cancel:
 		return
 	case webapp.Now:
-		webapp.QuittingCallback()
-		atexit.Exit(0)
+		d.quit()
 	case webapp.Later:
 		d.awaitingQuitDecision = true
 	}
@@ -93,12 +91,17 @@ func (d *driver) MayQuitNow(quit bool) {
 	if d.awaitingQuitDecision {
 		d.awaitingQuitDecision = false
 		if quit {
-			webapp.QuittingCallback()
-			atexit.Exit(0)
+			d.quit()
 		}
 	} else {
 		jot.Error("Call to MayQuitNow without AttemptQuit")
 	}
+}
+
+func (d *driver) quit() {
+	webapp.QuittingCallback()
+	PostQuitMessage(0)
+	cef.QuitMessageLoop()
 }
 
 func (d *driver) Invoke(id uint64) {
@@ -227,6 +230,7 @@ func (d *driver) WindowBrowserParent(wnd *webapp.Window) cef.WindowHandle {
 }
 
 func (d *driver) WindowClose(wnd *webapp.Window) {
+	wnd.WillCloseCallback()
 	p := syscall.Handle(wnd.PlatformPtr)
 	if err := DestroyWindow(p); err != nil {
 		jot.Error(err)

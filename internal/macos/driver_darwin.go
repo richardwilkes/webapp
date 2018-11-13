@@ -10,7 +10,6 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xmath/geom"
@@ -314,7 +313,7 @@ func checkQuitCallback() int {
 //export quittingCallback
 func quittingCallback() {
 	webapp.QuittingCallback()
-	atexit.Exit(0)
+	cef.QuitMessageLoop()
 }
 
 //export dispatchUITaskCallback

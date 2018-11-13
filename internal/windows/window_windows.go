@@ -30,10 +30,7 @@ func WndProc(wnd syscall.Handle, msg uint32, wparam, lparam uintptr) uintptr {
 	switch msg {
 	case wm.CLOSE:
 		if w, ok := drv.windows[wnd]; ok {
-			if w.MayCloseCallback() {
-				w.WillCloseCallback()
-				drv.WindowClose(w)
-			}
+			w.AttemptClose()
 		} else {
 			if err := DestroyWindow(wnd); err != nil {
 				jot.Error(err)

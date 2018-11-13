@@ -71,12 +71,18 @@ func Initialize(settings Settings) error {
 	if C.cef_initialize((*C.cef_main_args_t)(C.calloc(1, C.sizeof_struct__cef_main_args_t)), settings, nil, nil) != 1 {
 		return errs.New("Unable to initialize CEF")
 	}
+	C.cef_enable_highdpi_support()
 	return nil
 }
 
 // RunMessageLoop runs the application event loop.
 func RunMessageLoop() {
 	C.cef_run_message_loop()
+}
+
+// QuitMessageLoop quits the message loop in preparation for exiting.
+func QuitMessageLoop() {
+	C.cef_quit_message_loop()
 }
 
 // Shutdown CEF and the application.
