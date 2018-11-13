@@ -314,6 +314,7 @@ func checkQuitCallback() int {
 func quittingCallback() {
 	webapp.QuittingCallback()
 	cef.QuitMessageLoop()
+	cef.Shutdown()
 }
 
 //export dispatchUITaskCallback
