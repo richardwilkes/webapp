@@ -9,7 +9,9 @@ import (
 
 // Driver defines the required functions each platform driver must provide.
 type Driver interface {
+	Initialize() error
 	PrepareForStart() error
+	PrepareForEventLoop()
 
 	AttemptQuit()
 	MayQuitNow(quit bool)
@@ -40,7 +42,7 @@ type Driver interface {
 	KeyWindow() *Window
 	BringAllWindowsToFront()
 
-	WindowInit(wnd *Window, style StyleMask, bounds geom.Rect)
+	WindowInit(wnd *Window, style StyleMask, bounds geom.Rect) error
 	WindowBrowserParent(wnd *Window) cef.WindowHandle
 	WindowClose(wnd *Window)
 	WindowSetTitle(wnd *Window, title string)

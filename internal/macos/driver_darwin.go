@@ -38,9 +38,18 @@ func Driver() *driver {
 	return drv
 }
 
+func (d *driver) Initialize() error {
+	// Nothing to do
+	return nil
+}
+
 func (d *driver) PrepareForStart() error {
 	C.prepareForStart()
 	return nil
+}
+
+func (d *driver) PrepareForEventLoop() {
+	// Nothing to do
 }
 
 func (d *driver) AttemptQuit() {
@@ -210,10 +219,11 @@ func (d *driver) BringAllWindowsToFront() {
 	C.bringAllWindowsToFront()
 }
 
-func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds geom.Rect) {
+func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds geom.Rect) error {
 	w := C.newWindow(C.int(style), C.double(bounds.X), C.double(bounds.Y), C.double(bounds.Width), C.double(bounds.Height))
 	wnd.PlatformPtr = unsafe.Pointer(w)
 	d.windows[w] = wnd
+	return nil
 }
 
 func (d *driver) WindowBrowserParent(wnd *webapp.Window) cef.WindowHandle {

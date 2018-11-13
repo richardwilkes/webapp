@@ -10,24 +10,39 @@ import (
 
 var driver Driver
 
-// Start the user interface. This should only be called on the main OS thread.
-// Starting goroutines may cause your code to start executing on a secondary
-// thread, so either make this call prior to starting goroutines, or
-// explicitly call runtime.LockOSThread() as the first thing in main().
-// Only returns if an error occurs during initialization. No other functions
-// within this package should be called before this method.
-func Start(platformDriver Driver) error {
+// Initialize the library. This should be called on the main OS thread as
+// early as possible -- typically before parsing command-line arguments, as
+// this may be a request to start a sub-process and not the primary
+// application.
+//
+// Note that starting goroutines may cause your code to start executing on a
+// secondary thread, so either make this call prior to starting goroutines, or
+// explicitly call runtime.LockOSThread() before doing so.
+//
+// This function will not return if the executable is being started as a CEF
+// sub-process.
+func Initialize(platformDriver Driver) error {
 	if platformDriver == nil {
 		return errs.New("platformDriver may not be nil")
 	}
 	driver = platformDriver
 	runtime.LockOSThread()
+	return driver.Initialize()
+}
+
+// Start the user interface. This and most other functions in this package
+// should only be called from the main (UI) thread.
+func Start() error {
+	if driver == nil {
+		return errs.New("webapp.Initialize(driver) must be called first")
+	}
 	if err := driver.PrepareForStart(); err != nil {
 		return err
 	}
 	if err := cef.Initialize(cef.NewSettings()); err != nil {
 		return err
 	}
+	driver.PrepareForEventLoop()
 	cef.RunMessageLoop()
 	cef.Shutdown()
 	atexit.Exit(0)
