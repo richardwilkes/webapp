@@ -22,6 +22,11 @@ const (
 	SCALINGFACTORY = 115
 )
 
+// Constants returned in the Flags of MONITORINFO
+const (
+	MONITORINFOF_PRIMARY = 0x00000001
+)
+
 // DISPLAY_DEVICEW is defined here:
 // https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/ns-wingdi-_display_devicew
 type DISPLAY_DEVICEW struct {
@@ -66,4 +71,22 @@ type DEVMODEW struct {
 	Reserved2     uint32
 	PanningWidth  uint32
 	PanningHeight uint32
+}
+
+// RECT is defined here:
+// https://msdn.microsoft.com/en-us/9439cb6c-f2f7-4c27-b1d7-8ddf16d81fe8
+type RECT struct {
+	Left   int32
+	Top    int32
+	Right  int32
+	Bottom int32
+}
+
+// MONITORINFO is defined here:
+// https://docs.microsoft.com/en-us/windows/desktop/api/winuser/ns-winuser-tagmonitorinfo
+type MONITORINFO struct {
+	Size          uint32
+	MonitorBounds RECT
+	WorkBounds    RECT
+	Flags         uint32
 }

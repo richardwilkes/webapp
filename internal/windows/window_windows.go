@@ -3,6 +3,8 @@ package windows
 import (
 	"syscall"
 
+	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/webapp"
 	"github.com/richardwilkes/webapp/internal/windows/constants/wm"
 )
 
@@ -24,14 +26,26 @@ type WNDCLASSEXW struct {
 }
 
 // WndProc provides standard handling of window messages.
-func WndProc(hwnd syscall.Handle, msg uint32, wparam, lparam uintptr) uintptr {
+func WndProc(wnd syscall.Handle, msg uint32, wparam, lparam uintptr) uintptr {
 	switch msg {
 	case wm.CLOSE:
-		DestroyWindow(hwnd)
+		if w, ok := drv.windows[wnd]; ok {
+			if w.MayCloseCallback() {
+				w.WillCloseCallback()
+				drv.WindowClose(w)
+			}
+		} else {
+			if err := DestroyWindow(wnd); err != nil {
+				jot.Error(err)
+			}
+		}
+		if len(drv.windows) == 0 && webapp.QuitAfterLastWindowClosedCallback() {
+			webapp.AttemptQuit()
+		}
 	case wm.DESTROY:
 		PostQuitMessage(0)
 	default:
-		return DefWindowProcW(hwnd, msg, wparam, lparam)
+		return DefWindowProcW(wnd, msg, wparam, lparam)
 	}
 	return 0
 }

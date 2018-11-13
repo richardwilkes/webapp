@@ -5,13 +5,13 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/webapp"
 	"github.com/richardwilkes/webapp/internal/cef"
 	"github.com/richardwilkes/webapp/internal/windows/constants/cs"
-	"github.com/richardwilkes/webapp/internal/windows/constants/display"
 	"github.com/richardwilkes/webapp/internal/windows/constants/sw"
 	"github.com/richardwilkes/webapp/internal/windows/constants/ws"
 )
@@ -24,10 +24,14 @@ const (
 const windowClassName = "wndClass"
 
 type driver struct {
-	instance syscall.Handle
+	instance             syscall.Handle
+	windows              map[syscall.Handle]*webapp.Window
+	awaitingQuitDecision bool
 }
 
-var drv = &driver{}
+var drv = &driver{
+	windows: make(map[syscall.Handle]*webapp.Window),
+}
 
 // Driver returns the Windows implementation of the driver.
 func Driver() *driver {
@@ -74,11 +78,27 @@ func (d *driver) PrepareForEventLoop() {
 }
 
 func (d *driver) AttemptQuit() {
-	// RAW: Implement
+	switch webapp.CheckQuitCallback() {
+	case webapp.Cancel:
+		return
+	case webapp.Now:
+		webapp.QuittingCallback()
+		atexit.Exit(0)
+	case webapp.Later:
+		d.awaitingQuitDecision = true
+	}
 }
 
 func (d *driver) MayQuitNow(quit bool) {
-	// RAW: Implement
+	if d.awaitingQuitDecision {
+		d.awaitingQuitDecision = false
+		if quit {
+			webapp.QuittingCallback()
+			atexit.Exit(0)
+		}
+	} else {
+		jot.Error("Call to MayQuitNow without AttemptQuit")
+	}
 }
 
 func (d *driver) Invoke(id uint64) {
@@ -159,33 +179,26 @@ func (d *driver) MenuItemDispose(item *webapp.MenuItem) {
 }
 
 func (d *driver) Displays() []*webapp.Display {
-	var devNum uint32
 	result := make([]*webapp.Display, 0)
-	for {
-		one, err := EnumDisplayDevicesW(devNum, 0)
-		if err != nil {
-			break
+	if err := EnumDisplayMonitors(0, nil, func(monitor, dc syscall.Handle, rect, param uintptr) uintptr {
+		d := &webapp.Display{}
+		if info, err := GetMonitorInfoW(monitor); err != nil {
+			jot.Error(err)
+		} else {
+			d.Bounds.X = float64(info.MonitorBounds.Left)
+			d.Bounds.Y = float64(info.MonitorBounds.Top)
+			d.Bounds.Width = float64(info.MonitorBounds.Right - info.MonitorBounds.Left)
+			d.Bounds.Height = float64(info.MonitorBounds.Bottom - info.MonitorBounds.Top)
+			d.UsableBounds.X = float64(info.WorkBounds.Left)
+			d.UsableBounds.Y = float64(info.WorkBounds.Top)
+			d.UsableBounds.Width = float64(info.WorkBounds.Right - info.WorkBounds.Left)
+			d.UsableBounds.Height = float64(info.WorkBounds.Bottom - info.WorkBounds.Top)
+			d.IsMain = info.Flags&MONITORINFOF_PRIMARY != 0
+			result = append(result, d)
 		}
-		if one.Flags&display.DEVICE_ACTIVE != 0 {
-			dc, err := CreateDCW(&one.DeviceName[0])
-			if err != nil {
-				jot.Error(err)
-			} else {
-				d := &webapp.Display{}
-				d.Bounds.X = 0 // RAW: Implement
-				d.Bounds.Y = 0 // RAW: Implement
-				d.Bounds.Width = float64(GetDeviceCaps(dc, HORZRES))
-				d.Bounds.Height = float64(GetDeviceCaps(dc, VERTRES))
-				d.UsableBounds = d.Bounds // RAW: Account for task bar
-				d.ScaleFactor = 1         // RAW: Implement
-				d.IsMain = one.Flags&display.DEVICE_PRIMARY_DEVICE != 0
-				result = append(result, d)
-				if err = DeleteDC(dc); err != nil {
-					jot.Error(err)
-				}
-			}
-		}
-		devNum++
+		return 1
+	}, 0); err != nil {
+		jot.Error(err)
 	}
 	return result
 }
@@ -200,11 +213,12 @@ func (d *driver) BringAllWindowsToFront() {
 }
 
 func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds geom.Rect, title string) error {
-	w, err := CreateWindowExW(0, windowClassName, title, ws.OVERLAPPEDWINDOW|ws.CLIPCHILDREN, int32(bounds.X), int32(bounds.Y), int32(bounds.Height), int32(bounds.Width), 0, 0, d.instance)
+	w, err := CreateWindowExW(0, windowClassName, title, ws.OVERLAPPEDWINDOW|ws.CLIPCHILDREN, int32(bounds.X), int32(bounds.Y), int32(bounds.Width), int32(bounds.Height), 0, 0, d.instance)
 	if err != nil {
 		return err
 	}
 	wnd.PlatformPtr = unsafe.Pointer(w)
+	d.windows[w] = wnd
 	return nil
 }
 
@@ -217,6 +231,7 @@ func (d *driver) WindowClose(wnd *webapp.Window) {
 	if err := DestroyWindow(p); err != nil {
 		jot.Error(err)
 	}
+	delete(d.windows, p)
 }
 
 func (d *driver) WindowSetTitle(wnd *webapp.Window, title string) {

@@ -14,8 +14,10 @@ var (
 	defWindowProcW         = user32.NewProc("DefWindowProcW")
 	destroyWindow          = user32.NewProc("DestroyWindow")
 	enumDisplayDevicesW    = user32.NewProc("EnumDisplayDevicesW")
+	enumDisplayMonitors    = user32.NewProc("EnumDisplayMonitors")
 	enumDisplaySettingsExW = user32.NewProc("EnumDisplaySettingsExW")
 	getClientRect          = user32.NewProc("GetClientRect")
+	getMonitorInfoW        = user32.NewProc("GetMonitorInfoW")
 	getWindowRect          = user32.NewProc("GetWindowRect")
 	loadCursorW            = user32.NewProc("LoadCursorW")
 	moveWindow             = user32.NewProc("MoveWindow")
@@ -70,6 +72,14 @@ func EnumDisplayDevicesW(devNum uint32, flags uint32) (*DISPLAY_DEVICEW, error) 
 	return &data, nil
 }
 
+// EnumDisplayMonitors from https://docs.microsoft.com/en-us/windows/desktop/api/Winuser/nf-winuser-enumdisplaymonitors
+func EnumDisplayMonitors(hdc syscall.Handle, clip *RECT, callback func(monitor, dc syscall.Handle, rect, param uintptr) uintptr, data uint32) error {
+	if ret, _, err := enumDisplayMonitors.Call(uintptr(hdc), uintptr(unsafe.Pointer(clip)), syscall.NewCallback(callback), uintptr(data)); ret == 0 {
+		return errs.NewWithCause(enumDisplayMonitors.Name, err)
+	}
+	return nil
+}
+
 // EnumDisplaySettingsExW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enumdisplaysettingsexw
 func EnumDisplaySettingsExW(deviceName *uint16, modeNum uint32, flags uint32) (*DEVMODEW, error) {
 	var data DEVMODEW
@@ -82,28 +92,37 @@ func EnumDisplaySettingsExW(deviceName *uint16, modeNum uint32, flags uint32) (*
 // GetClientRect from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getclientrect
 func GetClientRect(hwnd syscall.Handle) (geom.Rect, error) {
 	var bounds geom.Rect
-	var rect [4]int32
-	if ret, _, err := getClientRect.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&rect[0]))); ret == 0 {
+	var rect RECT
+	if ret, _, err := getClientRect.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&rect))); ret == 0 {
 		return bounds, errs.NewWithCause(getClientRect.Name, err)
 	}
-	bounds.X = float64(rect[0])
-	bounds.Y = float64(rect[1])
-	bounds.Width = float64(rect[2] - rect[0])
-	bounds.Height = float64(rect[3] - rect[1])
+	bounds.X = float64(rect.Left)
+	bounds.Y = float64(rect.Top)
+	bounds.Width = float64(rect.Right - rect.Left)
+	bounds.Height = float64(rect.Bottom - rect.Top)
 	return bounds, nil
+}
+
+func GetMonitorInfoW(monitor syscall.Handle) (*MONITORINFO, error) {
+	var info MONITORINFO
+	info.Size = uint32(unsafe.Sizeof(info))
+	if ret, _, err := getMonitorInfoW.Call(uintptr(monitor), uintptr(unsafe.Pointer(&info))); ret == 0 {
+		return nil, errs.NewWithCause(getMonitorInfoW.Name, err)
+	}
+	return &info, nil
 }
 
 // GetWindowRect from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getwindowrect
 func GetWindowRect(hwnd syscall.Handle) (geom.Rect, error) {
 	var bounds geom.Rect
-	var rect [4]int32
-	if ret, _, err := getWindowRect.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&rect[0]))); ret == 0 {
+	var rect RECT
+	if ret, _, err := getWindowRect.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&rect))); ret == 0 {
 		return bounds, errs.NewWithCause(getWindowRect.Name, err)
 	}
-	bounds.X = float64(rect[0])
-	bounds.Y = float64(rect[1])
-	bounds.Width = float64(rect[2] - rect[0])
-	bounds.Height = float64(rect[3] - rect[1])
+	bounds.X = float64(rect.Left)
+	bounds.Y = float64(rect.Top)
+	bounds.Width = float64(rect.Right - rect.Left)
+	bounds.Height = float64(rect.Bottom - rect.Top)
 	return bounds, nil
 }
 
