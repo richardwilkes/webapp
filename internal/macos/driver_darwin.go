@@ -200,7 +200,6 @@ func (d *driver) Displays() []*webapp.Display {
 		d.UsableBounds.Y = float64(displays[i].usableBounds.origin.y)
 		d.UsableBounds.Width = float64(displays[i].usableBounds.size.width)
 		d.UsableBounds.Height = float64(displays[i].usableBounds.size.height)
-		d.ScaleFactor = float64(displays[i].scaleFactor)
 		d.IsMain = displays[i].isMain != 0
 		result[i] = d
 	}

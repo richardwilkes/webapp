@@ -8,7 +8,6 @@ import (
 type Display struct {
 	Bounds       geom.Rect
 	UsableBounds geom.Rect
-	ScaleFactor  float64
 	IsMain       bool
 }
 
