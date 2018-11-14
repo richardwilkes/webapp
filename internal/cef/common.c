@@ -1,4 +1,5 @@
 #include "common.h"
+#include "_cgo_export.h"
 
 typedef struct _cef_refcnt_t {
 	volatile atomic_int_fast32_t count;
@@ -86,4 +87,20 @@ cef_browser_host_t *get_cef_browser_host(cef_browser_t *browser) {
 
 cef_window_handle_t get_cef_window_handle(cef_browser_host_t *host) {
 	return host->get_window_handle(host);
+}
+
+typedef struct _my_cef_task_t {
+	cef_task_t task;
+	int        id;
+} my_cef_task_t;
+
+void execute_cef_task(cef_task_t *self) {
+	taskCallback(((my_cef_task_t *)self)->id);
+}
+
+cef_task_t *new_cef_task(int id) {
+	my_cef_task_t *task = (my_cef_task_t *)refcnt_alloc(sizeof(my_cef_task_t));
+	task->id = id;
+	task->task.execute = execute_cef_task;
+	return &task->task;
 }

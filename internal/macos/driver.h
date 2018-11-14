@@ -1,6 +1,5 @@
 #import <Quartz/Quartz.h>
 #import <Cocoa/Cocoa.h>
-#import <dispatch/dispatch.h>
 
 typedef void *CMenuPtr;
 typedef void *CMenuItemPtr;
@@ -18,8 +17,6 @@ void prepareForStart();
 
 void attemptQuit();
 void mayQuitNow(int quit);
-
-void invoke(uint32_t id);
 
 void hideApp();
 void hideOtherApps();

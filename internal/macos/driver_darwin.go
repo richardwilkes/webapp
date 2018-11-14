@@ -14,7 +14,6 @@ import (
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/webapp"
 	"github.com/richardwilkes/webapp/internal/cef"
-	"github.com/richardwilkes/webapp/internal/uitask"
 	"github.com/richardwilkes/webapp/keys"
 )
 
@@ -60,10 +59,6 @@ func (d *driver) MayQuitNow(quit bool) {
 		mayQuit = 1
 	}
 	C.mayQuitNow(mayQuit)
-}
-
-func (d *driver) Invoke(id uint32) {
-	C.invoke(C.uint32_t(id))
 }
 
 func (d *driver) MenuBarForWindow(_ *webapp.Window) *webapp.MenuBar {
@@ -310,11 +305,6 @@ func quittingCallback() {
 	webapp.QuittingCallback()
 	cef.QuitMessageLoop()
 	cef.Shutdown()
-}
-
-//export dispatchUITaskCallback
-func dispatchUITaskCallback(id uintptr) {
-	uitask.Dispatch(uint32(id))
 }
 
 //export validateMenuItemCallback

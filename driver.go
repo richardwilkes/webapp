@@ -14,8 +14,6 @@ type Driver interface {
 	AttemptQuit()
 	MayQuitNow(quit bool)
 
-	Invoke(id uint32)
-
 	MenuBarForWindow(wnd *Window) *MenuBar
 	MenuBarSetServicesMenu(bar *MenuBar, menu *Menu)
 	MenuBarSetWindowMenu(bar *MenuBar, menu *Menu)

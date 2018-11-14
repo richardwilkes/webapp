@@ -19,10 +19,6 @@ void mayQuitNow(int quit) {
 	[NSApp replyToApplicationShouldTerminate:quit];
 }
 
-void invoke(uint32_t id) {
-	dispatch_async_f(dispatch_get_main_queue(), (void *)(unsigned long)id, (dispatch_function_t)dispatchUITaskCallback);
-}
-
 void hideApp() {
 	[NSApp hide:nil];
 }
