@@ -3,13 +3,13 @@ package uitask
 import "sync"
 
 var (
-	nextID uint64 = 1
+	nextID uint32 = 1
 	lock   sync.Mutex
-	tasks  = make(map[uint64]func())
+	tasks  = make(map[uint32]func())
 )
 
 // Record a task for later execution on the UI thread.
-func Record(task func()) uint64 {
+func Record(task func()) uint32 {
 	lock.Lock()
 	id := nextID
 	nextID++
@@ -19,7 +19,7 @@ func Record(task func()) uint64 {
 }
 
 // Dispatch a UI task. Should only be called on the UI thread.
-func Dispatch(id uint64) {
+func Dispatch(id uint32) {
 	lock.Lock()
 	task := tasks[id]
 	delete(tasks, id)

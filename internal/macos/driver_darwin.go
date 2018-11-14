@@ -7,7 +7,6 @@ import (
 	"C"
 	"fmt"
 	"strings"
-	"time"
 	"unsafe"
 
 	"github.com/richardwilkes/toolbox/cmdline"
@@ -63,12 +62,8 @@ func (d *driver) MayQuitNow(quit bool) {
 	C.mayQuitNow(mayQuit)
 }
 
-func (d *driver) Invoke(id uint64) {
-	C.invoke(C.ulong(id))
-}
-
-func (d *driver) InvokeAfter(id uint64, after time.Duration) {
-	C.invokeAfter(C.ulong(id), C.long(after.Nanoseconds()))
+func (d *driver) Invoke(id uint32) {
+	C.invoke(C.uint32_t(id))
 }
 
 func (d *driver) MenuBarForWindow(_ *webapp.Window) *webapp.MenuBar {
@@ -318,8 +313,8 @@ func quittingCallback() {
 }
 
 //export dispatchUITaskCallback
-func dispatchUITaskCallback(id uint64) {
-	uitask.Dispatch(id)
+func dispatchUITaskCallback(id uintptr) {
+	uitask.Dispatch(uint32(id))
 }
 
 //export validateMenuItemCallback

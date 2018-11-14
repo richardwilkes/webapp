@@ -1,8 +1,6 @@
 package webapp
 
 import (
-	"time"
-
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/webapp/internal/cef"
 )
@@ -16,8 +14,7 @@ type Driver interface {
 	AttemptQuit()
 	MayQuitNow(quit bool)
 
-	Invoke(id uint64)
-	InvokeAfter(id uint64, after time.Duration)
+	Invoke(id uint32)
 
 	MenuBarForWindow(wnd *Window) *MenuBar
 	MenuBarSetServicesMenu(bar *MenuBar, menu *Menu)

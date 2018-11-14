@@ -19,8 +19,7 @@ void prepareForStart();
 void attemptQuit();
 void mayQuitNow(int quit);
 
-void invoke(unsigned long id);
-void invokeAfter(unsigned long id, long afterNanos);
+void invoke(uint32_t id);
 
 void hideApp();
 void hideOtherApps();

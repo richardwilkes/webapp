@@ -19,12 +19,8 @@ void mayQuitNow(int quit) {
 	[NSApp replyToApplicationShouldTerminate:quit];
 }
 
-void invoke(unsigned long id) {
-	dispatch_async_f(dispatch_get_main_queue(), (void *)id, (dispatch_function_t)dispatchUITaskCallback);
-}
-
-void invokeAfter(unsigned long id, long afterNanos) {
-	dispatch_after_f(dispatch_time(DISPATCH_TIME_NOW, afterNanos), dispatch_get_main_queue(), (void *)id, (dispatch_function_t)dispatchUITaskCallback);
+void invoke(uint32_t id) {
+	dispatch_async_f(dispatch_get_main_queue(), (void *)(unsigned long)id, (dispatch_function_t)dispatchUITaskCallback);
 }
 
 void hideApp() {

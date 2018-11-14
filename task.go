@@ -14,6 +14,6 @@ func InvokeUITask(task func()) {
 
 // InvokeUITaskAfter schedules a task to be run on the UI thread after waiting
 // for the specified duration.
-func InvokeUITaskAfter(f func(), after time.Duration) {
-	driver.InvokeAfter(uitask.Record(f), after)
+func InvokeUITaskAfter(task func(), after time.Duration) {
+	time.AfterFunc(after, func() { InvokeUITask(task) })
 }
