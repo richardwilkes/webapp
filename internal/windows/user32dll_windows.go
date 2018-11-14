@@ -23,6 +23,7 @@ var (
 	moveWindow                    = user32.NewProc("MoveWindow")
 	postQuitMessage               = user32.NewProc("PostQuitMessage")
 	registerClassExW              = user32.NewProc("RegisterClassExW")
+	registerWindowMessageW        = user32.NewProc("RegisterWindowMessageW")
 	setActiveWindow               = user32.NewProc("SetActiveWindow")
 	setProcessDpiAwarenessContext = user32.NewProc("SetProcessDpiAwarenessContext")
 	setWindowPos                  = user32.NewProc("SetWindowPos")
@@ -160,6 +161,19 @@ func RegisterClassExW(w *WNDCLASSEXW) (uint16, error) {
 		return 0, errs.NewWithCause(registerClassExW.Name, err)
 	}
 	return uint16(h), nil
+}
+
+// RegisterWindowMessageW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-registerwindowmessagew
+func RegisterWindowMessageW(name string) (uint32, error) {
+	str, err := syscall.UTF16PtrFromString(name)
+	if err != nil {
+		return 0, errs.NewWithCause("Unable to convert name to UTF16", err)
+	}
+	ret, _, err := registerWindowMessageW.Call(uintptr(unsafe.Pointer(str)))
+	if ret == 0 {
+		return 0, errs.NewWithCause(registerWindowMessageW.Name, err)
+	}
+	return uint32(ret), nil
 }
 
 // SetActiveWindow from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setactivewindow

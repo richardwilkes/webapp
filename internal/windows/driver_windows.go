@@ -2,7 +2,6 @@ package windows
 
 import (
 	"syscall"
-	"time"
 	"unsafe"
 
 	"github.com/richardwilkes/toolbox/errs"
@@ -12,6 +11,8 @@ import (
 	"github.com/richardwilkes/webapp/internal/cef"
 	"github.com/richardwilkes/webapp/internal/windows/constants/cs"
 	"github.com/richardwilkes/webapp/internal/windows/constants/sw"
+	"github.com/richardwilkes/webapp/internal/windows/constants/swp"
+	"github.com/richardwilkes/webapp/internal/windows/constants/wm"
 	"github.com/richardwilkes/webapp/internal/windows/constants/ws"
 )
 
@@ -47,26 +48,23 @@ func (d *driver) Initialize() error {
 }
 
 func (d *driver) PrepareForStart() error {
-	cursor, err := LoadCursorW(winIDC_ARROW)
-	if err != nil {
-		return err
-	}
-	cnstr, err := syscall.UTF16PtrFromString(windowClassName)
-	if err != nil {
-		return errs.NewWithCause("Unable to convert className to UTF16", err)
-	}
 	wcx := WNDCLASSEXW{
 		Style:    cs.HREDRAW | cs.VREDRAW,
-		WndProc:  syscall.NewCallback(WndProc),
+		WndProc:  syscall.NewCallback(d.wndProc),
 		Instance: d.instance,
 		// Icon: LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CEFCLIENT)),
-		Cursor: cursor,
 		// Background: cCOLOR_WINDOW + 1,
 		// MenuName: MAKEINTRESOURCE(IDC_CEFCLIENT),
-		ClassName: cnstr,
 		// IconSm: LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL)),
 	}
 	wcx.Size = uint32(unsafe.Sizeof(wcx))
+	var err error
+	if wcx.Cursor, err = LoadCursorW(winIDC_ARROW); err != nil {
+		return err
+	}
+	if wcx.ClassName, err = syscall.UTF16PtrFromString(windowClassName); err != nil {
+		return errs.NewWithCause("Unable to convert className to UTF16", err)
+	}
 	_, err = RegisterClassExW(&wcx)
 	return err
 }
@@ -74,6 +72,32 @@ func (d *driver) PrepareForStart() error {
 func (d *driver) PrepareForEventLoop() {
 	webapp.WillFinishStartupCallback()
 	webapp.DidFinishStartupCallback()
+}
+
+func (d *driver) wndProc(wnd syscall.Handle, msg uint32, wparam, lparam uintptr) uintptr {
+	switch msg {
+	case wm.SIZE:
+		if w, ok := d.windows[wnd]; ok {
+			size := d.WindowContentSize(w)
+			SetWindowPos(syscall.Handle(unsafe.Pointer(cef.GetWindowHandle(cef.GetBrowserHost(w.Browser)))), 0, 0, 0, int32(size.Width), int32(size.Height), swp.NOZORDER)
+		}
+	case wm.CLOSE:
+		if w, ok := d.windows[wnd]; ok {
+			w.AttemptClose()
+		} else {
+			if err := DestroyWindow(wnd); err != nil {
+				jot.Error(err)
+			}
+		}
+		if len(d.windows) == 0 && webapp.QuitAfterLastWindowClosedCallback() {
+			webapp.AttemptQuit()
+		}
+	case wm.DESTROY:
+		PostQuitMessage(0)
+	default:
+		return DefWindowProcW(wnd, msg, wparam, lparam)
+	}
+	return 0
 }
 
 func (d *driver) AttemptQuit() {
@@ -102,14 +126,6 @@ func (d *driver) quit() {
 	webapp.QuittingCallback()
 	PostQuitMessage(0)
 	cef.QuitMessageLoop()
-}
-
-func (d *driver) Invoke(id uint64) {
-	// RAW: Implement
-}
-
-func (d *driver) InvokeAfter(id uint64, after time.Duration) {
-	// RAW: Implement
 }
 
 func (d *driver) MenuBarForWindow(_ *webapp.Window) *webapp.MenuBar {
