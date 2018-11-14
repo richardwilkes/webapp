@@ -16,6 +16,7 @@ var (
 	enumDisplayDevicesW           = user32.NewProc("EnumDisplayDevicesW")
 	enumDisplayMonitors           = user32.NewProc("EnumDisplayMonitors")
 	enumDisplaySettingsExW        = user32.NewProc("EnumDisplaySettingsExW")
+	enumWindows                   = user32.NewProc("EnumWindows")
 	getClientRect                 = user32.NewProc("GetClientRect")
 	getMonitorInfoW               = user32.NewProc("GetMonitorInfoW")
 	getWindowRect                 = user32.NewProc("GetWindowRect")
@@ -75,8 +76,8 @@ func EnumDisplayDevicesW(devNum uint32, flags uint32) (*DISPLAY_DEVICEW, error) 
 }
 
 // EnumDisplayMonitors from https://docs.microsoft.com/en-us/windows/desktop/api/Winuser/nf-winuser-enumdisplaymonitors
-func EnumDisplayMonitors(hdc syscall.Handle, clip *RECT, callback func(monitor, dc syscall.Handle, rect, param uintptr) uintptr, data uint32) error {
-	if ret, _, err := enumDisplayMonitors.Call(uintptr(hdc), uintptr(unsafe.Pointer(clip)), syscall.NewCallback(callback), uintptr(data)); ret == 0 {
+func EnumDisplayMonitors(hdc syscall.Handle, clip *RECT, callback func(monitor, dc syscall.Handle, rect, param uintptr) uintptr, data uintptr) error {
+	if ret, _, err := enumDisplayMonitors.Call(uintptr(hdc), uintptr(unsafe.Pointer(clip)), syscall.NewCallback(callback), data); ret == 0 {
 		return errs.NewWithCause(enumDisplayMonitors.Name, err)
 	}
 	return nil
@@ -89,6 +90,14 @@ func EnumDisplaySettingsExW(deviceName *uint16, modeNum uint32, flags uint32) (*
 		return nil, errs.NewWithCause(enumDisplaySettingsExW.Name, err)
 	}
 	return &data, nil
+}
+
+// EnumWindows from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enumwindows
+func EnumWindows(callback func(wnd syscall.Handle, data uintptr) uintptr, data uintptr) error {
+	if ret, _, err := enumWindows.Call(syscall.NewCallback(callback), data); ret == 0 {
+		return errs.NewWithCause(enumWindows.Name, err)
+	}
+	return nil
 }
 
 // GetClientRect from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getclientrect
