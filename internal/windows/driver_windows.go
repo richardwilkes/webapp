@@ -25,7 +25,7 @@ const (
 const windowClassName = "wndClass"
 
 type driver struct {
-	instance             syscall.Handle
+	instance             HMODULE
 	windows              map[syscall.Handle]*webapp.Window
 	menubars             map[syscall.Handle]*webapp.MenuBar
 	awaitingQuitDecision bool
@@ -41,16 +41,11 @@ func Driver() *driver {
 	return drv
 }
 
-func (d *driver) Initialize() error {
+func (d *driver) PrepareForStart() error {
 	var err error
 	if d.instance, err = GetModuleHandleW(); err != nil {
 		return err
 	}
-	cef.ExecuteProcess(d.instance)
-	return nil
-}
-
-func (d *driver) PrepareForStart() error {
 	wcx := WNDCLASSEXW{
 		Style:    cs.HREDRAW | cs.VREDRAW,
 		WndProc:  syscall.NewCallback(d.wndProc),
@@ -61,7 +56,6 @@ func (d *driver) PrepareForStart() error {
 		// IconSm: LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL)),
 	}
 	wcx.Size = uint32(unsafe.Sizeof(wcx))
-	var err error
 	if wcx.Cursor, err = LoadCursorW(winIDC_ARROW); err != nil {
 		return err
 	}

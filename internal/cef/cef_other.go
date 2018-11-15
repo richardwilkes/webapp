@@ -10,7 +10,7 @@ import (
 	"unsafe"
 )
 
-func createMainArgs() *C.cef_main_args_t {
+func createMainArgs() (*C.cef_main_args_t, error) {
 	args := (*C.cef_main_args_t)(C.calloc(1, C.sizeof_struct__cef_main_args_t))
 	if len(os.Args) > 0 {
 		cp := C.calloc(C.size_t(len(os.Args)), C.size_t(unsafe.Sizeof(uintptr(0))))
@@ -21,5 +21,5 @@ func createMainArgs() *C.cef_main_args_t {
 		args.argc = C.int(len(os.Args))
 		args.argv = (**C.char)(cp)
 	}
-	return args
+	return args, nil
 }

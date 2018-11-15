@@ -12,7 +12,7 @@ type WNDCLASSEXW struct {
 	WndProc    uintptr
 	ClsExtra   int32
 	WndExtra   int32
-	Instance   syscall.Handle
+	Instance   HMODULE
 	Icon       syscall.Handle
 	Cursor     syscall.Handle
 	Background syscall.Handle

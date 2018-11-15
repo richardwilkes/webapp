@@ -7,7 +7,6 @@ import (
 
 // Driver defines the required functions each platform driver must provide.
 type Driver interface {
-	Initialize() error
 	PrepareForStart() error
 	PrepareForEventLoop()
 

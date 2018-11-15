@@ -35,11 +35,6 @@ func Driver() *driver {
 	return drv
 }
 
-func (d *driver) Initialize() error {
-	// Nothing to do
-	return nil
-}
-
 func (d *driver) PrepareForStart() error {
 	C.prepareForStart()
 	return nil

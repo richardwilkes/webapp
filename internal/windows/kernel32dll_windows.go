@@ -12,10 +12,10 @@ var (
 )
 
 // GetModuleHandleW from https://docs.microsoft.com/en-us/windows/desktop/api/libloaderapi/nf-libloaderapi-getmodulehandlew
-func GetModuleHandleW() (syscall.Handle, error) {
+func GetModuleHandleW() (HMODULE, error) {
 	h, _, err := getModuleHandleW.Call(0)
 	if h == 0 {
 		return 0, errs.NewWithCause(getModuleHandleW.Name, err)
 	}
-	return syscall.Handle(h), nil
+	return HMODULE(h), nil
 }

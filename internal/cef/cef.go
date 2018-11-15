@@ -9,6 +9,7 @@ import (
 	"sync"
 	"unsafe"
 
+	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 )
@@ -72,6 +73,20 @@ func GetBrowserHost(browser Browser) BrowserHost {
 // GetWindowHandle returns the WindowHandle for the browser content.
 func GetWindowHandle(host BrowserHost) WindowHandle {
 	return WindowHandle(C.get_cef_window_handle((*C.cef_browser_host_t)(host)))
+}
+
+// ExecuteProcess is used to start the secondary CEF processes. If this is
+// the main process, this call will do nothing and return. If it is a
+// secondary process, the call will not return.
+func ExecuteProcess() error {
+	args, err := createMainArgs()
+	if err != nil {
+		return err
+	}
+	if code := C.cef_execute_process(args, nil, nil); code >= 0 {
+		atexit.Exit(int(code))
+	}
+	return nil
 }
 
 // Initialize CEF.

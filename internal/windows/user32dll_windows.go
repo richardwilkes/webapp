@@ -57,7 +57,7 @@ func CreatePopupMenu() (syscall.Handle, error) {
 }
 
 // CreateWindowExW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createwindowexw
-func CreateWindowExW(exStyle uint32, className, windowName string, style uint32, x, y, width, height int32, parent, menu, instance syscall.Handle) (syscall.Handle, error) {
+func CreateWindowExW(exStyle uint32, className, windowName string, style uint32, x, y, width, height int32, parent, menu, instance HMODULE) (syscall.Handle, error) {
 	cnstr, err := syscall.UTF16PtrFromString(className)
 	if err != nil {
 		return 0, errs.NewWithCause("Unable to convert className to UTF16", err)
