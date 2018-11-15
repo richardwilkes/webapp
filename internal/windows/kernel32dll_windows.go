@@ -11,11 +11,11 @@ var (
 	getModuleHandleW = kernel32.NewProc("GetModuleHandleW")
 )
 
-// GetModuleHandleW from https://docs.microsoft.com/en-us/windows/desktop/api/libloaderapi/nf-libloaderapi-getmodulehandlew
-func GetModuleHandleW() (HMODULE, error) {
+// GetModuleHandleW https://docs.microsoft.com/en-us/windows/desktop/api/libloaderapi/nf-libloaderapi-getmodulehandlew
+func GetModuleHandleW() (HINSTANCE, error) {
 	h, _, err := getModuleHandleW.Call(0)
 	if h == 0 {
-		return 0, errs.NewWithCause(getModuleHandleW.Name, err)
+		return NULL, errs.NewWithCause(getModuleHandleW.Name, err)
 	}
-	return HMODULE(h), nil
+	return HINSTANCE(h), nil
 }

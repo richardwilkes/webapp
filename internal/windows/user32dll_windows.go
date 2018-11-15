@@ -5,7 +5,6 @@ import (
 	"unsafe"
 
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/xmath/geom"
 )
 
 var (
@@ -38,249 +37,275 @@ var (
 	showWindow                    = user32.NewProc("ShowWindow")
 )
 
-// CreateMenu from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createmenu
-func CreateMenu() (syscall.Handle, error) {
+// CreateMenu https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createmenu
+func CreateMenu() (HMENU, error) {
 	ret, _, err := createMenu.Call()
 	if ret == 0 {
-		return 0, errs.NewWithCause(createMenu.Name, err)
+		return NULL, errs.NewWithCause(createMenu.Name, err)
 	}
-	return syscall.Handle(ret), nil
+	return HMENU(ret), nil
 }
 
-// CreatePopupMenu from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createpopupmenu
-func CreatePopupMenu() (syscall.Handle, error) {
+// CreatePopupMenu https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createpopupmenu
+func CreatePopupMenu() (HMENU, error) {
 	ret, _, err := createPopupMenu.Call()
 	if ret == 0 {
-		return 0, errs.NewWithCause(createPopupMenu.Name, err)
+		return NULL, errs.NewWithCause(createPopupMenu.Name, err)
 	}
-	return syscall.Handle(ret), nil
+	return HMENU(ret), nil
 }
 
-// CreateWindowExW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createwindowexw
-func CreateWindowExW(exStyle uint32, className, windowName string, style uint32, x, y, width, height int32, parent, menu, instance HMODULE) (syscall.Handle, error) {
-	cnstr, err := syscall.UTF16PtrFromString(className)
+// CreateWindowExW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createwindowexw
+func CreateWindowExW(exStyle DWORD, className, windowName string, style DWORD, x, y, width, height int32, parent HWND, menu HMENU, instance HINSTANCE, param LPVOID) (HWND, error) {
+	cnstr, err := toUTF16PtrOrNilOnEmpty(className)
 	if err != nil {
-		return 0, errs.NewWithCause("Unable to convert className to UTF16", err)
+		return NULL, err
 	}
-	wnstr, err := syscall.UTF16PtrFromString(windowName)
+	wnstr, err := toUTF16PtrOrNilOnEmpty(windowName)
 	if err != nil {
-		return 0, errs.NewWithCause("Unable to convert windowName to UTF16", err)
+		return NULL, err
 	}
-	h, _, err := createWindowExW.Call(uintptr(exStyle), uintptr(unsafe.Pointer(cnstr)), uintptr(unsafe.Pointer(wnstr)), uintptr(style), uintptr(x), uintptr(y), uintptr(width), uintptr(height), uintptr(parent), uintptr(menu), uintptr(instance), uintptr(0))
-	if h == 0 {
-		return 0, errs.NewWithCause(createWindowExW.Name, err)
-	}
-	return syscall.Handle(h), nil
+	return CreateWindowExW_(exStyle, cnstr, wnstr, style, x, y, width, height, parent, menu, instance, param)
 }
 
-// DefWindowProcW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-defwindowprocw
-func DefWindowProcW(hwnd syscall.Handle, msg uint32, wparam, lparam uintptr) uintptr {
+// CreateWindowExW_ https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createwindowexw
+func CreateWindowExW_(exStyle DWORD, className, windowName LPCWSTR, style DWORD, x, y, width, height int32, parent HWND, menu HMENU, instance HINSTANCE, param LPVOID) (HWND, error) {
+	ret, _, err := createWindowExW.Call(uintptr(exStyle), uintptr(unsafe.Pointer(className)), uintptr(unsafe.Pointer(windowName)), uintptr(style), uintptr(x), uintptr(y), uintptr(width), uintptr(height), uintptr(parent), uintptr(menu), uintptr(instance), uintptr(param))
+	if ret == 0 {
+		return NULL, errs.NewWithCause(createWindowExW.Name, err)
+	}
+	return HWND(ret), nil
+}
+
+// DefWindowProcW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-defwindowprocw
+func DefWindowProcW(hwnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRESULT {
 	ret, _, _ := defWindowProcW.Call(uintptr(hwnd), uintptr(msg), uintptr(wparam), uintptr(lparam))
-	return uintptr(ret)
+	return LRESULT(ret)
 }
 
-// DestroyMenu from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-destroymenu
-func DestroyMenu(menu syscall.Handle) error {
-	h, _, err := destroyMenu.Call(uintptr(menu))
-	if h == 0 {
+// DestroyMenu https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-destroymenu
+func DestroyMenu(menu HMENU) error {
+	if ret, _, err := destroyMenu.Call(uintptr(menu)); ret == 0 {
 		return errs.NewWithCause(destroyMenu.Name, err)
 	}
 	return nil
 }
 
-// DestroyWindow from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-destroywindow
-func DestroyWindow(hwnd syscall.Handle) error {
-	h, _, err := destroyWindow.Call(uintptr(hwnd))
-	if h == 0 {
+// DestroyWindow https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-destroywindow
+func DestroyWindow(hwnd HWND) error {
+	if ret, _, err := destroyWindow.Call(uintptr(hwnd)); ret == 0 {
 		return errs.NewWithCause(destroyWindow.Name, err)
 	}
 	return nil
 }
 
-// EnumDisplayDevicesW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enumdisplaydevicesw
-func EnumDisplayDevicesW(devNum uint32, flags uint32) (*DISPLAY_DEVICEW, error) {
-	var data DISPLAY_DEVICEW
-	data.Size = uint32(unsafe.Sizeof(data))
-	ret, _, err := enumDisplayDevicesW.Call(0, uintptr(devNum), uintptr(unsafe.Pointer(&data)), uintptr(flags))
-	if ret == 0 {
-		return nil, errs.NewWithCause(enumDisplayDevicesW.Name, err)
+// EnumDisplayDevicesW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enumdisplaydevicesw
+func EnumDisplayDevicesW(device string, devNum DWORD, displayDevice *DISPLAY_DEVICEW, flags DWORD) error {
+	devstr, err := toUTF16PtrOrNilOnEmpty(device)
+	if err != nil {
+		return err
 	}
-	return &data, nil
+	return EnumDisplayDevicesW_(devstr, devNum, displayDevice, flags)
 }
 
-// EnumDisplayMonitors from https://docs.microsoft.com/en-us/windows/desktop/api/Winuser/nf-winuser-enumdisplaymonitors
-func EnumDisplayMonitors(hdc syscall.Handle, clip *RECT, callback func(monitor, dc syscall.Handle, rect, param uintptr) uintptr, data uintptr) error {
-	if ret, _, err := enumDisplayMonitors.Call(uintptr(hdc), uintptr(unsafe.Pointer(clip)), syscall.NewCallback(callback), data); ret == 0 {
+// EnumDisplayDevicesW_ https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enumdisplaydevicesw
+func EnumDisplayDevicesW_(device LPCWSTR, devNum DWORD, displayDevice *DISPLAY_DEVICEW, flags DWORD) error {
+	if ret, _, err := enumDisplayDevicesW.Call(uintptr(unsafe.Pointer(device)), uintptr(devNum), uintptr(unsafe.Pointer(displayDevice)), uintptr(flags)); ret == 0 {
+		return errs.NewWithCause(enumDisplayDevicesW.Name, err)
+	}
+	return nil
+}
+
+// EnumDisplayMonitors https://docs.microsoft.com/en-us/windows/desktop/api/Winuser/nf-winuser-enumdisplaymonitors
+func EnumDisplayMonitors(hdc HDC, clip *RECT, callback func(monitor HMONITOR, dc HDC, rect *RECT, param LPARAM) BOOL, data LPARAM) error {
+	if ret, _, err := enumDisplayMonitors.Call(uintptr(hdc), uintptr(unsafe.Pointer(clip)), syscall.NewCallback(func(monitor HMONITOR, dc HDC, rect *RECT, param LPARAM) uintptr {
+		return uintptr(callback(monitor, dc, rect, param))
+	}), uintptr(data)); ret == 0 {
 		return errs.NewWithCause(enumDisplayMonitors.Name, err)
 	}
 	return nil
 }
 
-// EnumDisplaySettingsExW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enumdisplaysettingsexw
-func EnumDisplaySettingsExW(deviceName *uint16, modeNum uint32, flags uint32) (*DEVMODEW, error) {
-	var data DEVMODEW
-	if ret, _, err := enumDisplaySettingsExW.Call(uintptr(unsafe.Pointer(deviceName)), uintptr(modeNum), uintptr(unsafe.Pointer(&data)), uintptr(flags)); ret == 0 {
-		return nil, errs.NewWithCause(enumDisplaySettingsExW.Name, err)
+// EnumDisplaySettingsExW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enumdisplaysettingsexw
+func EnumDisplaySettingsExW(deviceName string, modeNum DWORD, devMode *DEVMODEW, flags DWORD) error {
+	devstr, err := toUTF16PtrOrNilOnEmpty(deviceName)
+	if err != nil {
+		return err
 	}
-	return &data, nil
+	return EnumDisplaySettingsExW_(devstr, modeNum, devMode, flags)
 }
 
-// EnumWindows from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enumwindows
-func EnumWindows(callback func(wnd syscall.Handle, data uintptr) uintptr, data uintptr) error {
-	if ret, _, err := enumWindows.Call(syscall.NewCallback(callback), data); ret == 0 {
+// EnumDisplaySettingsExW_ https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enumdisplaysettingsexw
+func EnumDisplaySettingsExW_(deviceName LPCWSTR, modeNum DWORD, devMode *DEVMODEW, flags DWORD) error {
+	if ret, _, err := enumDisplaySettingsExW.Call(uintptr(unsafe.Pointer(deviceName)), uintptr(modeNum), uintptr(unsafe.Pointer(devMode)), uintptr(flags)); ret == 0 {
+		return errs.NewWithCause(enumDisplaySettingsExW.Name, err)
+	}
+	return nil
+}
+
+// EnumWindows https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enumwindows
+func EnumWindows(callback func(hwnd HWND, data LPARAM) BOOL, param LPARAM) error {
+	if ret, _, err := enumWindows.Call(syscall.NewCallback(func(hwnd HWND, data LPARAM) uintptr {
+		return uintptr(callback(hwnd, data))
+	}), uintptr(param)); ret == 0 {
 		return errs.NewWithCause(enumWindows.Name, err)
 	}
 	return nil
 }
 
-// GetClientRect from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getclientrect
-func GetClientRect(hwnd syscall.Handle) (geom.Rect, error) {
-	var bounds geom.Rect
-	var rect RECT
-	if ret, _, err := getClientRect.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&rect))); ret == 0 {
-		return bounds, errs.NewWithCause(getClientRect.Name, err)
+// GetClientRect https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getclientrect
+func GetClientRect(hwnd HWND, rect *RECT) error {
+	if ret, _, err := getClientRect.Call(uintptr(hwnd), uintptr(unsafe.Pointer(rect))); ret == 0 {
+		return errs.NewWithCause(getClientRect.Name, err)
 	}
-	bounds.X = float64(rect.Left)
-	bounds.Y = float64(rect.Top)
-	bounds.Width = float64(rect.Right - rect.Left)
-	bounds.Height = float64(rect.Bottom - rect.Top)
-	return bounds, nil
+	return nil
 }
 
-// GetMenu from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getmenu
-func GetMenu(wnd syscall.Handle) syscall.Handle {
-	ret, _, _ := getMenu.Call(uintptr(wnd))
-	return syscall.Handle(ret)
+// GetMenu https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getmenu
+func GetMenu(hwnd HWND) HMENU {
+	ret, _, _ := getMenu.Call(uintptr(hwnd))
+	return HMENU(ret)
 }
 
-func GetMonitorInfoW(monitor syscall.Handle) (*MONITORINFO, error) {
-	var info MONITORINFO
-	info.Size = uint32(unsafe.Sizeof(info))
-	if ret, _, err := getMonitorInfoW.Call(uintptr(monitor), uintptr(unsafe.Pointer(&info))); ret == 0 {
-		return nil, errs.NewWithCause(getMonitorInfoW.Name, err)
+// GetMonitorInfoW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getmonitorinfow
+func GetMonitorInfoW(monitor HMONITOR, pmi *MONITORINFO) error {
+	if ret, _, err := getMonitorInfoW.Call(uintptr(monitor), uintptr(unsafe.Pointer(pmi))); ret == 0 {
+		return errs.NewWithCause(getMonitorInfoW.Name, err)
 	}
-	return &info, nil
+	return nil
 }
 
-// GetWindowRect from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getwindowrect
-func GetWindowRect(hwnd syscall.Handle) (geom.Rect, error) {
-	var bounds geom.Rect
-	var rect RECT
-	if ret, _, err := getWindowRect.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&rect))); ret == 0 {
-		return bounds, errs.NewWithCause(getWindowRect.Name, err)
+// GetWindowRect https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getwindowrect
+func GetWindowRect(hwnd HWND, rect *RECT) error {
+	if ret, _, err := getWindowRect.Call(uintptr(hwnd), uintptr(unsafe.Pointer(rect))); ret == 0 {
+		return errs.NewWithCause(getWindowRect.Name, err)
 	}
-	bounds.X = float64(rect.Left)
-	bounds.Y = float64(rect.Top)
-	bounds.Width = float64(rect.Right - rect.Left)
-	bounds.Height = float64(rect.Bottom - rect.Top)
-	return bounds, nil
+	return nil
 }
 
-// LoadCursorW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-loadcursorw
-func LoadCursorW(cursorName uint32) (syscall.Handle, error) {
-	h, _, err := loadCursorW.Call(0, uintptr(uint16(cursorName)))
+// LoadCursorW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-loadcursorw
+func LoadCursorW(instance HINSTANCE, cursorName string) (HCURSOR, error) {
+	name, err := toUTF16Ptr(cursorName)
+	if err != nil {
+		return NULL, err
+	}
+	return LoadCursorW_(instance, name)
+}
+
+// LoadCursorW_ https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-loadcursorw
+func LoadCursorW_(instance HINSTANCE, cursorName LPCWSTR) (HCURSOR, error) {
+	return LoadCursorW__(instance, uintptr(unsafe.Pointer(cursorName)))
+}
+
+// LoadCursorW__ https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-loadcursorw
+func LoadCursorW__(instance HINSTANCE, cursorName uintptr) (HCURSOR, error) {
+	h, _, err := loadCursorW.Call(uintptr(instance), cursorName)
 	if h == 0 {
-		return 0, errs.NewWithCause(loadCursorW.Name, err)
+		return NULL, errs.NewWithCause(loadCursorW.Name, err)
 	}
-	return syscall.Handle(h), nil
+	return HCURSOR(h), nil
 }
 
-// MoveWindow from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-movewindow
-func MoveWindow(hwnd syscall.Handle, x, y, width, height int32, repaint bool) error {
-	r := 0
-	if repaint {
-		r = 1
-	}
-	if ret, _, err := moveWindow.Call(uintptr(hwnd), uintptr(x), uintptr(y), uintptr(width), uintptr(height), uintptr(r)); ret == 0 {
+// MoveWindow https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-movewindow
+func MoveWindow(hwnd HWND, x, y, width, height int32, repaint bool) error {
+	if ret, _, err := moveWindow.Call(uintptr(hwnd), uintptr(x), uintptr(y), uintptr(width), uintptr(height), uintptr(toBOOL(repaint))); ret == 0 {
 		return errs.NewWithCause(moveWindow.Name, err)
 	}
 	return nil
 }
 
-// PostQuitMessage from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-postquitmessage
+// PostQuitMessage https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-postquitmessage
 func PostQuitMessage(exitCode int32) {
 	postQuitMessage.Call(uintptr(exitCode))
 }
 
-// RegisterClassExW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-registerclassexw
-func RegisterClassExW(w *WNDCLASSEXW) (uint16, error) {
-	h, _, err := registerClassExW.Call(uintptr(unsafe.Pointer(w)))
+// RegisterClassExW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-registerclassexw
+func RegisterClassExW(wndcls *WNDCLASSEXW) (ATOM, error) {
+	h, _, err := registerClassExW.Call(uintptr(unsafe.Pointer(wndcls)))
 	if h == 0 {
 		return 0, errs.NewWithCause(registerClassExW.Name, err)
 	}
-	return uint16(h), nil
+	return ATOM(h), nil
 }
 
-// RegisterWindowMessageW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-registerwindowmessagew
+// RegisterWindowMessageW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-registerwindowmessagew
 func RegisterWindowMessageW(name string) (uint32, error) {
-	str, err := syscall.UTF16PtrFromString(name)
+	n, err := toUTF16Ptr(name)
 	if err != nil {
-		return 0, errs.NewWithCause("Unable to convert name to UTF16", err)
+		return 0, err
 	}
-	ret, _, err := registerWindowMessageW.Call(uintptr(unsafe.Pointer(str)))
+	return RegisterWindowMessageW_(n)
+}
+
+// RegisterWindowMessageW_ https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-registerwindowmessagew
+func RegisterWindowMessageW_(name LPCWSTR) (uint32, error) {
+	ret, _, err := registerWindowMessageW.Call(uintptr(unsafe.Pointer(name)))
 	if ret == 0 {
 		return 0, errs.NewWithCause(registerWindowMessageW.Name, err)
 	}
 	return uint32(ret), nil
 }
 
-// SetActiveWindow from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setactivewindow
-func SetActiveWindow(hwnd syscall.Handle) error {
+// SetActiveWindow https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setactivewindow
+func SetActiveWindow(hwnd HWND) error {
 	if ret, _, err := setActiveWindow.Call(uintptr(hwnd)); ret == 0 {
 		return errs.NewWithCause(setActiveWindow.Name, err)
 	}
 	return nil
 }
 
-// SetMenu from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setmenu
-func SetMenu(wnd, menu syscall.Handle) error {
-	if ret, _, err := setMenu.Call(uintptr(wnd), uintptr(menu)); ret == 0 {
+// SetMenu https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setmenu
+func SetMenu(hwnd HWND, menu HMENU) error {
+	if ret, _, err := setMenu.Call(uintptr(hwnd), uintptr(menu)); ret == 0 {
 		return errs.NewWithCause(setMenu.Name, err)
 	}
 	return nil
 }
 
-// SetMenuItemInfoW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setmenuiteminfow
-func SetMenuItemInfoW(menu syscall.Handle, item uint32, byPosition bool, info *MENUITEMINFOW) error {
-	if ret, _, err := setMenuItemInfoW.Call(uintptr(menu)); ret == 0 {
+// SetMenuItemInfoW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setmenuiteminfow
+func SetMenuItemInfoW(menu HMENU, item uint32, byPosition bool, info *MENUITEMINFOW) error {
+	if ret, _, err := setMenuItemInfoW.Call(uintptr(menu), uintptr(item), uintptr(toBOOL(byPosition)), uintptr(unsafe.Pointer(info))); ret == 0 {
 		return errs.NewWithCause(setMenuItemInfoW.Name, err)
 	}
 	return nil
 }
 
-// SetProcessDpiAwarenessContext from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setprocessdpiawarenesscontext
-func SetProcessDpiAwarenessContext(value uint32) error {
+// SetProcessDpiAwarenessContext https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setprocessdpiawarenesscontext
+func SetProcessDpiAwarenessContext(value DPI_AWARENESS_CONTEXT) error {
 	if ret, _, err := setProcessDpiAwarenessContext.Call(uintptr(value)); ret == 0 {
 		return errs.NewWithCause(setProcessDpiAwarenessContext.Name, err)
 	}
 	return nil
 }
 
-// SetWindowPos from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setwindowpos
-func SetWindowPos(hwnd, hwndInsertAfter syscall.Handle, x, y, width, height int32, flags uint32) error {
+// SetWindowPos https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setwindowpos
+func SetWindowPos(hwnd, hwndInsertAfter HWND, x, y, width, height int32, flags uint32) error {
 	if ret, _, err := setWindowPos.Call(uintptr(hwnd), uintptr(hwndInsertAfter), uintptr(x), uintptr(y), uintptr(width), uintptr(height), uintptr(flags)); ret == 0 {
 		return errs.NewWithCause(setWindowPos.Name, err)
 	}
 	return nil
 }
 
-// SetWindowTextW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setwindowtextw
-func SetWindowTextW(hwnd syscall.Handle, title string) error {
-	str, err := syscall.UTF16PtrFromString(title)
+// SetWindowTextW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setwindowtextw
+func SetWindowTextW(hwnd HWND, title string) error {
+	str, err := toUTF16Ptr(title)
 	if err != nil {
-		return errs.NewWithCause("Unable to convert title to UTF16", err)
+		return err
 	}
-	ret, _, err := setWindowTextW.Call(uintptr(hwnd), uintptr(unsafe.Pointer(str)))
-	if ret == 0 {
+	return SetWindowTextW_(hwnd, str)
+}
+
+// SetWindowTextW_ https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setwindowtextw
+func SetWindowTextW_(hwnd HWND, title LPCWSTR) error {
+	if ret, _, err := setWindowTextW.Call(uintptr(hwnd), uintptr(unsafe.Pointer(title))); ret == 0 {
 		return errs.NewWithCause(setWindowTextW.Name, err)
 	}
 	return nil
 }
 
-// ShowWindow from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-showwindow
-func ShowWindow(hwnd syscall.Handle, cmd int) bool {
-	ret, _, _ := showWindow.Call(uintptr(hwnd), uintptr(cmd))
-	if ret == 0 {
+// ShowWindow https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-showwindow
+func ShowWindow(hwnd HWND, cmd int32) bool {
+	if ret, _, _ := showWindow.Call(uintptr(hwnd), uintptr(cmd)); ret == 0 {
 		return false
 	}
 	return true

@@ -1,6 +1,7 @@
 package windows
 
 import (
+	"fmt"
 	"syscall"
 	"unsafe"
 
@@ -9,31 +10,20 @@ import (
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/webapp"
 	"github.com/richardwilkes/webapp/internal/cef"
-	"github.com/richardwilkes/webapp/internal/windows/constants/cs"
-	"github.com/richardwilkes/webapp/internal/windows/constants/hwnd"
-	"github.com/richardwilkes/webapp/internal/windows/constants/sw"
-	"github.com/richardwilkes/webapp/internal/windows/constants/swp"
-	"github.com/richardwilkes/webapp/internal/windows/constants/wm"
-	"github.com/richardwilkes/webapp/internal/windows/constants/ws"
-)
-
-const (
-	winIDC_ARROW     = 32512
-	winCW_USEDEFAULT = 0x80000000
 )
 
 const windowClassName = "wndClass"
 
 type driver struct {
-	instance             HMODULE
-	windows              map[syscall.Handle]*webapp.Window
-	menubars             map[syscall.Handle]*webapp.MenuBar
+	instance             HINSTANCE
+	windows              map[HWND]*webapp.Window
+	menubars             map[HMENU]*webapp.MenuBar
 	awaitingQuitDecision bool
 }
 
 var drv = &driver{
-	windows:  make(map[syscall.Handle]*webapp.Window),
-	menubars: make(map[syscall.Handle]*webapp.MenuBar),
+	windows:  make(map[HWND]*webapp.Window),
+	menubars: make(map[HMENU]*webapp.MenuBar),
 }
 
 // Driver returns the Windows implementation of the driver.
@@ -47,7 +37,7 @@ func (d *driver) PrepareForStart() error {
 		return err
 	}
 	wcx := WNDCLASSEXW{
-		Style:    cs.HREDRAW | cs.VREDRAW,
+		Style:    CS_HREDRAW | CS_VREDRAW,
 		WndProc:  syscall.NewCallback(d.wndProc),
 		Instance: d.instance,
 		// Icon: LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CEFCLIENT)),
@@ -56,7 +46,7 @@ func (d *driver) PrepareForStart() error {
 		// IconSm: LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL)),
 	}
 	wcx.Size = uint32(unsafe.Sizeof(wcx))
-	if wcx.Cursor, err = LoadCursorW(winIDC_ARROW); err != nil {
+	if wcx.Cursor, err = LoadCursorW__(NULL, IDC_ARROW); err != nil {
 		return err
 	}
 	if wcx.ClassName, err = syscall.UTF16PtrFromString(windowClassName); err != nil {
@@ -71,14 +61,14 @@ func (d *driver) PrepareForEventLoop() {
 	webapp.DidFinishStartupCallback()
 }
 
-func (d *driver) wndProc(wnd syscall.Handle, msg uint32, wparam, lparam uintptr) uintptr {
+func (d *driver) wndProc(wnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRESULT {
 	switch msg {
-	case wm.SIZE:
+	case WM_SIZE:
 		if w, ok := d.windows[wnd]; ok {
 			size := d.WindowContentSize(w)
-			SetWindowPos(syscall.Handle(unsafe.Pointer(cef.GetWindowHandle(cef.GetBrowserHost(w.Browser)))), 0, 0, 0, int32(size.Width), int32(size.Height), swp.NOZORDER)
+			SetWindowPos(HWND(unsafe.Pointer(cef.GetWindowHandle(cef.GetBrowserHost(w.Browser)))), 0, 0, 0, int32(size.Width), int32(size.Height), SWP_NOZORDER)
 		}
-	case wm.CLOSE:
+	case WM_CLOSE:
 		if w, ok := d.windows[wnd]; ok {
 			w.AttemptClose()
 		} else {
@@ -89,7 +79,7 @@ func (d *driver) wndProc(wnd syscall.Handle, msg uint32, wparam, lparam uintptr)
 		if len(d.windows) == 0 && webapp.QuitAfterLastWindowClosedCallback() {
 			webapp.AttemptQuit()
 		}
-	case wm.DESTROY:
+	case WM_DESTROY:
 		PostQuitMessage(0)
 	default:
 		return DefWindowProcW(wnd, msg, wparam, lparam)
@@ -126,16 +116,21 @@ func (d *driver) quit() {
 }
 
 func (d *driver) MenuBarForWindow(wnd *webapp.Window) *webapp.MenuBar {
-	w := syscall.Handle(wnd.PlatformPtr)
+	w := HWND(wnd.PlatformPtr)
 	m := GetMenu(w)
-	if m == 0 {
+	if m == NULL {
+		fmt.Println("Creating menu bar for window")
 		bar := &webapp.MenuBar{Menu: webapp.NewMenu("")}
-		m = syscall.Handle(bar.Menu.PlatformPtr)
+		m = HMENU(bar.Menu.PlatformPtr)
+		fmt.Println("m = ", m)
 		if err := SetMenu(w, m); err != nil {
+			fmt.Println(err)
 			jot.Error(err)
 			return nil
 		}
 		d.menubars[m] = bar
+	} else {
+		fmt.Println("GetMenu returned ", m)
 	}
 	return d.menubars[m]
 }
@@ -183,7 +178,7 @@ func (d *driver) MenuRemove(menu *webapp.Menu, index int) {
 }
 
 func (d *driver) MenuDispose(menu *webapp.Menu) {
-	if err := DestroyMenu(syscall.Handle(menu.PlatformPtr)); err != nil {
+	if err := DestroyMenu(HMENU(menu.PlatformPtr)); err != nil {
 		jot.Error(err)
 	}
 }
@@ -216,9 +211,11 @@ func (d *driver) MenuItemDispose(item *webapp.MenuItem) {
 
 func (d *driver) Displays() []*webapp.Display {
 	result := make([]*webapp.Display, 0)
-	if err := EnumDisplayMonitors(0, nil, func(monitor, dc syscall.Handle, rect, param uintptr) uintptr {
+	if err := EnumDisplayMonitors(0, nil, func(monitor HMONITOR, dc HDC, rect *RECT, param LPARAM) BOOL {
 		d := &webapp.Display{}
-		if info, err := GetMonitorInfoW(monitor); err != nil {
+		var info MONITORINFO
+		info.Size = DWORD(unsafe.Sizeof(info))
+		if err := GetMonitorInfoW(monitor, &info); err != nil {
 			jot.Error(err)
 		} else {
 			d.Bounds.X = float64(info.MonitorBounds.Left)
@@ -246,7 +243,7 @@ func (d *driver) KeyWindow() *webapp.Window {
 
 func (d *driver) BringAllWindowsToFront() {
 	list := make([]*webapp.Window, 0)
-	if err := EnumWindows(func(wnd syscall.Handle, data uintptr) uintptr {
+	if err := EnumWindows(func(wnd HWND, data LPARAM) BOOL {
 		if one, ok := d.windows[wnd]; ok {
 			list = append(list, one)
 		}
@@ -256,20 +253,20 @@ func (d *driver) BringAllWindowsToFront() {
 		return
 	}
 	for i, one := range list {
-		after := hwnd.TOP
-		flags := uint32(swp.NOMOVE | swp.NOSIZE)
+		after := HWND_TOP
+		flags := uint32(SWP_NOMOVE | SWP_NOSIZE)
 		if i != 0 {
-			flags |= swp.NOACTIVATE
-			after = syscall.Handle(list[i-1].PlatformPtr)
+			flags |= SWP_NOACTIVATE
+			after = HWND(list[i-1].PlatformPtr)
 		}
-		if err := SetWindowPos(syscall.Handle(one.PlatformPtr), after, 0, 0, 0, 0, flags); err != nil {
+		if err := SetWindowPos(HWND(one.PlatformPtr), after, 0, 0, 0, 0, flags); err != nil {
 			jot.Error(err)
 		}
 	}
 }
 
 func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds geom.Rect, title string) error {
-	w, err := CreateWindowExW(0, windowClassName, title, ws.OVERLAPPEDWINDOW|ws.CLIPCHILDREN, int32(bounds.X), int32(bounds.Y), int32(bounds.Width), int32(bounds.Height), 0, 0, d.instance)
+	w, err := CreateWindowExW(0, windowClassName, title, WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN, int32(bounds.X), int32(bounds.Y), int32(bounds.Width), int32(bounds.Height), NULL, NULL, d.instance, NULL)
 	if err != nil {
 		return err
 	}
@@ -284,52 +281,60 @@ func (d *driver) WindowBrowserParent(wnd *webapp.Window) cef.WindowHandle {
 
 func (d *driver) WindowClose(wnd *webapp.Window) {
 	wnd.WillCloseCallback()
-	p := syscall.Handle(wnd.PlatformPtr)
-	if err := DestroyWindow(p); err != nil {
+	hwnd := HWND(wnd.PlatformPtr)
+	if err := DestroyWindow(hwnd); err != nil {
 		jot.Error(err)
 	}
-	delete(d.windows, p)
+	delete(d.windows, hwnd)
 }
 
 func (d *driver) WindowSetTitle(wnd *webapp.Window, title string) {
-	if err := SetWindowTextW(syscall.Handle(wnd.PlatformPtr), title); err != nil {
+	if err := SetWindowTextW(HWND(wnd.PlatformPtr), title); err != nil {
 		jot.Error(err)
 	}
 }
 
 func (d *driver) WindowBounds(wnd *webapp.Window) geom.Rect {
-	bounds, err := GetWindowRect(syscall.Handle(wnd.PlatformPtr))
-	if err != nil {
+	var rect RECT
+	if err := GetWindowRect(HWND(wnd.PlatformPtr), &rect); err != nil {
 		jot.Error(err)
 	}
+	var bounds geom.Rect
+	bounds.X = float64(rect.Left)
+	bounds.Y = float64(rect.Top)
+	bounds.Width = float64(rect.Right - rect.Left)
+	bounds.Height = float64(rect.Bottom - rect.Top)
 	return bounds
 }
 
 func (d *driver) WindowContentSize(wnd *webapp.Window) geom.Size {
-	bounds, err := GetClientRect(syscall.Handle(wnd.PlatformPtr))
-	if err != nil {
+	var rect RECT
+	if err := GetClientRect(HWND(wnd.PlatformPtr), &rect); err != nil {
 		jot.Error(err)
 	}
-	return bounds.Size
+	return geom.Size{
+		Width:  float64(rect.Right - rect.Left),
+		Height: float64(rect.Bottom - rect.Top),
+	}
 }
 
 func (d *driver) WindowSetBounds(wnd *webapp.Window, bounds geom.Rect) {
-	if err := MoveWindow(syscall.Handle(wnd.PlatformPtr), int32(bounds.X), int32(bounds.Y), int32(bounds.Width), int32(bounds.Height), true); err != nil {
+	if err := MoveWindow(HWND(wnd.PlatformPtr), int32(bounds.X), int32(bounds.Y), int32(bounds.Width), int32(bounds.Height), true); err != nil {
 		jot.Error(err)
 	}
 }
 
 func (d *driver) WindowToFront(wnd *webapp.Window) {
-	ShowWindow(syscall.Handle(wnd.PlatformPtr), sw.SHOWNORMAL)
-	if err := SetActiveWindow(syscall.Handle(wnd.PlatformPtr)); err != nil {
+	ShowWindow(HWND(wnd.PlatformPtr), SW_SHOWNORMAL)
+	if err := SetActiveWindow(HWND(wnd.PlatformPtr)); err != nil {
 		jot.Error(err)
 	}
 }
 
 func (d *driver) WindowMinimize(wnd *webapp.Window) {
-	ShowWindow(syscall.Handle(wnd.PlatformPtr), sw.MINIMIZE)
+	ShowWindow(HWND(wnd.PlatformPtr), SW_MINIMIZE)
 }
 
 func (d *driver) WindowZoom(wnd *webapp.Window) {
-	ShowWindow(syscall.Handle(wnd.PlatformPtr), sw.MAXIMIZE)
+	ShowWindow(HWND(wnd.PlatformPtr), SW_MAXIMIZE)
 }

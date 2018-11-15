@@ -14,25 +14,25 @@ var (
 	getDeviceCaps = gdi32.NewProc("GetDeviceCaps")
 )
 
-// CreateDCW from https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/nf-wingdi-createdcw
-func CreateDCW(deviceName *uint16) (syscall.Handle, error) {
-	h, _, err := createDCW.Call(0, uintptr(unsafe.Pointer(deviceName)), 0, 0)
+// CreateDCW https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/nf-wingdi-createdcw
+func CreateDCW(driver, device, port LPCWSTR, pdm *DEVMODEW) (HDC, error) {
+	h, _, err := createDCW.Call(uintptr(unsafe.Pointer(driver)), uintptr(unsafe.Pointer(device)), uintptr(unsafe.Pointer(port)), uintptr(unsafe.Pointer(pdm)))
 	if h == 0 {
-		return 0, errs.NewWithCause(createDCW.Name, err)
+		return NULL, errs.NewWithCause(createDCW.Name, err)
 	}
-	return syscall.Handle(h), nil
+	return HDC(h), nil
 }
 
-// DeleteDC from https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/nf-wingdi-deletedc
-func DeleteDC(hdc syscall.Handle) error {
-	if ret, _, err := deleteDC.Call(uintptr(hdc)); ret == 0 {
-		return errs.NewWithCause(deleteDC.Name, err)
+// DeleteDC https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/nf-wingdi-deletedc
+func DeleteDC(hdc HDC) bool {
+	if ret, _, _ := deleteDC.Call(uintptr(hdc)); ret == 0 {
+		return false
 	}
-	return nil
+	return true
 }
 
-// GetDeviceCaps from https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/nf-wingdi-getdevicecaps
-func GetDeviceCaps(hdc syscall.Handle, index int) int {
+// GetDeviceCaps https://docs.microsoft.com/en-us/windows/desktop/api/wingdi/nf-wingdi-getdevicecaps
+func GetDeviceCaps(hdc HDC, index int) int {
 	ret, _, _ := getDeviceCaps.Call(uintptr(hdc), uintptr(index))
 	return int(ret)
 }
