@@ -83,6 +83,12 @@ const (
 	HWND_MESSAGE   = ^HWND(2) // -3
 )
 
+// https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-deletemenu
+const (
+	MF_BYCOMMAND  = 0x00000000
+	MF_BYPOSITION = 0x00000400
+)
+
 // https://docs.microsoft.com/en-us/windows/desktop/api/winuser/ns-winuser-tagmenuiteminfow
 const (
 	MFS_ENABLED   = 0x00000000

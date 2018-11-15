@@ -7,6 +7,7 @@ type (
 	ATOM                  uint16
 	BOOL                  int16
 	DWORD                 uint32
+	HBITMAP               uintptr
 	HCURSOR               uintptr
 	HDC                   uintptr
 	HMENU                 uintptr
@@ -36,13 +37,13 @@ type MENUITEMINFOW struct {
 	Type         uint32
 	State        uint32
 	ID           uint32
-	SubMenu      syscall.Handle
-	BMPChecked   syscall.Handle
-	BMPUnchecked syscall.Handle
+	SubMenu      HMENU
+	BMPChecked   HBITMAP
+	BMPUnchecked HBITMAP
 	ItemData     uintptr
 	TypeData     uintptr
 	CCH          uint32
-	BMPItem      syscall.Handle
+	BMPItem      HBITMAP
 }
 
 // WNDCLASSEXW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/ns-winuser-tagwndclassexw

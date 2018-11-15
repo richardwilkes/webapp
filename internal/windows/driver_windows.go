@@ -1,7 +1,6 @@
 package windows
 
 import (
-	"fmt"
 	"syscall"
 	"unsafe"
 
@@ -18,12 +17,17 @@ type driver struct {
 	instance             HINSTANCE
 	windows              map[HWND]*webapp.Window
 	menubars             map[HMENU]*webapp.MenuBar
+	menus                map[HMENU]*webapp.Menu
+	menuitems            map[HMENU]*webapp.MenuItem
 	awaitingQuitDecision bool
+	forMenuBar           bool
 }
 
 var drv = &driver{
-	windows:  make(map[HWND]*webapp.Window),
-	menubars: make(map[HMENU]*webapp.MenuBar),
+	windows:   make(map[HWND]*webapp.Window),
+	menubars:  make(map[HMENU]*webapp.MenuBar),
+	menus:     make(map[HMENU]*webapp.Menu),
+	menuitems: make(map[HMENU]*webapp.MenuItem),
 }
 
 // Driver returns the Windows implementation of the driver.
@@ -119,32 +123,29 @@ func (d *driver) MenuBarForWindow(wnd *webapp.Window) *webapp.MenuBar {
 	w := HWND(wnd.PlatformPtr)
 	m := GetMenu(w)
 	if m == NULL {
-		fmt.Println("Creating menu bar for window")
+		d.forMenuBar = true
 		bar := &webapp.MenuBar{Menu: webapp.NewMenu("")}
+		d.forMenuBar = false
 		m = HMENU(bar.Menu.PlatformPtr)
-		fmt.Println("m = ", m)
 		if err := SetMenu(w, m); err != nil {
-			fmt.Println(err)
 			jot.Error(err)
 			return nil
 		}
 		d.menubars[m] = bar
-	} else {
-		fmt.Println("GetMenu returned ", m)
 	}
 	return d.menubars[m]
 }
 
 func (d *driver) MenuBarSetServicesMenu(_ *webapp.MenuBar, menu *webapp.Menu) {
-	// RAW: Implement
+	// Not relevant to Windows
 }
 
 func (d *driver) MenuBarSetWindowMenu(bar *webapp.MenuBar, menu *webapp.Menu) {
-	// RAW: Implement
+	// Not relevant to Windows
 }
 
 func (d *driver) MenuBarSetHelpMenu(bar *webapp.MenuBar, menu *webapp.Menu) {
-	// RAW: Implement
+	// Not relevant to Windows
 }
 
 func (d *driver) MenuBarFillAppMenu(bar *webapp.MenuBar, appMenu *webapp.Menu) {
@@ -152,16 +153,30 @@ func (d *driver) MenuBarFillAppMenu(bar *webapp.MenuBar, appMenu *webapp.Menu) {
 }
 
 func (d *driver) MenuInit(menu *webapp.Menu) {
-	m, err := CreatePopupMenu()
+	var m HMENU
+	var err error
+	if d.forMenuBar {
+		m, err = CreateMenu()
+	} else {
+		m, err = CreatePopupMenu()
+	}
 	if err != nil {
 		jot.Error(err)
 		return
 	}
 	menu.PlatformPtr = unsafe.Pointer(m)
+	if !d.forMenuBar {
+		d.menus[m] = menu
+	}
 }
 
 func (d *driver) MenuCountItems(menu *webapp.Menu) int {
-	return 0
+	count, err := GetMenuItemCount(HMENU(menu.PlatformPtr))
+	if err != nil {
+		jot.Error(err)
+		return 0
+	}
+	return count
 }
 
 func (d *driver) MenuGetItem(menu *webapp.Menu, index int) *webapp.MenuItem {
@@ -174,17 +189,35 @@ func (d *driver) MenuInsertItem(menu *webapp.Menu, item *webapp.MenuItem, index 
 }
 
 func (d *driver) MenuRemove(menu *webapp.Menu, index int) {
-	// RAW: Implement
+	// RAW: Cleanup menu item that was removed
+	if err := DeleteMenu(HMENU(menu.PlatformPtr), uint32(index), MF_BYPOSITION); err != nil {
+		jot.Error(err)
+	}
 }
 
 func (d *driver) MenuDispose(menu *webapp.Menu) {
-	if err := DestroyMenu(HMENU(menu.PlatformPtr)); err != nil {
+	m := HMENU(menu.PlatformPtr)
+	delete(d.menus, m)
+	if err := DestroyMenu(m); err != nil {
 		jot.Error(err)
 	}
 }
 
 func (d *driver) MenuItemInitSeparator(item *webapp.MenuItem) {
-	// RAW: Implement
+	m, err := CreateMenu()
+	if err != nil {
+		jot.Error(err)
+		return
+	}
+	if err = SetMenuItemInfoW(m, 0, true, &MENUITEMINFOW{
+		Size: uint32(unsafe.Sizeof(MENUITEMINFOW{})),
+		Mask: MIIM_FTYPE,
+		Type: MFT_SEPARATOR,
+	}); err != nil {
+		jot.Error(err)
+	}
+	item.PlatformPtr = unsafe.Pointer(m)
+	d.menuitems[m] = item
 }
 
 func (d *driver) MenuItemInit(item *webapp.MenuItem, kind webapp.MenuItemKind) {
@@ -193,7 +226,27 @@ func (d *driver) MenuItemInit(item *webapp.MenuItem, kind webapp.MenuItemKind) {
 		jot.Error(err)
 		return
 	}
+	title, err := toUTF16Ptr(item.Title())
+	if err != nil {
+		jot.Error(err)
+		var empty [1]uint16
+		title = &empty[0]
+	}
+	data := &MENUITEMINFOW{
+		Size:     uint32(unsafe.Sizeof(MENUITEMINFOW{})),
+		Mask:     MIIM_FTYPE | MIIM_STRING,
+		Type:     MFT_STRING,
+		TypeData: uintptr(unsafe.Pointer(title)),
+	}
+	if item.Enabled() {
+		data.Mask |= MIIM_STATE
+		data.State = MFS_DISABLED
+	}
+	if err = SetMenuItemInfoW(m, 0, true, data); err != nil {
+		jot.Error(err)
+	}
 	item.PlatformPtr = unsafe.Pointer(m)
+	d.menuitems[m] = item
 }
 
 func (d *driver) MenuItemSubMenu(item *webapp.MenuItem) *webapp.Menu {
@@ -202,11 +255,21 @@ func (d *driver) MenuItemSubMenu(item *webapp.MenuItem) *webapp.Menu {
 }
 
 func (d *driver) MenuItemSetSubMenu(item *webapp.MenuItem, menu *webapp.Menu) {
-	// RAW: Implement
+	if err := SetMenuItemInfoW(HMENU(item.PlatformPtr), 0, true, &MENUITEMINFOW{
+		Size:    uint32(unsafe.Sizeof(MENUITEMINFOW{})),
+		Mask:    MIIM_SUBMENU,
+		SubMenu: HMENU(menu.PlatformPtr),
+	}); err != nil {
+		jot.Error(err)
+	}
 }
 
 func (d *driver) MenuItemDispose(item *webapp.MenuItem) {
-	// RAW: Implement
+	m := HMENU(item.PlatformPtr)
+	delete(d.menuitems, m)
+	if err := DestroyMenu(m); err != nil {
+		jot.Error(err)
+	}
 }
 
 func (d *driver) Displays() []*webapp.Display {

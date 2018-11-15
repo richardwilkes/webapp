@@ -13,6 +13,7 @@ var (
 	createPopupMenu               = user32.NewProc("CreatePopupMenu")
 	createWindowExW               = user32.NewProc("CreateWindowExW")
 	defWindowProcW                = user32.NewProc("DefWindowProcW")
+	deleteMenu                    = user32.NewProc("DeleteMenu")
 	destroyMenu                   = user32.NewProc("DestroyMenu")
 	destroyWindow                 = user32.NewProc("DestroyWindow")
 	enumDisplayDevicesW           = user32.NewProc("EnumDisplayDevicesW")
@@ -21,6 +22,7 @@ var (
 	enumWindows                   = user32.NewProc("EnumWindows")
 	getClientRect                 = user32.NewProc("GetClientRect")
 	getMenu                       = user32.NewProc("GetMenu")
+	getMenuItemCount              = user32.NewProc("GetMenuItemCount")
 	getMonitorInfoW               = user32.NewProc("GetMonitorInfoW")
 	getWindowRect                 = user32.NewProc("GetWindowRect")
 	loadCursorW                   = user32.NewProc("LoadCursorW")
@@ -81,6 +83,14 @@ func CreateWindowExW_(exStyle DWORD, className, windowName LPCWSTR, style DWORD,
 func DefWindowProcW(hwnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRESULT {
 	ret, _, _ := defWindowProcW.Call(uintptr(hwnd), uintptr(msg), uintptr(wparam), uintptr(lparam))
 	return LRESULT(ret)
+}
+
+// DeleteMenu https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-deletemenu
+func DeleteMenu(hmenu HMENU, position, flags uint32) error {
+	if ret, _, err := deleteMenu.Call(uintptr(hmenu), uintptr(position), uintptr(flags)); ret == 0 {
+		return errs.NewWithCause(deleteMenu.Name, err)
+	}
+	return nil
 }
 
 // DestroyMenu https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-destroymenu
@@ -165,6 +175,15 @@ func GetClientRect(hwnd HWND, rect *RECT) error {
 func GetMenu(hwnd HWND) HMENU {
 	ret, _, _ := getMenu.Call(uintptr(hwnd))
 	return HMENU(ret)
+}
+
+// GetMenuItemCount https://docs.microsoft.com/en-us/windows/desktop/api/Winuser/nf-winuser-getmenuitemcount
+func GetMenuItemCount(hmenu HMENU) (int, error) {
+	ret, _, err := getMenuItemCount.Call(uintptr(hmenu))
+	if ret == ^uintptr(0) { // -1
+		return 0, errs.NewWithCause(getMenuItemCount.Name, err)
+	}
+	return int(ret), nil
 }
 
 // GetMonitorInfoW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getmonitorinfow
