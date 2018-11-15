@@ -27,11 +27,13 @@ const windowClassName = "wndClass"
 type driver struct {
 	instance             syscall.Handle
 	windows              map[syscall.Handle]*webapp.Window
+	menubars             map[syscall.Handle]*webapp.MenuBar
 	awaitingQuitDecision bool
 }
 
 var drv = &driver{
-	windows: make(map[syscall.Handle]*webapp.Window),
+	windows:  make(map[syscall.Handle]*webapp.Window),
+	menubars: make(map[syscall.Handle]*webapp.MenuBar),
 }
 
 // Driver returns the Windows implementation of the driver.
@@ -129,11 +131,19 @@ func (d *driver) quit() {
 	cef.QuitMessageLoop()
 }
 
-func (d *driver) MenuBarForWindow(_ *webapp.Window) *webapp.MenuBar {
-	// RAW: Implement
-	return &webapp.MenuBar{
-		Menu: webapp.NewMenu(""),
+func (d *driver) MenuBarForWindow(wnd *webapp.Window) *webapp.MenuBar {
+	w := syscall.Handle(wnd.PlatformPtr)
+	m := GetMenu(w)
+	if m == 0 {
+		bar := &webapp.MenuBar{Menu: webapp.NewMenu("")}
+		m = syscall.Handle(bar.Menu.PlatformPtr)
+		if err := SetMenu(w, m); err != nil {
+			jot.Error(err)
+			return nil
+		}
+		d.menubars[m] = bar
 	}
+	return d.menubars[m]
 }
 
 func (d *driver) MenuBarSetServicesMenu(_ *webapp.MenuBar, menu *webapp.Menu) {
@@ -153,7 +163,12 @@ func (d *driver) MenuBarFillAppMenu(bar *webapp.MenuBar, appMenu *webapp.Menu) {
 }
 
 func (d *driver) MenuInit(menu *webapp.Menu) {
-	// RAW: Implement
+	m, err := CreatePopupMenu()
+	if err != nil {
+		jot.Error(err)
+		return
+	}
+	menu.PlatformPtr = unsafe.Pointer(m)
 }
 
 func (d *driver) MenuCountItems(menu *webapp.Menu) int {
@@ -174,7 +189,9 @@ func (d *driver) MenuRemove(menu *webapp.Menu, index int) {
 }
 
 func (d *driver) MenuDispose(menu *webapp.Menu) {
-	// RAW: Implement
+	if err := DestroyMenu(syscall.Handle(menu.PlatformPtr)); err != nil {
+		jot.Error(err)
+	}
 }
 
 func (d *driver) MenuItemInitSeparator(item *webapp.MenuItem) {
@@ -182,7 +199,12 @@ func (d *driver) MenuItemInitSeparator(item *webapp.MenuItem) {
 }
 
 func (d *driver) MenuItemInit(item *webapp.MenuItem, kind webapp.MenuItemKind) {
-	// RAW: Implement
+	m, err := CreateMenu()
+	if err != nil {
+		jot.Error(err)
+		return
+	}
+	item.PlatformPtr = unsafe.Pointer(m)
 }
 
 func (d *driver) MenuItemSubMenu(item *webapp.MenuItem) *webapp.Menu {

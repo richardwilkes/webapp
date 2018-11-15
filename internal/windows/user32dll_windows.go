@@ -10,14 +10,18 @@ import (
 
 var (
 	user32                        = syscall.NewLazyDLL("user32.dll")
+	createMenu                    = user32.NewProc("CreateMenu")
+	createPopupMenu               = user32.NewProc("CreatePopupMenu")
 	createWindowExW               = user32.NewProc("CreateWindowExW")
 	defWindowProcW                = user32.NewProc("DefWindowProcW")
+	destroyMenu                   = user32.NewProc("DestroyMenu")
 	destroyWindow                 = user32.NewProc("DestroyWindow")
 	enumDisplayDevicesW           = user32.NewProc("EnumDisplayDevicesW")
 	enumDisplayMonitors           = user32.NewProc("EnumDisplayMonitors")
 	enumDisplaySettingsExW        = user32.NewProc("EnumDisplaySettingsExW")
 	enumWindows                   = user32.NewProc("EnumWindows")
 	getClientRect                 = user32.NewProc("GetClientRect")
+	getMenu                       = user32.NewProc("GetMenu")
 	getMonitorInfoW               = user32.NewProc("GetMonitorInfoW")
 	getWindowRect                 = user32.NewProc("GetWindowRect")
 	loadCursorW                   = user32.NewProc("LoadCursorW")
@@ -26,11 +30,31 @@ var (
 	registerClassExW              = user32.NewProc("RegisterClassExW")
 	registerWindowMessageW        = user32.NewProc("RegisterWindowMessageW")
 	setActiveWindow               = user32.NewProc("SetActiveWindow")
+	setMenu                       = user32.NewProc("SetMenu")
+	setMenuItemInfoW              = user32.NewProc("SetMenuItemInfoW")
 	setProcessDpiAwarenessContext = user32.NewProc("SetProcessDpiAwarenessContext")
 	setWindowPos                  = user32.NewProc("SetWindowPos")
 	setWindowTextW                = user32.NewProc("SetWindowTextW")
 	showWindow                    = user32.NewProc("ShowWindow")
 )
+
+// CreateMenu from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createmenu
+func CreateMenu() (syscall.Handle, error) {
+	ret, _, err := createMenu.Call()
+	if ret == 0 {
+		return 0, errs.NewWithCause(createMenu.Name, err)
+	}
+	return syscall.Handle(ret), nil
+}
+
+// CreatePopupMenu from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createpopupmenu
+func CreatePopupMenu() (syscall.Handle, error) {
+	ret, _, err := createPopupMenu.Call()
+	if ret == 0 {
+		return 0, errs.NewWithCause(createPopupMenu.Name, err)
+	}
+	return syscall.Handle(ret), nil
+}
 
 // CreateWindowExW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createwindowexw
 func CreateWindowExW(exStyle uint32, className, windowName string, style uint32, x, y, width, height int32, parent, menu, instance syscall.Handle) (syscall.Handle, error) {
@@ -53,6 +77,15 @@ func CreateWindowExW(exStyle uint32, className, windowName string, style uint32,
 func DefWindowProcW(hwnd syscall.Handle, msg uint32, wparam, lparam uintptr) uintptr {
 	ret, _, _ := defWindowProcW.Call(uintptr(hwnd), uintptr(msg), uintptr(wparam), uintptr(lparam))
 	return uintptr(ret)
+}
+
+// DestroyMenu from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-destroymenu
+func DestroyMenu(menu syscall.Handle) error {
+	h, _, err := destroyMenu.Call(uintptr(menu))
+	if h == 0 {
+		return errs.NewWithCause(destroyMenu.Name, err)
+	}
+	return nil
 }
 
 // DestroyWindow from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-destroywindow
@@ -112,6 +145,12 @@ func GetClientRect(hwnd syscall.Handle) (geom.Rect, error) {
 	bounds.Width = float64(rect.Right - rect.Left)
 	bounds.Height = float64(rect.Bottom - rect.Top)
 	return bounds, nil
+}
+
+// GetMenu from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getmenu
+func GetMenu(wnd syscall.Handle) syscall.Handle {
+	ret, _, _ := getMenu.Call(uintptr(wnd))
+	return syscall.Handle(ret)
 }
 
 func GetMonitorInfoW(monitor syscall.Handle) (*MONITORINFO, error) {
@@ -189,6 +228,22 @@ func RegisterWindowMessageW(name string) (uint32, error) {
 func SetActiveWindow(hwnd syscall.Handle) error {
 	if ret, _, err := setActiveWindow.Call(uintptr(hwnd)); ret == 0 {
 		return errs.NewWithCause(setActiveWindow.Name, err)
+	}
+	return nil
+}
+
+// SetMenu from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setmenu
+func SetMenu(wnd, menu syscall.Handle) error {
+	if ret, _, err := setMenu.Call(uintptr(wnd), uintptr(menu)); ret == 0 {
+		return errs.NewWithCause(setMenu.Name, err)
+	}
+	return nil
+}
+
+// SetMenuItemInfoW from https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setmenuiteminfow
+func SetMenuItemInfoW(menu syscall.Handle, item uint32, byPosition bool, info *MENUITEMINFOW) error {
+	if ret, _, err := setMenuItemInfoW.Call(uintptr(menu)); ret == 0 {
+		return errs.NewWithCause(setMenuItemInfoW.Name, err)
 	}
 	return nil
 }
