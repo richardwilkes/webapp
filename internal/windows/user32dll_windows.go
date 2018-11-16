@@ -23,8 +23,10 @@ var (
 	getClientRect                 = user32.NewProc("GetClientRect")
 	getMenu                       = user32.NewProc("GetMenu")
 	getMenuItemCount              = user32.NewProc("GetMenuItemCount")
+	getMenuItemInfoW              = user32.NewProc("GetMenuItemInfoW")
 	getMonitorInfoW               = user32.NewProc("GetMonitorInfoW")
 	getWindowRect                 = user32.NewProc("GetWindowRect")
+	insertMenuItemW               = user32.NewProc("InsertMenuItemW")
 	loadCursorW                   = user32.NewProc("LoadCursorW")
 	moveWindow                    = user32.NewProc("MoveWindow")
 	postQuitMessage               = user32.NewProc("PostQuitMessage")
@@ -186,6 +188,14 @@ func GetMenuItemCount(hmenu HMENU) (int, error) {
 	return int(ret), nil
 }
 
+// GetMenuItemInfoW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getmenuiteminfow
+func GetMenuItemInfoW(hmenu HMENU, item uint32, byPosition bool, lpmii *MENUITEMINFOW) error {
+	if ret, _, err := getMenuItemInfoW.Call(uintptr(hmenu), uintptr(item), uintptr(toBOOL(byPosition)), uintptr(unsafe.Pointer(lpmii))); ret == 0 {
+		return errs.NewWithCause(getMenuItemInfoW.Name, err)
+	}
+	return nil
+}
+
 // GetMonitorInfoW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getmonitorinfow
 func GetMonitorInfoW(monitor HMONITOR, pmi *MONITORINFO) error {
 	if ret, _, err := getMonitorInfoW.Call(uintptr(monitor), uintptr(unsafe.Pointer(pmi))); ret == 0 {
@@ -209,6 +219,14 @@ func LoadCursorW(instance HINSTANCE, cursorName string) (HCURSOR, error) {
 		return NULL, err
 	}
 	return LoadCursorW_(instance, name)
+}
+
+// InsertMenuItemW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-insertmenuitemw
+func InsertMenuItemW(hmenu HMENU, item uint32, byPosition bool, lpmi *MENUITEMINFOW) error {
+	if ret, _, err := insertMenuItemW.Call(uintptr(hmenu), uintptr(item), uintptr(toBOOL(byPosition)), uintptr(unsafe.Pointer(lpmi))); ret == 0 {
+		return errs.NewWithCause(insertMenuItemW.Name, err)
+	}
+	return nil
 }
 
 // LoadCursorW_ https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-loadcursorw
