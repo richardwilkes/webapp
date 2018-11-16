@@ -20,6 +20,23 @@ func MenuBarForWindow(window *Window) (bar *MenuBar, isGlobal, isFirst bool) {
 	return driver.MenuBarForWindow(window)
 }
 
+// Menu returns the menu with the specified tag anywhere in the menu bar and
+// its sub-menus.
+func (bar *MenuBar) Menu(tag int) *Menu {
+	return driver.MenuBarMenu(bar, tag)
+}
+
+// MenuAtIndex returns the menu at the specified index within the menu bar.
+func (bar *MenuBar) MenuAtIndex(index int) *Menu {
+	return driver.MenuBarMenuAtIndex(bar, index)
+}
+
+// MenuItem returns the menu item with the specified tag anywhere in the menu
+// bar and its sub-menus.
+func (bar *MenuBar) MenuItem(tag int) *MenuItem {
+	return driver.MenuBarMenuItem(bar, tag)
+}
+
 // InsertMenu inserts a menu at the specified item index within this menu bar.
 // Pass in a negative index to append to the end.
 func (bar *MenuBar) InsertMenu(beforeIndex int, menu *Menu) {

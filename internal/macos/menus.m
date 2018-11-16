@@ -29,8 +29,26 @@ int menuItemCount(CMenuPtr menu) {
 	return [(NSMenu *)menu numberOfItems];
 }
 
-CMenuItemPtr menuItem(CMenuPtr menu, int index) {
+CMenuItemPtr menuItemAtIndex(CMenuPtr menu, int index) {
 	return (index < 0 || index >= menuItemCount(menu)) ?  nil : [(NSMenu *)menu itemAtIndex:index];
+}
+
+CMenuItemPtr menuItemWithTag(CMenuPtr menu, int tag) {
+	NSMenu *m = (NSMenu *)menu;
+	NSMenuItem *item = [m itemWithTag:tag];
+	if (item != nil) {
+		return (CMenuItemPtr)item;
+	}
+	for (int i = [m numberOfItems]; --i >= 0;) {
+		item = [m itemAtIndex:i];
+		if ([item hasSubmenu]) {
+			CMenuItemPtr result = menuItemWithTag((CMenuPtr)[item submenu], tag);
+			if (result != nil) {
+				return result;
+			}
+		}
+	}
+	return nil;
 }
 
 void insertMenuItem(CMenuPtr menu, CMenuItemPtr item, int index) {
@@ -53,7 +71,7 @@ static MenuItemDelegate *menuItemDelegate = nil;
 
 CMenuItemPtr newMenuItem(int tag, const char *title, const char *selector, const char *key, int modifiers, bool needDelegate) {
 	NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:title] action:NSSelectorFromString([NSString stringWithUTF8String:selector]) keyEquivalent:[NSString stringWithUTF8String:key]] retain];
-	item.tag = tag;
+	[item setTag:tag];
 	// macOS uses the same modifier mask bit order as we do, but it is shifted up by 16 bits
 	[item setKeyEquivalentModifierMask:modifiers << 16];
 	if (needDelegate) {
@@ -79,4 +97,20 @@ void setSubMenu(CMenuItemPtr item, CMenuPtr subMenu) {
 
 void disposeMenuItem(CMenuItemPtr item) {
 	[(NSMenuItem *)item release];
+}
+
+CMenuItemInfo *menuItemInfo(CMenuItemPtr item) {
+	NSMenuItem *mitem = (NSMenuItem *)item;
+	CMenuItemInfo *info = (CMenuItemInfo *)calloc(1, sizeof(CMenuItemInfo));
+	info->tag = [mitem tag];
+	info->title = strdup([[mitem title] UTF8String]);
+	if ([mitem hasSubmenu]) {
+		info->subMenu = (CMenuPtr)[mitem submenu];
+	}
+	return info;
+}
+
+void disposeMenuItemInfo(CMenuItemInfo *info) {
+	free(info->title);
+	free(info);
 }

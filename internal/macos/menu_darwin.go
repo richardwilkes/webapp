@@ -25,6 +25,31 @@ func (d *driver) MenuInit(menu *webapp.Menu) {
 	d.menus[m] = menu
 }
 
+func (d *driver) MenuItem(menu *webapp.Menu, tag int) *webapp.MenuItem {
+	if item := C.menuItemWithTag(C.CMenuPtr(menu.PlatformPtr), C.int(tag)); item != nil {
+		return d.toMenuItem(item)
+	}
+	return nil
+}
+
+func (d *driver) MenuItemAtIndex(menu *webapp.Menu, index int) *webapp.MenuItem {
+	if item := C.menuItemAtIndex(C.CMenuPtr(menu.PlatformPtr), C.int(index)); item != nil {
+		return d.toMenuItem(item)
+	}
+	return nil
+}
+
+func (d *driver) toMenuItem(item C.CMenuItemPtr) *webapp.MenuItem {
+	info := C.menuItemInfo(item)
+	mi := &webapp.MenuItem{
+		Tag:     int(info.tag),
+		Title:   C.GoString(info.title),
+		SubMenu: d.menus[info.subMenu],
+	}
+	C.disposeMenuItemInfo(info)
+	return mi
+}
+
 func (d *driver) MenuInsertSeparator(menu *webapp.Menu, beforeIndex int) {
 	C.insertMenuItem(C.CMenuPtr(menu.PlatformPtr), C.newMenuSeparator(), C.int(beforeIndex))
 }

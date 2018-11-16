@@ -44,29 +44,40 @@ func NewMenu(tag int, title string) *Menu {
 	return menu
 }
 
+// ItemAtIndex returns the menu item at the specified index within the menu.
+func (menu *Menu) ItemAtIndex(index int) *MenuItem {
+	return driver.MenuItemAtIndex(menu, index)
+}
+
+// Item returns the menu item with the specified tag anywhere in the menu and
+// and its sub-menus.
+func (menu *Menu) Item(tag int) *MenuItem {
+	return driver.MenuItem(menu, tag)
+}
+
 // InsertSeparator inserts a menu separator at the specified item index within
 // this menu. Pass in a negative index to append to the end.
-func (m *Menu) InsertSeparator(beforeIndex int) {
-	driver.MenuInsertSeparator(m, beforeIndex)
+func (menu *Menu) InsertSeparator(beforeIndex int) {
+	driver.MenuInsertSeparator(menu, beforeIndex)
 }
 
 // InsertItem inserts a menu item at the specified item index within this
 // menu. Pass in a negative index to append to the end. Both 'validator' and
 // 'handler' may be nil for default behavior.
-func (m *Menu) InsertItem(beforeIndex, tag int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
+func (menu *Menu) InsertItem(beforeIndex, tag int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
 	if validator == nil {
 		validator = func() bool { return true }
 	}
 	if handler == nil {
 		handler = func() {}
 	}
-	driver.MenuInsertItem(m, beforeIndex, tag, title, keyCode, keyModifiers, validator, handler)
+	driver.MenuInsertItem(menu, beforeIndex, tag, title, keyCode, keyModifiers, validator, handler)
 }
 
 // InsertMenu inserts a sub-menu at the specified item index within this
 // menu. Pass in a negative index to append to the end.
-func (m *Menu) InsertMenu(beforeIndex int, subMenu *Menu) {
-	driver.MenuInsert(m, beforeIndex, subMenu)
+func (menu *Menu) InsertMenu(beforeIndex int, subMenu *Menu) {
+	driver.MenuInsert(menu, beforeIndex, subMenu)
 }
 
 // Remove the menu item at the specified index from this menu.
