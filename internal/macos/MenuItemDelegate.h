@@ -1,4 +1,4 @@
 #import <Cocoa/Cocoa.h>
 
-@interface MenuItemDelegate : NSObject
+@interface MenuItemDelegate : NSObject<NSMenuItemValidation>
 @end

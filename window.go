@@ -1,8 +1,6 @@
 package webapp
 
 import (
-	"unsafe"
-
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/webapp/internal/cef"
 )
@@ -22,7 +20,7 @@ const (
 
 // Window holds window information.
 type Window struct {
-	PlatformPtr unsafe.Pointer
+	PlatformPtr uintptr
 	Browser     cef.Browser
 	style       StyleMask
 	title       string

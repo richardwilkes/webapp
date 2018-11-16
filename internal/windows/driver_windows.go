@@ -164,7 +164,7 @@ func (d *driver) MenuInit(menu *webapp.Menu) {
 		jot.Error(err)
 		return
 	}
-	menu.PlatformPtr = unsafe.Pointer(m)
+	menu.PlatformPtr = uintptr(m)
 	if !d.forMenuBar {
 		d.menus[m] = menu
 	}
@@ -216,7 +216,7 @@ func (d *driver) MenuItemInitSeparator(item *webapp.MenuItem) {
 	}); err != nil {
 		jot.Error(err)
 	}
-	item.PlatformPtr = unsafe.Pointer(m)
+	item.PlatformPtr = uintptr(m)
 	d.menuitems[m] = item
 }
 
@@ -245,7 +245,7 @@ func (d *driver) MenuItemInit(item *webapp.MenuItem, kind webapp.MenuItemKind) {
 	if err = SetMenuItemInfoW(m, 0, true, data); err != nil {
 		jot.Error(err)
 	}
-	item.PlatformPtr = unsafe.Pointer(m)
+	item.PlatformPtr = uintptr(m)
 	d.menuitems[m] = item
 }
 
@@ -333,7 +333,7 @@ func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds g
 	if err != nil {
 		return err
 	}
-	wnd.PlatformPtr = unsafe.Pointer(w)
+	wnd.PlatformPtr = uintptr(w)
 	d.windows[w] = wnd
 	return nil
 }

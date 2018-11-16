@@ -1,86 +1,87 @@
 package webapp
 
-import "unsafe"
+import "github.com/richardwilkes/webapp/keys"
+
+const (
+	MenuTagAppMenu = 1 + iota
+	MenuTagFileMenu
+	MenuTagEditMenu
+	MenuTagWindowMenu
+	MenuTagHelpMenu
+	MenuTagServicesMenu
+	MenuTagAboutItem
+	MenuTagPreferencesItem
+	MenuTagQuitItem
+	MenuTagCutItem
+	MenuTagCopyItem
+	MenuTagPasteItem
+	MenuTagDeleteItem
+	MenuTagSelectAllItem
+	MenuTagMinimizeItem
+	MenuTagZoomItem
+	MenuTagBringAllWindowsToFrontItem
+	MenuTagCloseItem
+	MenuTagHideItem
+	MenuTagHideOthersItem
+	MenuTagShowAllItem
+	MenuTagUserBase = 1000
+)
 
 // Menu represents a set of menu items.
 type Menu struct {
-	PlatformPtr unsafe.Pointer
-	title       string
+	PlatformPtr uintptr
+	Tag         int
+	Title       string
 }
 
 // NewMenu creates a new menu.
-func NewMenu(title string) *Menu {
-	menu := &Menu{title: title}
+func NewMenu(tag int, title string) *Menu {
+	menu := &Menu{
+		Title: title,
+		Tag:   tag,
+	}
 	driver.MenuInit(menu)
 	return menu
 }
 
-// Title returns the title of this menu.
-func (menu *Menu) Title() string {
-	return menu.title
-}
-
-// Count of menu items in this menu.
-func (menu *Menu) Count() int {
-	return driver.MenuCountItems(menu)
-}
-
-// Item at the specified index, or nil.
-func (menu *Menu) Item(index int) *MenuItem {
-	return driver.MenuGetItem(menu, index)
-}
-
-// Menu at the specified index, or nil.
-func (menu *Menu) Menu(index int) *Menu {
-	if item := menu.Item(index); item != nil {
-		return item.SubMenu()
-	}
-	return nil
-}
-
-// AppendItem appends a menu item at the end of this menu.
-func (menu *Menu) AppendItem(item *MenuItem) {
-	menu.InsertItem(item, -1)
+// InsertSeparator inserts a menu separator at the specified item index within
+// this menu. Pass in a negative index to append to the end.
+func (m *Menu) InsertSeparator(beforeIndex int) {
+	driver.MenuInsertSeparator(m, beforeIndex)
 }
 
 // InsertItem inserts a menu item at the specified item index within this
-// menu. Pass in a negative index to append to the end.
-func (menu *Menu) InsertItem(item *MenuItem, index int) {
-	max := menu.Count()
-	if index < 0 || index > max {
-		index = max
+// menu. Pass in a negative index to append to the end. Both 'validator' and
+// 'handler' may be nil for default behavior.
+func (m *Menu) InsertItem(beforeIndex, tag int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
+	if validator == nil {
+		validator = func() bool { return true }
 	}
-	driver.MenuInsertItem(menu, item, index)
+	if handler == nil {
+		handler = func() {}
+	}
+	driver.MenuInsertItem(m, beforeIndex, tag, title, keyCode, keyModifiers, validator, handler)
 }
 
-// AppendMenu appends a menu item with a sub-menu at the end of this menu.
-func (menu *Menu) AppendMenu(subMenu *Menu) {
-	menu.InsertMenu(subMenu, -1)
+// InsertMenu inserts a sub-menu at the specified item index within this
+// menu. Pass in a negative index to append to the end.
+func (m *Menu) InsertMenu(beforeIndex int, subMenu *Menu) {
+	driver.MenuInsert(m, beforeIndex, subMenu)
 }
 
-// InsertMenu inserts a menu item with a sub-menu at the specified item index
-// within this menu. Pass in a negative index to append to the end.
-func (menu *Menu) InsertMenu(subMenu *Menu, index int) {
-	item := NewMenuItem(subMenu.Title())
-	driver.MenuItemSetSubMenu(item, subMenu)
-	menu.InsertItem(item, index)
-}
-
-// Remove the menu item at the specified index from this menu. This does not
-// dispose of the menu item.
+// Remove the menu item at the specified index from this menu.
 func (menu *Menu) Remove(index int) {
 	if index >= 0 && index < menu.Count() {
 		driver.MenuRemove(menu, index)
 	}
 }
 
+// Count of menu items in this menu.
+func (menu *Menu) Count() int {
+	return driver.MenuCount(menu)
+}
+
 // Dispose releases any operating system resources associated with this menu.
-// It will also call Dispose() on all menu items it contains.
 func (menu *Menu) Dispose() {
-	for i := menu.Count() - 1; i >= 0; i-- {
-		if item := menu.Item(i); item != nil {
-			item.Dispose()
-		}
-	}
 	driver.MenuDispose(menu)
 }

@@ -3,6 +3,7 @@ package webapp
 import (
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/webapp/internal/cef"
+	"github.com/richardwilkes/webapp/keys"
 )
 
 // Driver defines the required functions each platform driver must provide.
@@ -13,24 +14,21 @@ type Driver interface {
 	AttemptQuit()
 	MayQuitNow(quit bool)
 
-	MenuBarForWindow(wnd *Window) *MenuBar
-	MenuBarSetServicesMenu(bar *MenuBar, menu *Menu)
+	MenuBarForWindow(wnd *Window) (bar *MenuBar, isGlobal, isFirst bool)
+	MenuBarInsert(bar *MenuBar, beforeIndex int, menu *Menu)
+	MenuBarRemove(bar *MenuBar, index int)
+	MenuBarCount(bar *MenuBar) int
 	MenuBarSetWindowMenu(bar *MenuBar, menu *Menu)
 	MenuBarSetHelpMenu(bar *MenuBar, menu *Menu)
-	MenuBarFillAppMenu(bar *MenuBar, appMenu *Menu)
+	MenuBarFillAppMenu(bar *MenuBar, aboutHandler, prefsHandler func())
 
 	MenuInit(menu *Menu)
-	MenuCountItems(menu *Menu) int
-	MenuGetItem(menu *Menu, index int) *MenuItem
-	MenuInsertItem(menu *Menu, item *MenuItem, index int)
+	MenuInsertSeparator(menu *Menu, beforeIndex int)
+	MenuInsertItem(menu *Menu, beforeIndex, tag int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func())
+	MenuInsert(menu *Menu, beforeIndex int, subMenu *Menu)
 	MenuRemove(menu *Menu, index int)
+	MenuCount(menu *Menu) int
 	MenuDispose(menu *Menu)
-
-	MenuItemInitSeparator(item *MenuItem)
-	MenuItemInit(item *MenuItem, kind MenuItemKind)
-	MenuItemSubMenu(item *MenuItem) *Menu
-	MenuItemSetSubMenu(item *MenuItem, menu *Menu)
-	MenuItemDispose(item *MenuItem)
 
 	Displays() []*Display
 	KeyWindow() *Window

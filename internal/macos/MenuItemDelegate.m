@@ -4,11 +4,11 @@
 @implementation MenuItemDelegate
 
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem {
-	return validateMenuItemCallback(menuItem);
+	return validateMenuItemCallback(menuItem.tag);
 }
 
 - (void)handleMenuItem:(id)sender {
-	handleMenuItemCallback(sender);
+	handleMenuItemCallback(((NSMenuItem *)sender).tag);
 }
 
 @end

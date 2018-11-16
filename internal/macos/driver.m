@@ -64,8 +64,11 @@ CMenuItemPtr menuItem(CMenuPtr menu, int index) {
 }
 
 void insertMenuItem(CMenuPtr menu, CMenuItemPtr item, int index) {
-	[(NSMenu *)menu insertItem:item atIndex:index];
-	// [(NSMenu *)menu insertItem:(NSMenuItem *)item atIndex:index];
+	NSMenu *m = (NSMenu *)menu;
+	if (index < 0) {
+		index = [m numberOfItems];
+	}
+	[m insertItem:item atIndex:index];
 }
 
 void removeMenuItem(CMenuPtr menu, int index) {
@@ -78,8 +81,9 @@ CMenuItemPtr newMenuSeparator() {
 
 static MenuItemDelegate *menuItemDelegate = nil;
 
-CMenuItemPtr newMenuItem(const char *title, const char *selector, const char *key, int modifiers, bool needDelegate) {
+CMenuItemPtr newMenuItem(int tag, const char *title, const char *selector, const char *key, int modifiers, bool needDelegate) {
 	NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:title] action:NSSelectorFromString([NSString stringWithUTF8String:selector]) keyEquivalent:[NSString stringWithUTF8String:key]] retain];
+	item.tag = tag;
 	// macOS uses the same modifier mask bit order as we do, but it is shifted up by 16 bits
 	[item setKeyEquivalentModifierMask:modifiers << 16];
 	if (needDelegate) {
@@ -115,7 +119,6 @@ Display *displays(unsigned long *qty) {
 	Display *d = (Display *)malloc(sizeof(Display) * count);
 	for (unsigned int i = 0; i < count; i++) {
 		NSScreen *screen = [s objectAtIndex: i];
-		d[i].scaleFactor = [screen backingScaleFactor];
 		CGDirectDisplayID dID = (CGDirectDisplayID)[[[screen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
 		d[i].bounds = CGDisplayBounds(dID);
 		d[i].usableBounds = [screen visibleFrame];

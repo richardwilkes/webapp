@@ -3,7 +3,7 @@ package cef
 import (
 	// #cgo CFLAGS: -I ${SRCDIR}/../../cef
 	// #cgo darwin LDFLAGS: -framework Cocoa -F ${SRCDIR}/../../cef/Release -framework "Chromium Embedded Framework"
-	// #cgo windows LDFLAGS: -L${SRCDIR}/../../cef/Release -lcef
+	// #cgo windows LDFLAGS: -L${SRCDIR}/../../cef/Release -lcef -Wl,--subsystem,windows
 	// #include "common.h"
 	"C"
 	"sync"
