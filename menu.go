@@ -2,6 +2,7 @@ package webapp
 
 import "github.com/richardwilkes/webapp/keys"
 
+// Pre-defined menu tags. Apps should start their tags at MenuTagUserBase.
 const (
 	MenuTagAppMenu = 1 + iota
 	MenuTagFileMenu
