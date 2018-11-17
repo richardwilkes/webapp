@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-CEF_VERSION=3.3538.1849.g458cc98
+CEF_VERSION=3.3538.1852.gcb937fc
 
 # Setup PLATFORM
 case $(uname -s) in
