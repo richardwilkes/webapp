@@ -1,7 +1,7 @@
 version: "1.0"
 dependencies:
 - import: github.com/pkg/term
-  commit: 93e6c91493094ff99a036fea0040802a1e0a4f69
+  commit: 27bbf2edb814447174b568fc0875a8e0c1608fae
 - import: github.com/richardwilkes/toolbox
   commit: 26ec29feef51f2616e0a458a6f901041e4502de5
 - import: gopkg.in/yaml.v2
