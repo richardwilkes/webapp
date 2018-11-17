@@ -70,7 +70,7 @@ const (
 	vkReturn       = 0x24
 	vkTab          = 0x30
 	vkSpace        = 0x31
-	vkDelete       = 0x33
+	vkBackspace    = 0x33
 	vkEscape       = 0x35
 	vkRightCommand = 0x36
 	vkCommand      = 0x37
@@ -125,7 +125,7 @@ func init() {
 	insertKeyCodeMapping(&Mapping{KeyCode: VirtualKeyInsert, Name: InsertName}) // Not on a Mac keyboard
 	InsertMapping(vkHome, &Mapping{KeyCode: VirtualKeyHome, Name: HomeName})
 	InsertMapping(vkEnd, &Mapping{KeyCode: VirtualKeyEnd, Name: EndName})
-	InsertMapping(vkDelete, &Mapping{KeyCode: VirtualKeyBackspace, Name: BackspaceName})
+	InsertMapping(vkBackspace, &Mapping{KeyCode: VirtualKeyBackspace, KeyChar: '\b', Name: BackspaceName})
 	InsertMapping(vkTab, &Mapping{KeyCode: VirtualKeyTab, KeyChar: '\t', Name: TabName})
 	InsertMapping(vkReturn, &Mapping{KeyCode: VirtualKeyReturn, KeyChar: '\n', Name: ReturnName})
 	InsertMapping(vkAnsiKeypadEnter, &Mapping{KeyCode: VirtualKeyNumPadEnter, KeyChar: '\n', Name: NumPadEnterName})
@@ -192,7 +192,7 @@ func init() {
 	insertASCIIKeyCodeMapping(vkAnsiBackslash, VirtualKeyBackSlash)
 	insertASCIIKeyCodeMapping(vkAnsiRightBracket, VirtualKeyRightBracket)
 	insertASCIIKeyCodeMapping(vkAnsiGrave, VirtualKeyBacktick)
-	InsertMapping(vkForwardDelete, &Mapping{KeyCode: VirtualKeyDelete, Name: DeleteName})
+	InsertMapping(vkForwardDelete, &Mapping{KeyCode: VirtualKeyDelete, KeyChar: '\x7f', Name: DeleteName})
 	InsertMapping(vkAnsiKeypad0, &Mapping{KeyCode: VirtualKeyNumPad0, KeyChar: '0', Name: NumPad0Name})
 	InsertMapping(vkAnsiKeypad1, &Mapping{KeyCode: VirtualKeyNumPad1, KeyChar: '1', Name: NumPad1Name})
 	InsertMapping(vkAnsiKeypad2, &Mapping{KeyCode: VirtualKeyNumPad2, KeyChar: '2', Name: NumPad2Name})
