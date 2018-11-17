@@ -15,7 +15,6 @@ cef_settings_t *new_cef_settings();
 cef_browser_settings_t *new_cef_browser_settings();
 cef_client_t *new_cef_client();
 cef_window_info_t *new_cef_window_info(cef_window_handle_t parent, int x, int y, int width, int height);
-cef_browser_host_t *get_cef_browser_host(cef_browser_t *browser);
 cef_window_handle_t get_cef_window_handle(cef_browser_host_t *host);
 cef_task_t *new_cef_task(int id);
 

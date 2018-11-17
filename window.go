@@ -21,7 +21,7 @@ const (
 // Window holds window information.
 type Window struct {
 	PlatformPtr uintptr
-	Browser     cef.Browser
+	Browser     *cef.Browser
 	style       StyleMask
 	title       string
 	// MayCloseCallback is called when the user has requested that the window

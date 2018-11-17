@@ -28,7 +28,6 @@ type (
 	WindowHandle    C.cef_window_handle_t
 	WindowInfo      *C.cef_window_info_t
 	BrowserSettings *C.cef_browser_settings_t
-	Browser         *C.cef_browser_t
 	BrowserHost     *C.cef_browser_host_t
 )
 
@@ -61,13 +60,10 @@ func NewString(str string) String {
 }
 
 // NewBrowser creates a new Browser instance.
-func NewBrowser(info WindowInfo, client Client, url string, settings BrowserSettings) Browser {
-	return Browser(C.cef_browser_host_create_browser_sync(info, client, NewString(url), settings, nil))
-}
-
-// GetBrowserHost retrieves the BrowserHost.
-func GetBrowserHost(browser Browser) BrowserHost {
-	return BrowserHost(C.get_cef_browser_host((*C.cef_browser_t)(browser)))
+func NewBrowser(info WindowInfo, client Client, url string, settings BrowserSettings) *Browser {
+	return &Browser{
+		native: C.cef_browser_host_create_browser_sync(info, client, NewString(url), settings, nil),
+	}
 }
 
 // GetWindowHandle returns the WindowHandle for the browser content.

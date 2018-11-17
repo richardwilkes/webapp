@@ -1,6 +1,7 @@
 package windows
 
 import (
+	"syscall"
 	"unsafe"
 
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -9,7 +10,24 @@ import (
 )
 
 type menuBar struct {
-	bar HMENU
+	bar        HMENU
+	wnd        HWND
+	needRedraw bool
+}
+
+type menuItem struct {
+	validator func() bool
+	handler   func()
+}
+
+func (bar *menuBar) markForUpdate() {
+	if !bar.needRedraw {
+		bar.needRedraw = true
+		webapp.InvokeUITask(func() {
+			bar.needRedraw = false
+			DrawMenuBar(bar.wnd)
+		})
+	}
 }
 
 func (d *driver) MenuBarForWindow(wnd *webapp.Window) (*webapp.MenuBar, bool, bool) {
@@ -25,7 +43,9 @@ func (d *driver) MenuBarForWindow(wnd *webapp.Window) (*webapp.MenuBar, bool, bo
 			jot.Error(err)
 			return nil, false, false
 		}
-		d.menubars[m] = &webapp.MenuBar{PlatformData: &menuBar{bar: m}}
+		b := &menuBar{bar: m}
+		d.menubars[m] = &webapp.MenuBar{PlatformData: b}
+		b.markForUpdate()
 	}
 	return d.menubars[m], false, false
 }
@@ -49,7 +69,8 @@ func (d *driver) MenuBarMenuItem(bar *webapp.MenuBar, tag int) *webapp.MenuItem 
 }
 
 func (d *driver) MenuBarInsert(bar *webapp.MenuBar, beforeIndex int, menu *webapp.Menu) {
-	if err := InsertMenuItemW(bar.PlatformData.(*menuBar).bar, uint32(beforeIndex), true, &MENUITEMINFOW{
+	b := bar.PlatformData.(*menuBar)
+	if err := InsertMenuItemW(b.bar, uint32(beforeIndex), true, &MENUITEMINFOW{
 		Size:     uint32(unsafe.Sizeof(MENUITEMINFOW{})),
 		Mask:     MIIM_ID | MIIM_FTYPE | MIIM_STRING | MIIM_SUBMENU,
 		Type:     MFT_STRING,
@@ -59,12 +80,15 @@ func (d *driver) MenuBarInsert(bar *webapp.MenuBar, beforeIndex int, menu *webap
 	}); err != nil {
 		jot.Error(err)
 	}
+	b.markForUpdate()
 }
 
 func (d *driver) MenuBarRemove(bar *webapp.MenuBar, index int) {
-	if err := DeleteMenu(bar.PlatformData.(*menuBar).bar, uint32(index), MF_BYPOSITION); err != nil {
+	b := bar.PlatformData.(*menuBar)
+	if err := DeleteMenu(b.bar, uint32(index), MF_BYPOSITION); err != nil {
 		jot.Error(err)
 	}
+	b.markForUpdate()
 }
 
 func (d *driver) MenuBarCount(bar *webapp.MenuBar) int {
@@ -107,15 +131,27 @@ func (d *driver) MenuItem(menu *webapp.Menu, tag int) *webapp.MenuItem {
 }
 
 func (d *driver) lookupMenuItem(menu HMENU, item int, byPosition bool) *webapp.MenuItem {
+	var data [512]uint16
 	info := &MENUITEMINFOW{
-		Size: uint32(unsafe.Sizeof(MENUITEMINFOW{})),
-		Mask: MIIM_ID | MIIM_FTYPE | MIIM_STRING | MIIM_SUBMENU,
+		Size:     uint32(unsafe.Sizeof(MENUITEMINFOW{})),
+		Mask:     MIIM_ID | MIIM_FTYPE | MIIM_STRING | MIIM_SUBMENU,
+		TypeData: uintptr(unsafe.Pointer(&data[0])),
+		CCH:      uint32(len(data) - 1),
 	}
 	if err := GetMenuItemInfoW(menu, uint32(item), byPosition, info); err != nil {
 		jot.Error(err)
 		return nil
 	}
-	return d.toMenuItem(info)
+	switch info.Type {
+	case MFT_STRING:
+		return &webapp.MenuItem{
+			Tag:     int(info.ID),
+			Title:   syscall.UTF16ToString(data[:info.CCH]),
+			SubMenu: d.menus[info.SubMenu],
+		}
+	default:
+		return &webapp.MenuItem{Tag: int(info.ID)}
+	}
 }
 
 func (d *driver) MenuInsertSeparator(menu *webapp.Menu, beforeIndex int) {
@@ -133,14 +169,17 @@ func (d *driver) MenuInsertItem(menu *webapp.Menu, beforeIndex, tag int, title s
 		Size:     uint32(unsafe.Sizeof(MENUITEMINFOW{})),
 		Mask:     MIIM_ID | MIIM_FTYPE | MIIM_STRING,
 		Type:     MFT_STRING,
-		ID:       uint32(menu.Tag),
+		ID:       uint32(tag),
 		TypeData: uintptr(unsafe.Pointer(mustToUTF16Ptr(title))),
 	}); err != nil {
 		jot.Error(err)
 	}
+	d.menuitems[tag] = &menuItem{
+		validator: validator,
+		handler:   handler,
+	}
 	// RAW: Implement key code support
 	// RAW: Implement validator support
-	// RAW: Implement handler support
 }
 
 func (d *driver) MenuInsert(menu *webapp.Menu, beforeIndex int, subMenu *webapp.Menu) {
@@ -176,18 +215,5 @@ func (d *driver) MenuDispose(menu *webapp.Menu) {
 	delete(d.menus, m)
 	if err := DestroyMenu(m); err != nil {
 		jot.Error(err)
-	}
-}
-
-func (d *driver) toMenuItem(info *MENUITEMINFOW) *webapp.MenuItem {
-	switch info.Type {
-	case MFT_STRING:
-		return &webapp.MenuItem{
-			Tag:     int(info.ID),
-			Title:   opaqueUTF16toString(info.TypeData),
-			SubMenu: d.menus[info.SubMenu],
-		}
-	default:
-		return &webapp.MenuItem{Tag: int(info.ID)}
 	}
 }

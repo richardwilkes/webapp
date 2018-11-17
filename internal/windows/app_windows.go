@@ -15,13 +15,15 @@ type driver struct {
 	windows              map[HWND]*webapp.Window
 	menubars             map[HMENU]*webapp.MenuBar
 	menus                map[HMENU]*webapp.Menu
+	menuitems            map[int]*menuItem
 	awaitingQuitDecision bool
 }
 
 var drv = &driver{
-	windows:  make(map[HWND]*webapp.Window),
-	menubars: make(map[HMENU]*webapp.MenuBar),
-	menus:    make(map[HMENU]*webapp.Menu),
+	windows:   make(map[HWND]*webapp.Window),
+	menubars:  make(map[HMENU]*webapp.MenuBar),
+	menus:     make(map[HMENU]*webapp.Menu),
+	menuitems: make(map[int]*menuItem),
 }
 
 // Driver returns the Windows implementation of the driver.

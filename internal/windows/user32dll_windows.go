@@ -16,11 +16,13 @@ var (
 	deleteMenu                    = user32.NewProc("DeleteMenu")
 	destroyMenu                   = user32.NewProc("DestroyMenu")
 	destroyWindow                 = user32.NewProc("DestroyWindow")
+	drawMenuBar                   = user32.NewProc("DrawMenuBar")
 	enumDisplayDevicesW           = user32.NewProc("EnumDisplayDevicesW")
 	enumDisplayMonitors           = user32.NewProc("EnumDisplayMonitors")
 	enumDisplaySettingsExW        = user32.NewProc("EnumDisplaySettingsExW")
 	enumWindows                   = user32.NewProc("EnumWindows")
 	getClientRect                 = user32.NewProc("GetClientRect")
+	getForegroundWindow           = user32.NewProc("GetForegroundWindow")
 	getMenu                       = user32.NewProc("GetMenu")
 	getMenuItemCount              = user32.NewProc("GetMenuItemCount")
 	getMenuItemInfoW              = user32.NewProc("GetMenuItemInfoW")
@@ -111,6 +113,14 @@ func DestroyWindow(hwnd HWND) error {
 	return nil
 }
 
+// DrawMenuBar https://docs.microsoft.com/en-us/windows/desktop/api/Winuser/nf-winuser-drawmenubar
+func DrawMenuBar(hwnd HWND) error {
+	if ret, _, err := drawMenuBar.Call(uintptr(hwnd)); ret == 0 {
+		return errs.NewWithCause(drawMenuBar.Name, err)
+	}
+	return nil
+}
+
 // EnumDisplayDevicesW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enumdisplaydevicesw
 func EnumDisplayDevicesW(device string, devNum DWORD, displayDevice *DISPLAY_DEVICEW, flags DWORD) error {
 	devstr, err := toUTF16PtrOrNilOnEmpty(device)
@@ -171,6 +181,12 @@ func GetClientRect(hwnd HWND, rect *RECT) error {
 		return errs.NewWithCause(getClientRect.Name, err)
 	}
 	return nil
+}
+
+// GetForegroundWindow https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getforegroundwindow
+func GetForegroundWindow() HWND {
+	ret, _, _ := getForegroundWindow.Call()
+	return HWND(ret)
 }
 
 // GetMenu https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getmenu

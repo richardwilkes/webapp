@@ -13,10 +13,16 @@ const windowClassName = "wndClass"
 
 func (d *driver) wndProc(wnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRESULT {
 	switch msg {
+	case WM_COMMAND:
+		if mi, ok := d.menuitems[int(wparam)]; ok {
+			if mi.handler != nil {
+				mi.handler()
+			}
+		}
 	case WM_SIZE:
 		if w, ok := d.windows[wnd]; ok {
 			size := d.WindowContentSize(w)
-			SetWindowPos(HWND(unsafe.Pointer(cef.GetWindowHandle(cef.GetBrowserHost(w.Browser)))), 0, 0, 0, int32(size.Width), int32(size.Height), SWP_NOZORDER)
+			SetWindowPos(HWND(unsafe.Pointer(cef.GetWindowHandle(w.Browser.Host()))), 0, 0, 0, int32(size.Width), int32(size.Height), SWP_NOZORDER)
 		}
 	case WM_CLOSE:
 		if w, ok := d.windows[wnd]; ok {
@@ -38,8 +44,7 @@ func (d *driver) wndProc(wnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRE
 }
 
 func (d *driver) KeyWindow() *webapp.Window {
-	// RAW: Implement
-	return nil
+	return d.windows[GetForegroundWindow()]
 }
 
 func (d *driver) BringAllWindowsToFront() {
@@ -126,8 +131,10 @@ func (d *driver) WindowSetBounds(wnd *webapp.Window, bounds geom.Rect) {
 }
 
 func (d *driver) WindowToFront(wnd *webapp.Window) {
-	ShowWindow(HWND(wnd.PlatformPtr), SW_SHOWNORMAL)
-	if err := SetActiveWindow(HWND(wnd.PlatformPtr)); err != nil {
+	w := HWND(wnd.PlatformPtr)
+	ShowWindow(w, SW_SHOWNORMAL)
+	DrawMenuBar(w)
+	if err := SetActiveWindow(w); err != nil {
 		jot.Error(err)
 	}
 }

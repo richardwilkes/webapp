@@ -2,7 +2,6 @@ package webapp
 
 import (
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/webapp/keys"
 )
 
@@ -65,97 +64,74 @@ func (bar *MenuBar) InstallAppMenu(aboutHandler, prefsHandler func()) {
 func (bar *MenuBar) InstallEditMenu() {
 	stdMod := keys.PlatformMenuModifier()
 	m := NewMenu(MenuTagEditMenu, i18n.Text("Edit"))
-	m.InsertItem(-1, MenuTagCutItem, i18n.Text("Cut"), keys.VirtualKeyX, stdMod, validateCut, handleCut)
-	m.InsertItem(-1, MenuTagCopyItem, i18n.Text("Copy"), keys.VirtualKeyC, stdMod, validateCopy, handleCopy)
-	m.InsertItem(-1, MenuTagPasteItem, i18n.Text("Paste"), keys.VirtualKeyV, stdMod, validatePaste, handlePaste)
+	m.InsertItem(-1, MenuTagCutItem, i18n.Text("Cut"), keys.VirtualKeyX, stdMod, func() bool {
+		// RAW: Implement
+		return true
+	}, func() {
+		if wnd := KeyWindow(); wnd != nil {
+			wnd.Browser.Cut()
+		}
+	})
+	m.InsertItem(-1, MenuTagCopyItem, i18n.Text("Copy"), keys.VirtualKeyC, stdMod, func() bool {
+		// RAW: Implement
+		return true
+	}, func() {
+		if wnd := KeyWindow(); wnd != nil {
+			wnd.Browser.Copy()
+		}
+	})
+	m.InsertItem(-1, MenuTagPasteItem, i18n.Text("Paste"), keys.VirtualKeyV, stdMod, func() bool {
+		// RAW: Implement
+		return true
+	}, func() {
+		if wnd := KeyWindow(); wnd != nil {
+			wnd.Browser.Paste()
+		}
+	})
 	m.InsertSeparator(-1)
-	m.InsertItem(-1, MenuTagDeleteItem, i18n.Text("Delete"), keys.VirtualKeyBackspace, 0, validateDelete, handleDelete)
-	m.InsertItem(-1, MenuTagSelectAllItem, i18n.Text("Select All"), keys.VirtualKeyA, stdMod, validateSelectAll, handleSelectAll)
+	m.InsertItem(-1, MenuTagDeleteItem, i18n.Text("Delete"), keys.VirtualKeyBackspace, 0, func() bool {
+		// RAW: Implement
+		return true
+	}, func() {
+		if wnd := KeyWindow(); wnd != nil {
+			wnd.Browser.Delete()
+		}
+	})
+	m.InsertItem(-1, MenuTagSelectAllItem, i18n.Text("Select All"), keys.VirtualKeyA, stdMod, func() bool {
+		// RAW: Implement
+		return true
+	}, func() {
+		if wnd := KeyWindow(); wnd != nil {
+			wnd.Browser.SelectAll()
+		}
+	})
 	bar.InsertMenu(-1, m)
-}
-
-func validateCut() bool {
-	// RAW: Implement
-	return true
-}
-
-func handleCut() {
-	// RAW: Implement
-	jot.Info("Cut")
-}
-
-func validateCopy() bool {
-	// RAW: Implement
-	return true
-}
-
-func handleCopy() {
-	// RAW: Implement
-	jot.Info("Copy")
-}
-
-func validatePaste() bool {
-	// RAW: Implement
-	return true
-}
-
-func handlePaste() {
-	// RAW: Implement
-	jot.Info("Paste")
-}
-
-func validateDelete() bool {
-	// RAW: Implement
-	return true
-}
-
-func handleDelete() {
-	// RAW: Implement
-	jot.Info("Delete")
-}
-
-func validateSelectAll() bool {
-	// RAW: Implement
-	return true
-}
-
-func handleSelectAll() {
-	// RAW: Implement
-	jot.Info("Select All")
 }
 
 // InstallWindowMenu adds a standard 'Window' menu to the end of the menu bar.
 func (bar *MenuBar) InstallWindowMenu() {
 	stdMod := keys.PlatformMenuModifier()
 	m := NewMenu(MenuTagWindowMenu, i18n.Text("Window"))
-	m.InsertItem(-1, MenuTagMinimizeItem, i18n.Text("Minimize"), keys.VirtualKeyM, stdMod, validateMinimize, handleMinimize)
-	m.InsertItem(-1, MenuTagZoomItem, i18n.Text("Zoom"), keys.VirtualKeyZ, keys.ShiftModifier|stdMod, validateZoom, handleZoom)
+	m.InsertItem(-1, MenuTagMinimizeItem, i18n.Text("Minimize"), keys.VirtualKeyM, stdMod, func() bool {
+		w := KeyWindow()
+		return w != nil && w.Minimizable()
+	}, func() {
+		if wnd := KeyWindow(); wnd != nil {
+			wnd.Minimize()
+		}
+	})
+	m.InsertItem(-1, MenuTagZoomItem, i18n.Text("Zoom"), keys.VirtualKeyZ, keys.ShiftModifier|stdMod, func() bool {
+		w := KeyWindow()
+		return w != nil && w.Resizable()
+	}, func() {
+		if wnd := KeyWindow(); wnd != nil {
+			wnd.Zoom()
+		}
+	})
 	m.InsertSeparator(-1)
 	m.InsertItem(-1, MenuTagBringAllWindowsToFrontItem, i18n.Text("Bring All to Front"), 0, 0, nil, AllWindowsToFront)
 	bar.InsertMenu(-1, m)
 	driver.MenuBarSetWindowMenu(bar, m)
-}
-
-func validateMinimize() bool {
-	w := KeyWindow()
-	return w != nil && w.Minimizable()
-}
-
-func handleMinimize() {
-	if wnd := KeyWindow(); wnd != nil {
-		wnd.Minimize()
-	}
-}
-
-func validateZoom() bool {
-	w := KeyWindow()
-	return w != nil && w.Resizable()
-}
-
-func handleZoom() {
-	if wnd := KeyWindow(); wnd != nil {
-		wnd.Zoom()
-	}
 }
 
 // InstallHelpMenu adds a standard 'Help' menu to the end of the menu bar.

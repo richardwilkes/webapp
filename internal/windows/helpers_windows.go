@@ -2,7 +2,6 @@ package windows
 
 import (
 	"syscall"
-	"unsafe"
 
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -31,10 +30,6 @@ func mustToUTF16Ptr(in string) *uint16 {
 		out = &empty[0]
 	}
 	return out
-}
-
-func opaqueUTF16toString(in uintptr) string {
-	return syscall.UTF16ToString(((*[1<<30 - 1]uint16)(unsafe.Pointer(in)))[:])
 }
 
 func fromBOOL(in BOOL) bool {
