@@ -23,3 +23,19 @@ void gocef_call_void_frame_string_visitor(cef_frame_t *frame, cef_string_visitor
 void gocef_call_void_frame_string(cef_frame_t *frame, cef_string_t *str, void (CEF_CALLBACK *callback)(cef_frame_t *, const cef_string_t *)) {
 	callback(frame, str);
 }
+
+void gocef_call_void_frame_string_string(cef_frame_t *frame, cef_string_t *str1, cef_string_t *str2, void (CEF_CALLBACK *callback)(cef_frame_t *, const cef_string_t *, const cef_string_t *)) {
+	callback(frame, str1, str2);
+}
+
+void gocef_call_void_frame_string_string_int(cef_frame_t *frame, cef_string_t *str1, cef_string_t *str2, int num, void (CEF_CALLBACK *callback)(cef_frame_t *, const cef_string_t *, const cef_string_t *, int)) {
+	callback(frame, str1, str2, num);
+}
+
+cef_frame_t *gocef_call_frame_frame(cef_frame_t *frame, cef_frame_t *(CEF_CALLBACK *callback)(cef_frame_t *)) {
+	return callback(frame);
+}
+
+cef_browser_t *gocef_call_browser_frame(cef_frame_t *frame, cef_browser_t *(CEF_CALLBACK *callback)(cef_frame_t *)) {
+	return callback(frame);
+}

@@ -3,6 +3,8 @@ package cef
 import (
 	// #include "frame.h"
 	"C"
+
+	"github.com/richardwilkes/toolbox/log/jot"
 )
 
 type Frame struct {
@@ -68,6 +70,7 @@ func (f *Frame) GetText(asyncCallback func(string)) {
 
 // LoadRequest loads the request into the frame.
 func (f *Frame) LoadRequest(request interface{}) {
+	jot.Fatal(1, "Frame.LoadRequest has not been implemented yet")
 	// RAW: Implement
 	//
 	// void(CEF_CALLBACK* load_request)(struct _cef_frame_t* self, struct _cef_request_t* request);
@@ -75,8 +78,7 @@ func (f *Frame) LoadRequest(request interface{}) {
 
 // LoadURL loads the url into the frame.
 func (f *Frame) LoadURL(url string) {
-	cefstr := newCEFStr(url)
-	C.gocef_call_void_frame_string(f.native, cefstr, f.native.load_url)
+	C.gocef_call_void_frame_string(f.native, newCEFStr(url), f.native.load_url)
 }
 
 // LoadString loads the contents of 'value' with the specified dummy 'url'.
@@ -84,9 +86,7 @@ func (f *Frame) LoadURL(url string) {
 // behaviors like link clicks and web security restrictions may not behave as
 // expected.
 func (f *Frame) LoadString(value, url string) {
-	// RAW: Implement
-	//
-	// void(CEF_CALLBACK* load_string)(struct _cef_frame_t* self, const cef_string_t* string_val, const cef_string_t* url);
+	C.gocef_call_void_frame_string_string(f.native, newCEFStr(value), newCEFStr(url), f.native.load_string)
 }
 
 // ExecuteJavaScript executes a string of JavaScript code in this frame. The
@@ -95,9 +95,7 @@ func (f *Frame) LoadString(value, url string) {
 // the error. The 'startLine' parameter is the base line number to use for
 // error reporting.
 func (f *Frame) ExecuteJavaScript(script, url string, startLine int) {
-	// RAW: Implement
-	//
-	// void(CEF_CALLBACK* execute_java_script)(struct _cef_frame_t* self, const cef_string_t* code, const cef_string_t* script_url, int start_line);
+	C.gocef_call_void_frame_string_string_int(f.native, newCEFStr(script), newCEFStr(url), C.int(startLine), f.native.execute_java_script)
 }
 
 // Main returns true if this is the main (top-level) frame.
@@ -128,9 +126,9 @@ func (f *Frame) ID() int64 {
 // Parent returns the parent of this frame or nil if this is the main
 // (top-level) frame.
 func (f *Frame) Parent() *Frame {
-	// RAW: Implement
-	//
-	// struct _cef_frame_t*(CEF_CALLBACK* get_parent)(struct _cef_frame_t* self);
+	if parent := C.gocef_call_frame_frame(f.native, f.native.get_parent); parent != nil {
+		return &Frame{native: parent}
+	}
 	return nil
 }
 
@@ -141,8 +139,5 @@ func (f *Frame) URL() string {
 
 // Browser returns the browser that this frame belongs to.
 func (f *Frame) Browser() *Browser {
-	// RAW: Implement
-	//
-	// struct _cef_browser_t*(CEF_CALLBACK* get_browser)(struct _cef_frame_t* self);
-	return nil
+	return &Browser{native: C.gocef_call_browser_frame(f.native, f.native.get_browser)}
 }
