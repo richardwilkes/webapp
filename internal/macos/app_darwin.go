@@ -4,7 +4,7 @@ import (
 	// // Note: Only one file per package needs the #cgo directives.
 	// //       Imports are still needed on a per-file basis.
 	//
-	// #cgo CFLAGS: -x objective-c -I ${SRCDIR}/../../../../cef/cef
+	// #cgo CFLAGS: -x objective-c
 	// #cgo LDFLAGS: -framework Cocoa
 	// #import "app.h"
 	// #import "menus.h"
