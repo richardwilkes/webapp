@@ -100,18 +100,6 @@ func (d *driver) MenuBarCount(bar *webapp.MenuBar) int {
 	return count
 }
 
-func (d *driver) MenuBarSetWindowMenu(bar *webapp.MenuBar, menu *webapp.Menu) {
-	// Not relevant to Windows
-}
-
-func (d *driver) MenuBarSetHelpMenu(bar *webapp.MenuBar, menu *webapp.Menu) {
-	// Not relevant to Windows
-}
-
-func (d *driver) MenuBarFillAppMenu(bar *webapp.MenuBar, aboutHandler, prefsHandler func()) {
-	// RAW: Implement
-}
-
 func (d *driver) MenuInit(menu *webapp.Menu) {
 	m, err := CreatePopupMenu()
 	if err != nil {

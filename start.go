@@ -50,6 +50,11 @@ func Start() error {
 	return nil
 }
 
+// PlatformDriver returns the underlying driver.
+func PlatformDriver() Driver {
+	return driver
+}
+
 // WillFinishStartupCallback is called right before application startup has
 // completed. This is a good point to create any windows your app wants to
 // display.

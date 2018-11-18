@@ -14,22 +14,10 @@ func (b *Browser) Host() BrowserHost {
 	return BrowserHost(C.get_cef_browser_host(b.native))
 }
 
-func (b *Browser) Cut() {
-	C.cef_browser_cut(b.native)
-}
-
-func (b *Browser) Copy() {
-	C.cef_browser_copy(b.native)
-}
-
-func (b *Browser) Paste() {
-	C.cef_browser_paste(b.native)
-}
-
-func (b *Browser) Delete() {
-	C.cef_browser_delete(b.native)
-}
-
-func (b *Browser) SelectAll() {
-	C.cef_browser_select_all(b.native)
+// FocusedFrame returns the currently focused frame.
+func (b *Browser) FocusedFrame() *Frame {
+	if f := C.get_cef_focused_frame(b.native); f != nil {
+		return &Frame{native: f}
+	}
+	return nil
 }

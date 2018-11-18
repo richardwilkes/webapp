@@ -3,7 +3,6 @@
 package cef
 
 import (
-	// #cgo CFLAGS: -I ${SRCDIR}/../../cef
 	// #include "common.h"
 	"C"
 	"os"

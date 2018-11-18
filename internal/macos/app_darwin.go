@@ -15,6 +15,11 @@ import (
 	"github.com/richardwilkes/webapp/internal/cef"
 )
 
+var (
+	_ webapp.Driver                  = &driver{}
+	_ webapp.AppVisibilityController = &driver{}
+)
+
 type driver struct {
 	menubar            *webapp.MenuBar
 	menus              map[C.CMenuPtr]*webapp.Menu
@@ -54,6 +59,18 @@ func (d *driver) MayQuitNow(quit bool) {
 		mayQuit = 1
 	}
 	C.mayQuitNow(mayQuit)
+}
+
+func (d *driver) HideApp() {
+	C.hideApp()
+}
+
+func (d *driver) HideOtherApps() {
+	C.hideOtherApps()
+}
+
+func (d *driver) ShowAllApps() {
+	C.showAllApps()
 }
 
 //export willFinishStartupCallback

@@ -21,9 +21,6 @@ type Driver interface {
 	MenuBarInsert(bar *MenuBar, beforeIndex int, menu *Menu)
 	MenuBarRemove(bar *MenuBar, index int)
 	MenuBarCount(bar *MenuBar) int
-	MenuBarSetWindowMenu(bar *MenuBar, menu *Menu)
-	MenuBarSetHelpMenu(bar *MenuBar, menu *Menu)
-	MenuBarFillAppMenu(bar *MenuBar, aboutHandler, prefsHandler func())
 
 	MenuInit(menu *Menu)
 	MenuItemAtIndex(menu *Menu, index int) *MenuItem
@@ -49,4 +46,12 @@ type Driver interface {
 	WindowToFront(wnd *Window)
 	WindowMinimize(wnd *Window)
 	WindowZoom(wnd *Window)
+}
+
+// AppVisibilityController defines optional APIs a platform can provide for
+// manipulating application visibility.
+type AppVisibilityController interface {
+	HideApp()
+	HideOtherApps()
+	ShowAllApps()
 }
