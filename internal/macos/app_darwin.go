@@ -4,15 +4,15 @@ import (
 	// // Note: Only one file per package needs the #cgo directives.
 	// //       Imports are still needed on a per-file basis.
 	//
-	// #cgo CFLAGS: -x objective-c -I ${SRCDIR}/../../cef
+	// #cgo CFLAGS: -x objective-c -I ${SRCDIR}/../../../../cef/cef
 	// #cgo LDFLAGS: -framework Cocoa
 	// #import "app.h"
 	// #import "menus.h"
 	// #import "windows.h"
 	"C"
 
+	"github.com/richardwilkes/cef"
 	"github.com/richardwilkes/webapp"
-	"github.com/richardwilkes/webapp/internal/cef"
 )
 
 var (

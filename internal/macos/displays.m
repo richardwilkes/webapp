@@ -1,8 +1,6 @@
-#import "MainApp.h"
 #import "displays.h"
 
 Display *displays(unsigned long *qty) {
-	[WebApplication sharedApplication];
 	NSArray *s = [NSScreen screens];
 	unsigned long count = [s count];
 	*qty = count;

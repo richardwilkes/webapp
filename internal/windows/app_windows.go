@@ -4,10 +4,10 @@ import (
 	"syscall"
 	"unsafe"
 
+	"github.com/richardwilkes/cef"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/webapp"
-	"github.com/richardwilkes/webapp/internal/cef"
 )
 
 type driver struct {

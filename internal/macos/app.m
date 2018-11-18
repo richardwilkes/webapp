@@ -1,9 +1,7 @@
 #import "AppDelegate.h"
-#import "MainApp.h"
 #import "app.h"
 
 void prepareForStart() {
-	[WebApplication sharedApplication];
 	[NSApp setDelegate:[AppDelegate new]];
 }
 

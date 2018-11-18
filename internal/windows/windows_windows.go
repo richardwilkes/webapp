@@ -3,10 +3,10 @@ package windows
 import (
 	"unsafe"
 
+	"github.com/richardwilkes/cef"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/webapp"
-	"github.com/richardwilkes/webapp/internal/cef"
 )
 
 const windowClassName = "wndClass"

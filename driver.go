@@ -1,8 +1,8 @@
 package webapp
 
 import (
+	"github.com/richardwilkes/cef"
 	"github.com/richardwilkes/toolbox/xmath/geom"
-	"github.com/richardwilkes/webapp/internal/cef"
 	"github.com/richardwilkes/webapp/keys"
 )
 

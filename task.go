@@ -3,7 +3,7 @@ package webapp
 import (
 	"time"
 
-	"github.com/richardwilkes/webapp/internal/cef"
+	"github.com/richardwilkes/cef"
 )
 
 // InvokeUITask a task on the UI thread. The task is put into the system event

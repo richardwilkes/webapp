@@ -6,9 +6,9 @@ import (
 	"C"
 	"unsafe"
 
+	"github.com/richardwilkes/cef"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/webapp"
-	"github.com/richardwilkes/webapp/internal/cef"
 )
 
 func (d *driver) BringAllWindowsToFront() {

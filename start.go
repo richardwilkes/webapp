@@ -3,9 +3,9 @@ package webapp
 import (
 	"runtime"
 
+	"github.com/richardwilkes/cef"
 	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/webapp/internal/cef"
 )
 
 var driver Driver
