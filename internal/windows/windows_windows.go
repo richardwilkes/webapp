@@ -22,7 +22,7 @@ func (d *driver) wndProc(wnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRE
 	case WM_SIZE:
 		if w, ok := d.windows[wnd]; ok {
 			size := d.WindowContentSize(w)
-			SetWindowPos(HWND(unsafe.Pointer(cef.GetWindowHandle(w.Browser.Host()))), 0, 0, 0, int32(size.Width), int32(size.Height), SWP_NOZORDER)
+			SetWindowPos(HWND(unsafe.Pointer(w.Browser.Host().WindowHandle())), 0, 0, 0, int32(size.Width), int32(size.Height), SWP_NOZORDER)
 		}
 	case WM_CLOSE:
 		if w, ok := d.windows[wnd]; ok {

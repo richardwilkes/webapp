@@ -7,78 +7,57 @@ import (
 	// #cgo CFLAGS: -I ${SRCDIR}/../../cef
 	// #cgo darwin LDFLAGS: -framework Cocoa -F ${SRCDIR}/../../cef/Release -framework "Chromium Embedded Framework"
 	// #cgo windows LDFLAGS: -L${SRCDIR}/../../cef/Release -lcef -Wl,--subsystem,windows
-	// #include "common.h"
+	// #include <stdlib.h>
+	// #include "include/capi/cef_app_capi.h"
+	// #include "include/capi/cef_client_capi.h"
+	// #include "ref.h"
 	"C"
-	"sync"
 	"unsafe"
 
 	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/xmath/geom"
-)
-
-var (
-	nextTaskID     C.int = 1
-	nextTaskIDLock sync.Mutex
-	taskMap        = make(map[C.int]func())
 )
 
 // Various CEF type aliases
 type (
-	String          *C.cef_string_t
 	Settings        *C.cef_settings_t
 	Client          *C.cef_client_t
-	WindowHandle    C.cef_window_handle_t
-	WindowInfo      *C.cef_window_info_t
 	BrowserSettings *C.cef_browser_settings_t
-	BrowserHost     *C.cef_browser_host_t
 )
 
 // NewSettings creates a new default Settings instance.
 func NewSettings() Settings {
-	return Settings(C.new_cef_settings())
+	settings := (*C.cef_settings_t)(C.calloc(1, C.sizeof_struct__cef_settings_t))
+	settings.size = C.sizeof_struct__cef_settings_t
+	settings.no_sandbox = 1
+	settings.command_line_args_disabled = 1
+	return Settings(settings)
 }
 
 // NewClient creates a new default Client instance.
 func NewClient() Client {
-	return Client(C.new_cef_client())
-}
-
-// NewWindowInfo creates a new default WindowInfo instance.
-func NewWindowInfo(parent WindowHandle, bounds geom.Rect) WindowInfo {
-	return WindowInfo(C.new_cef_window_info((C.cef_window_handle_t)(parent), C.int(bounds.X), C.int(bounds.Y), C.int(bounds.Width), C.int(bounds.Height)))
+	return Client(unsafe.Pointer(C.gocef_refcnt_alloc(C.sizeof_struct__cef_client_t)))
 }
 
 // NewBrowserSettings creates a new default BrowserSettings instance.
 func NewBrowserSettings() BrowserSettings {
-	return BrowserSettings(C.new_cef_browser_settings())
-}
-
-// NewString creates a new default String instance.
-func NewString(str string) String {
-	s := C.CString(str)
-	cs := C.new_cef_string_from_utf8(s)
-	C.free(unsafe.Pointer(s))
-	return String(cs)
+	settings := (*C.cef_browser_settings_t)(C.calloc(1, C.sizeof_struct__cef_browser_settings_t))
+	settings.size = C.sizeof_struct__cef_browser_settings_t
+	return BrowserSettings(settings)
 }
 
 // NewBrowser creates a new Browser instance.
-func NewBrowser(info WindowInfo, client Client, url string, settings BrowserSettings) *Browser {
+func NewBrowser(info *WindowInfo, client Client, url string, settings BrowserSettings) *Browser {
 	return &Browser{
-		native: C.cef_browser_host_create_browser_sync(info, client, NewString(url), settings, nil),
+		native: C.cef_browser_host_create_browser_sync(info.native, client, newCEFStr(url), settings, nil),
 	}
-}
-
-// GetWindowHandle returns the WindowHandle for the browser content.
-func GetWindowHandle(host BrowserHost) WindowHandle {
-	return WindowHandle(C.get_cef_window_handle((*C.cef_browser_host_t)(host)))
 }
 
 // ExecuteProcess is used to start the secondary CEF processes. If this is
 // the main process, this call will do nothing and return. If it is a
 // secondary process, the call will not return.
 func ExecuteProcess() error {
-	args, err := createMainArgs()
+	args, err := mainArgs()
 	if err != nil {
 		return err
 	}
@@ -90,7 +69,11 @@ func ExecuteProcess() error {
 
 // Initialize CEF.
 func Initialize(settings Settings) error {
-	if C.cef_initialize((*C.cef_main_args_t)(C.calloc(1, C.sizeof_struct__cef_main_args_t)), settings, nil, nil) != 1 {
+	args, err := mainArgs()
+	if err != nil {
+		return err
+	}
+	if C.cef_initialize(args, settings, nil, nil) != 1 {
 		return errs.New("Unable to initialize CEF")
 	}
 	return nil
@@ -115,25 +98,4 @@ func Shutdown() {
 // should be called before any other CEF function if this support is desired.
 func EnableHighResolutionSupport() {
 	C.cef_enable_highdpi_support()
-}
-
-// PostUITask schedules a task for execution on the UI thread.
-func PostUITask(task func()) {
-	nextTaskIDLock.Lock()
-	id := nextTaskID
-	nextTaskID++
-	taskMap[id] = task
-	nextTaskIDLock.Unlock()
-	C.cef_post_task(C.TID_UI, C.new_cef_task(id))
-}
-
-//export taskCallback
-func taskCallback(id C.int) {
-	nextTaskIDLock.Lock()
-	task := taskMap[id]
-	delete(taskMap, id)
-	nextTaskIDLock.Unlock()
-	if task != nil {
-		task()
-	}
 }

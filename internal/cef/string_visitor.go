@@ -21,7 +21,7 @@ func newAsyncStringVisitor(callback func(string)) *C.cef_string_visitor_t {
 	asyncStringNextID++
 	asyncStringVisitorCallbackMap[id] = callback
 	asyncStringVisitorCallbackLock.Unlock()
-	return C.new_async_string_visitor(id)
+	return C.gocef_new_async_string_visitor(id)
 }
 
 //export asyncStringVisitorCallback

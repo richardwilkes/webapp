@@ -3,13 +3,14 @@
 package cef
 
 import (
-	// #include "common.h"
+	// #include <stdlib.h>
+	// #include "include/capi/cef_app_capi.h"
 	"C"
 	"os"
 	"unsafe"
 )
 
-func createMainArgs() (*C.cef_main_args_t, error) {
+func mainArgs() (*C.cef_main_args_t, error) {
 	args := (*C.cef_main_args_t)(C.calloc(1, C.sizeof_struct__cef_main_args_t))
 	if len(os.Args) > 0 {
 		cp := C.calloc(C.size_t(len(os.Args)), C.size_t(unsafe.Sizeof(uintptr(0))))
