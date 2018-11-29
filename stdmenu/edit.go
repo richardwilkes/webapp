@@ -39,7 +39,7 @@ func CutValidator() bool {
 // CutHandler provides the standard handler function for the "Cut" menu item.
 func CutHandler() {
 	if wnd := webapp.KeyWindow(); wnd != nil {
-		if ff := wnd.Browser.FocusedFrame(); ff != nil {
+		if ff := wnd.Browser.GetFocusedFrame(); ff != nil {
 			ff.Cut()
 		}
 	}
@@ -62,7 +62,7 @@ func CopyValidator() bool {
 // item.
 func CopyHandler() {
 	if wnd := webapp.KeyWindow(); wnd != nil {
-		if ff := wnd.Browser.FocusedFrame(); ff != nil {
+		if ff := wnd.Browser.GetFocusedFrame(); ff != nil {
 			ff.Copy()
 		}
 	}
@@ -85,7 +85,7 @@ func PasteValidator() bool {
 // item.
 func PasteHandler() {
 	if wnd := webapp.KeyWindow(); wnd != nil {
-		if ff := wnd.Browser.FocusedFrame(); ff != nil {
+		if ff := wnd.Browser.GetFocusedFrame(); ff != nil {
 			ff.Paste()
 		}
 	}
@@ -108,7 +108,7 @@ func DeleteValidator() bool {
 // item.
 func DeleteHandler() {
 	if wnd := webapp.KeyWindow(); wnd != nil {
-		if ff := wnd.Browser.FocusedFrame(); ff != nil {
+		if ff := wnd.Browser.GetFocusedFrame(); ff != nil {
 			ff.Del()
 		}
 	}
@@ -131,7 +131,7 @@ func SelectAllValidator() bool {
 // "Select All" menu item.
 func SelectAllHandler() {
 	if wnd := webapp.KeyWindow(); wnd != nil {
-		if ff := wnd.Browser.FocusedFrame(); ff != nil {
+		if ff := wnd.Browser.GetFocusedFrame(); ff != nil {
 			ff.SelectAll()
 		}
 	}

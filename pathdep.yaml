@@ -3,7 +3,7 @@ dependencies:
 - import: github.com/pkg/term
   commit: 27bbf2edb814447174b568fc0875a8e0c1608fae
 - import: github.com/richardwilkes/cef
-  commit: f80bdbf4a66e0118d5d1ef69c605e3e2f5876ec7
+  commit: 95a983c3b92dea14a559aab6624c26743f723705
 - import: github.com/richardwilkes/toolbox
   commit: 26ec29feef51f2616e0a458a6f901041e4502de5
 - import: gopkg.in/yaml.v2

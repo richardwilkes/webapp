@@ -63,7 +63,7 @@ func AllWindowsToFront() {
 }
 
 // NewWindow creates a new window with a webview as its content.
-func NewWindow(style StyleMask, bounds geom.Rect, title, url string) (*Window, error) {
+func NewWindow(style StyleMask, bounds geom.Rect, title, url string, clientProxy cef.ClientProxy, browserSettings *cef.BrowserSettings, requestContext *cef.RequestContext) (*Window, error) {
 	window := &Window{
 		style:             style,
 		MayCloseCallback:  func() bool { return true },
@@ -77,7 +77,10 @@ func NewWindow(style StyleMask, bounds geom.Rect, title, url string) (*Window, e
 	bounds.Size = window.WindowContentSize()
 	bounds.X = 0
 	bounds.Y = 0
-	window.Browser = cef.NewBrowser(cef.NewWindowInfo(driver.WindowBrowserParent(window), bounds), cef.NewClient(), url, cef.NewBrowserSettings())
+	if browserSettings == nil {
+		browserSettings = cef.NewBrowserSettings()
+	}
+	window.Browser = cef.BrowserHostCreateBrowserSync(cef.NewWindowInfo(driver.WindowBrowserParent(window), bounds), cef.NewClient(clientProxy), url, browserSettings, requestContext)
 	windowList = append(windowList, window)
 	return window, nil
 }

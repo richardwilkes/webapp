@@ -21,33 +21,41 @@ var driver Driver
 //
 // This function will not return if the executable is being started as a CEF
 // sub-process.
-func Initialize(platformDriver Driver) error {
+func Initialize(platformDriver Driver) (*cef.MainArgs, error) {
 	if platformDriver == nil {
-		return errs.New("platformDriver may not be nil")
+		return nil, errs.New("platformDriver may not be nil")
 	}
 	driver = platformDriver
 	runtime.LockOSThread()
-	cef.EnableHighResolutionSupport()
-	return cef.ExecuteProcess()
+	cef.EnableHighdpiSupport()
+	args := cef.NewMainArgs()
+	if code := cef.ExecuteProcess(args, nil, nil); code >= 0 {
+		atexit.Exit(int(code))
+	}
+	return args, nil
 }
 
 // Start the user interface. This and most other functions in this package
 // should only be called from the main (UI) thread.
-func Start() error {
+func Start(args *cef.MainArgs, settings *cef.Settings, application *cef.App) error {
 	if driver == nil {
 		return errs.New("webapp.Initialize(driver) must be called first")
 	}
+	cef.InstantiateApplication()
 	if err := driver.PrepareForStart(); err != nil {
 		return err
 	}
-	if err := cef.Initialize(cef.NewSettings()); err != nil {
-		return err
+	if settings == nil {
+		settings = cef.NewSettings()
+	}
+	if cef.Initialize(args, settings, application, nil) == 0 {
+		return errs.New("Unable to initialize CEF")
 	}
 	driver.PrepareForEventLoop()
 	cef.RunMessageLoop()
 	cef.Shutdown()
 	atexit.Exit(0)
-	return nil
+	return nil // Never reaches here
 }
 
 // PlatformDriver returns the underlying driver.

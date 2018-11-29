@@ -6,7 +6,6 @@ import (
 	"C"
 	"unsafe"
 
-	"github.com/richardwilkes/cef"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/webapp"
 )
@@ -31,8 +30,8 @@ func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds g
 	return nil
 }
 
-func (d *driver) WindowBrowserParent(wnd *webapp.Window) cef.WindowHandle {
-	return cef.WindowHandle(C.contentView(C.CWindowPtr(wnd.PlatformPtr)))
+func (d *driver) WindowBrowserParent(wnd *webapp.Window) unsafe.Pointer {
+	return unsafe.Pointer(C.contentView(C.CWindowPtr(wnd.PlatformPtr)))
 }
 
 func (d *driver) WindowClose(wnd *webapp.Window) {

@@ -1,7 +1,8 @@
 package webapp
 
 import (
-	"github.com/richardwilkes/cef"
+	"unsafe"
+
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/webapp/keys"
 )
@@ -37,7 +38,7 @@ type Driver interface {
 	BringAllWindowsToFront()
 
 	WindowInit(wnd *Window, style StyleMask, bounds geom.Rect, title string) error
-	WindowBrowserParent(wnd *Window) cef.WindowHandle
+	WindowBrowserParent(wnd *Window) unsafe.Pointer
 	WindowClose(wnd *Window)
 	WindowSetTitle(wnd *Window, title string)
 	WindowBounds(wnd *Window) geom.Rect

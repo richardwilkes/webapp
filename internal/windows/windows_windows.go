@@ -3,7 +3,6 @@ package windows
 import (
 	"unsafe"
 
-	"github.com/richardwilkes/cef"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/webapp"
@@ -81,8 +80,8 @@ func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds g
 	return nil
 }
 
-func (d *driver) WindowBrowserParent(wnd *webapp.Window) cef.WindowHandle {
-	return cef.WindowHandle(unsafe.Pointer(wnd.PlatformPtr))
+func (d *driver) WindowBrowserParent(wnd *webapp.Window) unsafe.Pointer {
+	return unsafe.Pointer(wnd.PlatformPtr)
 }
 
 func (d *driver) WindowClose(wnd *webapp.Window) {
