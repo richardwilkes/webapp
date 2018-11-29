@@ -8,3 +8,6 @@ go get -u -d github.com/richardwilkes/cef
 cd $GOPATH/src/github.com/richardwilkes/cef
 ./setup.sh
 ```
+
+An example use of this library can be found at
+https://github.com/richardwilkes/webapp-example
