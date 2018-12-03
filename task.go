@@ -3,7 +3,7 @@ package webapp
 import (
 	"time"
 
-	"github.com/richardwilkes/cef"
+	"github.com/richardwilkes/cef/cef"
 )
 
 type taskFunc struct {

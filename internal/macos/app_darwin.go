@@ -11,7 +11,7 @@ import (
 	// #import "windows.h"
 	"C"
 
-	"github.com/richardwilkes/cef"
+	"github.com/richardwilkes/cef/cef"
 	"github.com/richardwilkes/webapp"
 )
 

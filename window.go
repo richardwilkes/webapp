@@ -1,7 +1,7 @@
 package webapp
 
 import (
-	"github.com/richardwilkes/cef"
+	"github.com/richardwilkes/cef/cef"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 )
 
