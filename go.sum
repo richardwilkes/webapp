@@ -11,8 +11,8 @@ github.com/pkg/term v0.0.0-20181116001808-27bbf2edb814 h1:qWlKm6sU/AyVAgBC1Pg1uu
 github.com/pkg/term v0.0.0-20181116001808-27bbf2edb814/go.mod h1:eCbImbZ95eXtAUIbLAuAVnBnwf83mjf6QIVH8SHYwqQ=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/richardwilkes/cef v0.0.0-20181204183215-4ca379827c85 h1:ahz3SYScjnJnkG2C5ISdiC31cepzH9NTpSJnvyx5es4=
-github.com/richardwilkes/cef v0.0.0-20181204183215-4ca379827c85/go.mod h1:Sk0yis72Jzl3rymh+OSh53/rjdP8DIE0bi3rGrYGiPU=
+github.com/richardwilkes/cef v0.0.0-20181204215502-82f550a00fd2 h1:LgJpJoWNsxJzougmaOY6wa5uOcshyc9IvM/Yd2qZtsE=
+github.com/richardwilkes/cef v0.0.0-20181204215502-82f550a00fd2/go.mod h1:Sk0yis72Jzl3rymh+OSh53/rjdP8DIE0bi3rGrYGiPU=
 github.com/richardwilkes/toolbox v1.0.3 h1:er0YNc5qNWxqDx0KdMMmDA7qgScj8aEDdaLxa64ziVs=
 github.com/richardwilkes/toolbox v1.0.3/go.mod h1:+3AAAjOGg4EL71NOhZud4tSuBHO62vWvoIuDL0GEQqQ=
 github.com/stretchr/testify v1.2.2 h1:bSDNvY7ZPG5RlJ8otE/7V6gMiyenm9RtJ7IUVIAoJ1w=
