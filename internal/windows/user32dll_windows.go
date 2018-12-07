@@ -22,6 +22,7 @@ var (
 	enumDisplaySettingsExW        = user32.NewProc("EnumDisplaySettingsExW")
 	enumWindows                   = user32.NewProc("EnumWindows")
 	getClientRect                 = user32.NewProc("GetClientRect")
+	getDpiForSystem               = user32.NewProc("GetDpiForSystem")
 	getForegroundWindow           = user32.NewProc("GetForegroundWindow")
 	getMenu                       = user32.NewProc("GetMenu")
 	getMenuItemCount              = user32.NewProc("GetMenuItemCount")
@@ -181,6 +182,12 @@ func GetClientRect(hwnd HWND, rect *RECT) error {
 		return errs.NewWithCause(getClientRect.Name, err)
 	}
 	return nil
+}
+
+// GetDpiForSystem https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getdpiforsystem
+func GetDpiForSystem() int {
+	ret, _, _ := getDpiForSystem.Call()
+	return int(ret)
 }
 
 // GetForegroundWindow https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getforegroundwindow

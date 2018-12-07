@@ -446,3 +446,11 @@ const (
 const (
 	MONITORINFOF_PRIMARY = 0x00000001
 )
+
+// https://docs.microsoft.com/en-us/windows/desktop/api/shellscalingapi/ne-shellscalingapi-monitor_dpi_type
+const (
+	MDT_EFFECTIVE_DPI = iota
+	MDT_ANGULAR_DPI
+	MDT_RAW_DPI
+	MDT_DEFAULT
+)

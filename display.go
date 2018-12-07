@@ -6,9 +6,10 @@ import (
 
 // Display holds information about each available active display.
 type Display struct {
-	Bounds       geom.Rect
-	UsableBounds geom.Rect
-	IsMain       bool
+	Bounds        geom.Rect
+	UsableBounds  geom.Rect
+	ScalingFactor float64
+	IsMain        bool
 }
 
 // MainDisplay returns the primary display.

@@ -16,16 +16,22 @@ func (d *driver) Displays() []*webapp.Display {
 		if err := GetMonitorInfoW(monitor, &info); err != nil {
 			jot.Error(err)
 		} else {
-			d.Bounds.X = float64(info.MonitorBounds.Left)
-			d.Bounds.Y = float64(info.MonitorBounds.Top)
-			d.Bounds.Width = float64(info.MonitorBounds.Right - info.MonitorBounds.Left)
-			d.Bounds.Height = float64(info.MonitorBounds.Bottom - info.MonitorBounds.Top)
-			d.UsableBounds.X = float64(info.WorkBounds.Left)
-			d.UsableBounds.Y = float64(info.WorkBounds.Top)
-			d.UsableBounds.Width = float64(info.WorkBounds.Right - info.WorkBounds.Left)
-			d.UsableBounds.Height = float64(info.WorkBounds.Bottom - info.WorkBounds.Top)
-			d.IsMain = info.Flags&MONITORINFOF_PRIMARY != 0
-			result = append(result, d)
+			var dpiX, dpiY uint32
+			if err = GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY); err != nil {
+				jot.Error(err)
+			} else {
+				d.Bounds.X = float64(info.MonitorBounds.Left)
+				d.Bounds.Y = float64(info.MonitorBounds.Top)
+				d.Bounds.Width = float64(info.MonitorBounds.Right - info.MonitorBounds.Left)
+				d.Bounds.Height = float64(info.MonitorBounds.Bottom - info.MonitorBounds.Top)
+				d.UsableBounds.X = float64(info.WorkBounds.Left)
+				d.UsableBounds.Y = float64(info.WorkBounds.Top)
+				d.UsableBounds.Width = float64(info.WorkBounds.Right - info.WorkBounds.Left)
+				d.UsableBounds.Height = float64(info.WorkBounds.Bottom - info.WorkBounds.Top)
+				d.ScalingFactor = float64(dpiX) / 96
+				d.IsMain = info.Flags&MONITORINFOF_PRIMARY != 0
+				result = append(result, d)
+			}
 		}
 		return 1
 	}, 0); err != nil {
