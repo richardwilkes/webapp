@@ -12,6 +12,7 @@ import (
 	"C"
 
 	"github.com/richardwilkes/cef/cef"
+	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/webapp"
 )
 
@@ -118,4 +119,5 @@ func quittingCallback() {
 	webapp.QuittingCallback()
 	cef.QuitMessageLoop()
 	cef.Shutdown()
+	jot.Flush()
 }
