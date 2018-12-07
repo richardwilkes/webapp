@@ -48,3 +48,8 @@ func (bar *MenuBar) Remove(index int) {
 func (bar *MenuBar) Count() int {
 	return driver.MenuBarCount(bar)
 }
+
+// MenuBarHeight returns the height of the MenuBar when displayed in a window.
+func MenuBarHeight() float64 {
+	return driver.MenuBarHeightInWindow()
+}

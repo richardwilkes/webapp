@@ -100,6 +100,10 @@ func (d *driver) MenuBarCount(bar *webapp.MenuBar) int {
 	return count
 }
 
+func (d *driver) MenuBarHeightInWindow() float64 {
+	return float64(GetSystemMetrics(SM_CYMENU))
+}
+
 func (d *driver) MenuInit(menu *webapp.Menu) {
 	m, err := CreatePopupMenu()
 	if err != nil {

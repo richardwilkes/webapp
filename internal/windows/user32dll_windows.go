@@ -28,6 +28,7 @@ var (
 	getMenuItemCount              = user32.NewProc("GetMenuItemCount")
 	getMenuItemInfoW              = user32.NewProc("GetMenuItemInfoW")
 	getMonitorInfoW               = user32.NewProc("GetMonitorInfoW")
+	getSystemMetrics              = user32.NewProc("GetSystemMetrics")
 	getWindowRect                 = user32.NewProc("GetWindowRect")
 	insertMenuItemW               = user32.NewProc("InsertMenuItemW")
 	loadCursorW                   = user32.NewProc("LoadCursorW")
@@ -225,6 +226,12 @@ func GetMonitorInfoW(monitor HMONITOR, pmi *MONITORINFO) error {
 		return errs.NewWithCause(getMonitorInfoW.Name, err)
 	}
 	return nil
+}
+
+// GetSystemMetrics https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getsystemmetrics
+func GetSystemMetrics(index int) int {
+	ret, _, _ := getSystemMetrics.Call(uintptr(index))
+	return int(ret)
 }
 
 // GetWindowRect https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getwindowrect

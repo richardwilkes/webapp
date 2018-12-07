@@ -22,6 +22,7 @@ type Driver interface {
 	MenuBarInsert(bar *MenuBar, beforeIndex int, menu *Menu)
 	MenuBarRemove(bar *MenuBar, index int)
 	MenuBarCount(bar *MenuBar) int
+	MenuBarHeightInWindow() float64
 
 	MenuInit(menu *Menu)
 	MenuItemAtIndex(menu *Menu, index int) *MenuItem

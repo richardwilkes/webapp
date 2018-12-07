@@ -85,3 +85,7 @@ func (d *driver) MenuBarRemove(bar *webapp.MenuBar, index int) {
 func (d *driver) MenuBarCount(bar *webapp.MenuBar) int {
 	return int(C.menuItemCount(bar.PlatformData.(*menuBar).bar))
 }
+
+func (d *driver) MenuBarHeightInWindow() float64 {
+	return 0
+}
