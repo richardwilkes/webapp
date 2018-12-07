@@ -3,6 +3,7 @@
 typedef struct {
 	CGRect bounds;
 	CGRect usableBounds;
+	double scalingFactor;
 	int    isMain;
 } Display;
 

@@ -3,6 +3,9 @@ package macos
 import (
 	// #import "displays.h"
 	"C"
+)
+
+import (
 	"unsafe"
 
 	"github.com/richardwilkes/webapp"
@@ -23,6 +26,7 @@ func (d *driver) Displays() []*webapp.Display {
 		d.UsableBounds.Y = float64(displays[i].usableBounds.origin.y)
 		d.UsableBounds.Width = float64(displays[i].usableBounds.size.width)
 		d.UsableBounds.Height = float64(displays[i].usableBounds.size.height)
+		d.ScalingFactor = float64(displays[i].scalingFactor)
 		d.IsMain = displays[i].isMain != 0
 		result[i] = d
 	}

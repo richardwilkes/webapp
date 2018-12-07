@@ -10,6 +10,7 @@ Display *displays(unsigned long *qty) {
 		CGDirectDisplayID dID = (CGDirectDisplayID)[[[screen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
 		d[i].bounds = CGDisplayBounds(dID);
 		d[i].usableBounds = [screen visibleFrame];
+		d[i].scalingFactor = [screen backingScaleFactor];
 		d[i].isMain = CGDisplayIsMain(dID);
 		CGRect b = [screen frame];
 		d[i].usableBounds.origin.y = d[i].bounds.origin.y + (b.origin.y + b.size.height - (d[i].usableBounds.origin.y + d[i].usableBounds.size.height));
