@@ -9,11 +9,13 @@ import (
 
 var (
 	user32                        = syscall.NewLazyDLL("user32.dll")
+	createAcceleratorTableW       = user32.NewProc("CreateAcceleratorTableW")
 	createMenu                    = user32.NewProc("CreateMenu")
 	createPopupMenu               = user32.NewProc("CreatePopupMenu")
 	createWindowExW               = user32.NewProc("CreateWindowExW")
 	defWindowProcW                = user32.NewProc("DefWindowProcW")
 	deleteMenu                    = user32.NewProc("DeleteMenu")
+	destroyAcceleratorTable       = user32.NewProc("DestroyAcceleratorTable")
 	destroyMenu                   = user32.NewProc("DestroyMenu")
 	destroyWindow                 = user32.NewProc("DestroyWindow")
 	drawMenuBar                   = user32.NewProc("DrawMenuBar")
@@ -44,6 +46,15 @@ var (
 	setWindowTextW                = user32.NewProc("SetWindowTextW")
 	showWindow                    = user32.NewProc("ShowWindow")
 )
+
+// CreateAcceleratorTableW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createacceleratortablew
+func CreateAcceleratorTableW(accelList LPACCEL, count int) (HACCEL, error) {
+	ret, _, err := createAcceleratorTableW.Call(uintptr(accelList), uintptr(count))
+	if ret == 0 {
+		return NULL, errs.NewWithCause(createAcceleratorTableW.Name, err)
+	}
+	return HACCEL(ret), nil
+}
 
 // CreateMenu https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-createmenu
 func CreateMenu() (HMENU, error) {
@@ -97,6 +108,12 @@ func DeleteMenu(hmenu HMENU, position, flags uint32) error {
 		return errs.NewWithCause(deleteMenu.Name, err)
 	}
 	return nil
+}
+
+// DestroyAcceleratorTable https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-destroyacceleratortable
+func DestroyAcceleratorTable(accel HACCEL) bool {
+	ret, _, _ := destroyAcceleratorTable.Call(uintptr(accel))
+	return ret != 0
 }
 
 // DestroyMenu https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-destroymenu

@@ -553,3 +553,13 @@ const (
 	SM_CONVERTIBLESLATEMODE        = 0x2003
 	SM_SYSTEMDOCKED                = 0x2004
 )
+
+// https://docs.microsoft.com/en-us/windows/desktop/menurc/acceltableentry
+const (
+	FVIRTKEY  = 0x01
+	FNOINVERT = 0x02
+	FSHIFT    = 0x04
+	FCONTROL  = 0x08
+	FALT      = 0x10
+	FLAST     = 0x80
+)

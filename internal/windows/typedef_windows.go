@@ -7,6 +7,7 @@ type (
 	ATOM                  uint16
 	BOOL                  int16
 	DWORD                 uint32
+	HACCEL                uintptr
 	HBITMAP               uintptr
 	HCURSOR               uintptr
 	HDC                   uintptr
@@ -14,10 +15,12 @@ type (
 	HINSTANCE             uintptr
 	HMONITOR              uintptr
 	HWND                  uintptr
+	LPACCEL               uintptr
 	LPCWSTR               *uint16
 	LPVOID                uintptr
 	LRESULT               uintptr
 	LPARAM                uintptr
+	WORD                  uint16
 	WPARAM                uintptr
 	DPI_AWARENESS_CONTEXT uint32
 )
@@ -112,4 +115,12 @@ type MONITORINFO struct {
 	MonitorBounds RECT
 	WorkBounds    RECT
 	Flags         DWORD
+}
+
+// ACCEL https://docs.microsoft.com/en-us/windows/desktop/menurc/using-keyboard-accelerators#creating-a-run-time-accelerator-table
+type ACCEL struct {
+	Flags   byte
+	padding byte
+	Key     WORD
+	Cmd     WORD
 }
