@@ -11,6 +11,7 @@ import (
 type Driver interface {
 	PrepareForStart() error
 	PrepareForEventLoop()
+	RunEventLoop()
 
 	AttemptQuit()
 	MayQuitNow(quit bool)

@@ -52,9 +52,7 @@ func Start(args *cef.MainArgs, settings *cef.Settings, application *cef.App) err
 		return errs.New("Unable to initialize CEF")
 	}
 	driver.PrepareForEventLoop()
-	cef.RunMessageLoop()
-	cef.Shutdown()
-	atexit.Exit(0)
+	driver.RunEventLoop()
 	return nil // Never reaches here
 }
 
