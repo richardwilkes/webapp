@@ -16,9 +16,9 @@ type Driver interface {
 	MayQuitNow(quit bool)
 
 	MenuBarForWindow(wnd *Window) (bar *MenuBar, isGlobal, isFirst bool)
-	MenuBarMenu(bar *MenuBar, tag int) *Menu
+	MenuBarMenu(bar *MenuBar, id int) *Menu
 	MenuBarMenuAtIndex(bar *MenuBar, index int) *Menu
-	MenuBarMenuItem(bar *MenuBar, tag int) *MenuItem
+	MenuBarMenuItem(bar *MenuBar, id int) *MenuItem
 	MenuBarInsert(bar *MenuBar, beforeIndex int, menu *Menu)
 	MenuBarRemove(bar *MenuBar, index int)
 	MenuBarCount(bar *MenuBar) int
@@ -26,9 +26,9 @@ type Driver interface {
 
 	MenuInit(menu *Menu)
 	MenuItemAtIndex(menu *Menu, index int) *MenuItem
-	MenuItem(menu *Menu, tag int) *MenuItem
+	MenuItem(menu *Menu, id int) *MenuItem
 	MenuInsertSeparator(menu *Menu, beforeIndex int)
-	MenuInsertItem(menu *Menu, beforeIndex, tag int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func())
+	MenuInsertItem(menu *Menu, beforeIndex, id int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func())
 	MenuInsert(menu *Menu, beforeIndex int, subMenu *Menu)
 	MenuRemove(menu *Menu, index int)
 	MenuCount(menu *Menu) int
