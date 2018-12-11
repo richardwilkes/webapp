@@ -21,19 +21,19 @@ func (d *driver) MenuInit(menu *webapp.Menu) {
 	cTitle := C.CString(menu.Title)
 	m := C.newMenu(cTitle)
 	C.free(unsafe.Pointer(cTitle))
-	menu.PlatformPtr = uintptr(m)
+	menu.PlatformData = m
 	d.menus[m] = menu
 }
 
 func (d *driver) MenuItem(menu *webapp.Menu, tag int) *webapp.MenuItem {
-	if item := C.menuItemWithTag(C.CMenuPtr(menu.PlatformPtr), C.int(tag)); item != nil {
+	if item := C.menuItemWithTag(menu.PlatformData.(C.CMenuPtr), C.int(tag)); item != nil {
 		return d.toMenuItem(item)
 	}
 	return nil
 }
 
 func (d *driver) MenuItemAtIndex(menu *webapp.Menu, index int) *webapp.MenuItem {
-	if item := C.menuItemAtIndex(C.CMenuPtr(menu.PlatformPtr), C.int(index)); item != nil {
+	if item := C.menuItemAtIndex(menu.PlatformData.(C.CMenuPtr), C.int(index)); item != nil {
 		return d.toMenuItem(item)
 	}
 	return nil
@@ -51,7 +51,7 @@ func (d *driver) toMenuItem(item C.CMenuItemPtr) *webapp.MenuItem {
 }
 
 func (d *driver) MenuInsertSeparator(menu *webapp.Menu, beforeIndex int) {
-	C.insertMenuItem(C.CMenuPtr(menu.PlatformPtr), C.newMenuSeparator(), C.int(beforeIndex))
+	C.insertMenuItem(menu.PlatformData.(C.CMenuPtr), C.newMenuSeparator(), C.int(beforeIndex))
 }
 
 func (d *driver) MenuInsertItem(menu *webapp.Menu, beforeIndex, tag int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
@@ -86,7 +86,7 @@ func (d *driver) MenuInsertItem(menu *webapp.Menu, beforeIndex, tag int, title s
 	C.free(unsafe.Pointer(cSelector))
 	C.free(unsafe.Pointer(cKey))
 	C.free(unsafe.Pointer(cTitle))
-	C.insertMenuItem(C.CMenuPtr(menu.PlatformPtr), mi, C.int(beforeIndex))
+	C.insertMenuItem(menu.PlatformData.(C.CMenuPtr), mi, C.int(beforeIndex))
 	d.menuItemValidators[tag] = validator
 	d.menuItemHandlers[tag] = handler
 }
@@ -95,20 +95,20 @@ func (d *driver) MenuInsert(menu *webapp.Menu, beforeIndex int, subMenu *webapp.
 	cTitle := C.CString(subMenu.Title)
 	mi := C.newMenuItem(C.int(subMenu.Tag), cTitle, handleMenuItemCStr, emptyCStr, 0, true)
 	C.free(unsafe.Pointer(cTitle))
-	C.setSubMenu(mi, C.CMenuPtr(subMenu.PlatformPtr))
-	C.insertMenuItem(C.CMenuPtr(menu.PlatformPtr), mi, C.int(beforeIndex))
+	C.setSubMenu(mi, subMenu.PlatformData.(C.CMenuPtr))
+	C.insertMenuItem(menu.PlatformData.(C.CMenuPtr), mi, C.int(beforeIndex))
 }
 
 func (d *driver) MenuRemove(menu *webapp.Menu, index int) {
-	C.removeMenuItem(C.CMenuPtr(menu.PlatformPtr), C.int(index))
+	C.removeMenuItem(menu.PlatformData.(C.CMenuPtr), C.int(index))
 }
 
 func (d *driver) MenuCount(menu *webapp.Menu) int {
-	return int(C.menuItemCount(C.CMenuPtr(menu.PlatformPtr)))
+	return int(C.menuItemCount(menu.PlatformData.(C.CMenuPtr)))
 }
 
 func (d *driver) MenuDispose(menu *webapp.Menu) {
-	p := C.CMenuPtr(menu.PlatformPtr)
+	p := menu.PlatformData.(C.CMenuPtr)
 	C.disposeMenu(p)
 	delete(d.menus, p)
 }

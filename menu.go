@@ -33,9 +33,9 @@ const (
 
 // Menu represents a set of menu items.
 type Menu struct {
-	PlatformPtr uintptr
-	Tag         int
-	Title       string
+	PlatformData interface{}
+	Tag          int
+	Title        string
 }
 
 // NewMenu creates a new menu.
