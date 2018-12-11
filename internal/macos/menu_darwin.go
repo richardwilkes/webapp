@@ -42,6 +42,8 @@ func (d *driver) MenuItemAtIndex(menu *webapp.Menu, index int) *webapp.MenuItem 
 func (d *driver) toMenuItem(item C.CMenuItemPtr) *webapp.MenuItem {
 	info := C.menuItemInfo(item)
 	mi := &webapp.MenuItem{
+		Owner:   d.menus[info.owner],
+		Index:   int(info.index),
 		ID:      int(info.id),
 		Title:   C.GoString(info.title),
 		SubMenu: d.menus[info.subMenu],
@@ -91,12 +93,14 @@ func (d *driver) MenuInsertItem(menu *webapp.Menu, beforeIndex, id int, title st
 	d.menuItemHandlers[id] = handler
 }
 
-func (d *driver) MenuInsert(menu *webapp.Menu, beforeIndex int, subMenu *webapp.Menu) {
-	cTitle := C.CString(subMenu.Title)
-	mi := C.newMenuItem(C.int(subMenu.ID), cTitle, handleMenuItemCStr, emptyCStr, 0, true)
+func (d *driver) MenuInsertMenu(menu *webapp.Menu, beforeIndex, id int, title string) *webapp.Menu {
+	cTitle := C.CString(title)
+	mi := C.newMenuItem(C.int(id), cTitle, handleMenuItemCStr, emptyCStr, 0, true)
 	C.free(unsafe.Pointer(cTitle))
+	subMenu := webapp.NewMenu(id, title)
 	C.setSubMenu(mi, subMenu.PlatformData.(C.CMenuPtr))
 	C.insertMenuItem(menu.PlatformData.(C.CMenuPtr), mi, C.int(beforeIndex))
+	return subMenu
 }
 
 func (d *driver) MenuRemove(menu *webapp.Menu, index int) {

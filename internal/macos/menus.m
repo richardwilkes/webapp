@@ -102,6 +102,9 @@ void disposeMenuItem(CMenuItemPtr item) {
 CMenuItemInfo *menuItemInfo(CMenuItemPtr item) {
 	NSMenuItem *mitem = (NSMenuItem *)item;
 	CMenuItemInfo *info = (CMenuItemInfo *)calloc(1, sizeof(CMenuItemInfo));
+	NSMenu *parent = [mitem menu];
+	info->owner = (CMenuPtr)parent;
+	info->index = [parent indexOfItem:mitem];
 	info->id = [mitem tag];
 	info->title = strdup([[mitem title] UTF8String]);
 	if ([mitem hasSubmenu]) {

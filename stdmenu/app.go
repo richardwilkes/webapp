@@ -21,7 +21,7 @@ func NewAppMenu(aboutHandler, prefsHandler func()) *webapp.Menu {
 	}
 	if runtime.GOOS == "darwin" {
 		menu.InsertSeparator(-1)
-		menu.InsertMenu(-1, webapp.NewMenu(webapp.MenuIDServicesMenu, i18n.Text("Services")))
+		menu.InsertMenu(-1, webapp.MenuIDServicesMenu, i18n.Text("Services"))
 	}
 	if avc, ok := webapp.PlatformDriver().(webapp.AppVisibilityController); ok {
 		menu.InsertSeparator(-1)

@@ -37,6 +37,16 @@ func (bar *MenuBar) InsertMenu(beforeIndex int, menu *Menu) {
 	driver.MenuBarInsert(bar, beforeIndex, menu)
 }
 
+// IndexOf returns the index of the menu within this menu bar, or -1.
+func (bar *MenuBar) IndexOf(menu *Menu) int {
+	for i := bar.Count() - 1; i >= 0; i-- {
+		if bar.MenuAtIndex(i) == menu {
+			return i
+		}
+	}
+	return -1
+}
+
 // Remove the menu at the specified index from this menu bar.
 func (bar *MenuBar) Remove(index int) {
 	if index >= 0 && index < bar.Count() {

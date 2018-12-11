@@ -29,7 +29,7 @@ type Driver interface {
 	MenuItem(menu *Menu, id int) *MenuItem
 	MenuInsertSeparator(menu *Menu, beforeIndex int)
 	MenuInsertItem(menu *Menu, beforeIndex, id int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func())
-	MenuInsert(menu *Menu, beforeIndex int, subMenu *Menu)
+	MenuInsertMenu(menu *Menu, beforeIndex, id int, title string) *Menu
 	MenuRemove(menu *Menu, index int)
 	MenuCount(menu *Menu) int
 	MenuDispose(menu *Menu)

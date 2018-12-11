@@ -78,10 +78,10 @@ func (menu *Menu) InsertItem(beforeIndex, id int, title string, keyCode int, key
 	driver.MenuInsertItem(menu, beforeIndex, id, title, keyCode, keyModifiers, validator, handler)
 }
 
-// InsertMenu inserts a sub-menu at the specified item index within this
+// InsertMenu inserts a new sub-menu at the specified item index within this
 // menu. Pass in a negative index to append to the end.
-func (menu *Menu) InsertMenu(beforeIndex int, subMenu *Menu) {
-	driver.MenuInsert(menu, beforeIndex, subMenu)
+func (menu *Menu) InsertMenu(beforeIndex, id int, title string) *Menu {
+	return driver.MenuInsertMenu(menu, beforeIndex, id, title)
 }
 
 // Remove the menu item at the specified index from this menu.

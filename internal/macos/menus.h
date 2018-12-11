@@ -4,6 +4,8 @@ typedef void *CMenuPtr;
 typedef void *CMenuItemPtr;
 
 typedef struct {
+	CMenuPtr owner;
+	int      index;
 	int      id;
 	char *   title;
 	CMenuPtr subMenu;
