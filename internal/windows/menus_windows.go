@@ -76,7 +76,7 @@ func (d *driver) MenuBarInsert(bar *webapp.MenuBar, beforeIndex int, menu *webap
 		Type:     MFT_STRING,
 		ID:       uint32(menu.ID),
 		TypeData: uintptr(unsafe.Pointer(mustToUTF16Ptr(menu.Title))),
-		SubMenu:  HMENU(menu.PlatformPtr),
+		SubMenu:  menu.PlatformData.(HMENU),
 	}); err != nil {
 		jot.Error(err)
 	}
@@ -110,16 +110,16 @@ func (d *driver) MenuInit(menu *webapp.Menu) {
 		jot.Error(err)
 		return
 	}
-	menu.PlatformPtr = uintptr(m)
+	menu.PlatformData = m
 	d.menus[m] = menu
 }
 
 func (d *driver) MenuItemAtIndex(menu *webapp.Menu, index int) *webapp.MenuItem {
-	return d.lookupMenuItem(HMENU(menu.PlatformPtr), index, true)
+	return d.lookupMenuItem(menu.PlatformData.(HMENU), index, true)
 }
 
 func (d *driver) MenuItem(menu *webapp.Menu, id int) *webapp.MenuItem {
-	return d.lookupMenuItem(HMENU(menu.PlatformPtr), id, false)
+	return d.lookupMenuItem(menu.PlatformData.(HMENU), id, false)
 }
 
 func (d *driver) lookupMenuItem(menu HMENU, item int, byPosition bool) *webapp.MenuItem {
@@ -147,7 +147,7 @@ func (d *driver) lookupMenuItem(menu HMENU, item int, byPosition bool) *webapp.M
 }
 
 func (d *driver) MenuInsertSeparator(menu *webapp.Menu, beforeIndex int) {
-	if err := InsertMenuItemW(HMENU(menu.PlatformPtr), uint32(beforeIndex), true, &MENUITEMINFOW{
+	if err := InsertMenuItemW(menu.PlatformData.(HMENU), uint32(beforeIndex), true, &MENUITEMINFOW{
 		Size: uint32(unsafe.Sizeof(MENUITEMINFOW{})),
 		Mask: MIIM_FTYPE,
 		Type: MFT_SEPARATOR,
@@ -157,7 +157,7 @@ func (d *driver) MenuInsertSeparator(menu *webapp.Menu, beforeIndex int) {
 }
 
 func (d *driver) MenuInsertItem(menu *webapp.Menu, beforeIndex, id int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
-	if err := InsertMenuItemW(HMENU(menu.PlatformPtr), uint32(beforeIndex), true, &MENUITEMINFOW{
+	if err := InsertMenuItemW(menu.PlatformData.(HMENU), uint32(beforeIndex), true, &MENUITEMINFOW{
 		Size:     uint32(unsafe.Sizeof(MENUITEMINFOW{})),
 		Mask:     MIIM_ID | MIIM_FTYPE | MIIM_STRING,
 		Type:     MFT_STRING,
@@ -174,27 +174,29 @@ func (d *driver) MenuInsertItem(menu *webapp.Menu, beforeIndex, id int, title st
 	// RAW: Implement validator support
 }
 
-func (d *driver) MenuInsert(menu *webapp.Menu, beforeIndex int, subMenu *webapp.Menu) {
-	if err := InsertMenuItemW(HMENU(menu.PlatformPtr), uint32(beforeIndex), true, &MENUITEMINFOW{
+func (d *driver) MenuInsertMenu(menu *webapp.Menu, beforeIndex, id int, title string) *webapp.Menu {
+	subMenu := webapp.NewMenu(id, title)
+	if err := InsertMenuItemW(menu.PlatformData.(HMENU), uint32(beforeIndex), true, &MENUITEMINFOW{
 		Size:     uint32(unsafe.Sizeof(MENUITEMINFOW{})),
 		Mask:     MIIM_ID | MIIM_FTYPE | MIIM_STRING | MIIM_SUBMENU,
 		Type:     MFT_STRING,
 		ID:       uint32(subMenu.ID),
 		TypeData: uintptr(unsafe.Pointer(mustToUTF16Ptr(subMenu.Title))),
-		SubMenu:  HMENU(subMenu.PlatformPtr),
+		SubMenu:  subMenu.PlatformData.(HMENU),
 	}); err != nil {
 		jot.Error(err)
 	}
+	return subMenu
 }
 
 func (d *driver) MenuRemove(menu *webapp.Menu, index int) {
-	if err := DeleteMenu(HMENU(menu.PlatformPtr), uint32(index), MF_BYPOSITION); err != nil {
+	if err := DeleteMenu(menu.PlatformData.(HMENU), uint32(index), MF_BYPOSITION); err != nil {
 		jot.Error(err)
 	}
 }
 
 func (d *driver) MenuCount(menu *webapp.Menu) int {
-	count, err := GetMenuItemCount(HMENU(menu.PlatformPtr))
+	count, err := GetMenuItemCount(menu.PlatformData.(HMENU))
 	if err != nil {
 		jot.Error(err)
 		return 0
@@ -203,7 +205,7 @@ func (d *driver) MenuCount(menu *webapp.Menu) int {
 }
 
 func (d *driver) MenuDispose(menu *webapp.Menu) {
-	m := HMENU(menu.PlatformPtr)
+	m := menu.PlatformData.(HMENU)
 	delete(d.menus, m)
 	if err := DestroyMenu(m); err != nil {
 		jot.Error(err)
