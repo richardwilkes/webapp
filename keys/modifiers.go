@@ -61,26 +61,64 @@ func (m Modifiers) PlatformMenuModifierDown() bool {
 	return m&mask == mask
 }
 
-// String implements the fmt.Stringer interface.
+// String returns a text representation of these modifiers. If any modifiers
+// are present, then the string will end with a '+'.
 func (m Modifiers) String() string {
 	if m == 0 {
 		return ""
 	}
 	var buffer bytes.Buffer
-	m.append(&buffer, ControlModifier, ControlName)
-	m.append(&buffer, OptionModifier, OptionName)
-	m.append(&buffer, ShiftModifier, ShiftName)
-	m.append(&buffer, CapsLockModifier, CapsLockName)
-	if runtime.GOOS == "darwin" {
-		m.append(&buffer, CommandModifier, CommandName)
-	} else {
-		m.append(&buffer, CommandModifier, WindowsName)
+	if m&ControlModifier == ControlModifier {
+		buffer.WriteString("Ctrl+")
+	}
+	if m&OptionModifier == OptionModifier {
+		if runtime.GOOS == "darwin" {
+			buffer.WriteString("Opt+")
+		} else {
+			buffer.WriteString("Alt+")
+		}
+	}
+	if m&ShiftModifier == ShiftModifier {
+		buffer.WriteString("Shift+")
+	}
+	if m&CapsLockModifier == CapsLockModifier {
+		buffer.WriteString("Caps+")
+	}
+	if m&CommandModifier == CommandModifier {
+		if runtime.GOOS == "darwin" {
+			buffer.WriteString("Cmd+")
+		} else {
+			buffer.WriteString("Win+")
+		}
 	}
 	return buffer.String()
 }
 
-func (m Modifiers) append(buffer *bytes.Buffer, modifier Modifiers, name string) {
-	if m&modifier == modifier {
-		buffer.WriteString(name)
+// SymbolString returns a representation of these modifiers using symbols
+// rather than names. It will not have a trailing '+' symbol.
+func (m Modifiers) SymbolString() string {
+	if m == 0 {
+		return ""
 	}
+	var buffer bytes.Buffer
+	if m&ControlModifier == ControlModifier {
+		buffer.WriteString("\u2303")
+	}
+	if m&OptionModifier == OptionModifier {
+		buffer.WriteString("\u2325")
+	}
+	if m&ShiftModifier == ShiftModifier {
+		buffer.WriteString("\u21e7")
+	}
+	if m&CapsLockModifier == CapsLockModifier {
+		buffer.WriteString("\u21ea")
+	}
+	if m&CommandModifier == CommandModifier {
+		if runtime.GOOS == "darwin" {
+			buffer.WriteString("\u2318")
+		} else {
+			buffer.WriteString("\u2756")
+		}
+	}
+	return buffer.String()
 }

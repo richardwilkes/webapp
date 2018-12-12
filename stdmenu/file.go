@@ -22,7 +22,7 @@ func NewFileMenu() *webapp.Menu {
 // InsertCloseKeyWindowItem creates the standard "Close" menu item that will
 // close the current key window when chosen.
 func InsertCloseKeyWindowItem(menu *webapp.Menu, beforeIndex int) {
-	menu.InsertItem(-1, webapp.MenuIDCloseItem, i18n.Text("Close"), keys.VirtualKeyW, keys.PlatformMenuModifier(), CloseKeyWindowValidator, CloseKeyWindowHandler)
+	menu.InsertItem(-1, webapp.MenuIDCloseItem, i18n.Text("Close"), keys.W, keys.PlatformMenuModifier(), CloseKeyWindowValidator, CloseKeyWindowHandler)
 }
 
 // CloseKeyWindowValidator provides the standard validation function for the
@@ -49,5 +49,5 @@ func InsertQuitItem(menu *webapp.Menu, beforeIndex int) {
 	} else {
 		title = i18n.Text("Exit")
 	}
-	menu.InsertItem(-1, webapp.MenuIDQuitItem, title, keys.VirtualKeyQ, keys.PlatformMenuModifier(), nil, webapp.AttemptQuit)
+	menu.InsertItem(-1, webapp.MenuIDQuitItem, title, keys.Q, keys.PlatformMenuModifier(), nil, webapp.AttemptQuit)
 }

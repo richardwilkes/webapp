@@ -68,14 +68,14 @@ func (menu *Menu) InsertSeparator(beforeIndex int) {
 // InsertItem inserts a menu item at the specified item index within this
 // menu. Pass in a negative index to append to the end. Both 'validator' and
 // 'handler' may be nil for default behavior.
-func (menu *Menu) InsertItem(beforeIndex, id int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
+func (menu *Menu) InsertItem(beforeIndex, id int, title string, key *keys.Key, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
 	if validator == nil {
 		validator = func() bool { return true }
 	}
 	if handler == nil {
 		handler = func() {}
 	}
-	driver.MenuInsertItem(menu, beforeIndex, id, title, keyCode, keyModifiers, validator, handler)
+	driver.MenuInsertItem(menu, beforeIndex, id, title, key, keyModifiers, validator, handler)
 }
 
 // InsertMenu inserts a new sub-menu at the specified item index within this

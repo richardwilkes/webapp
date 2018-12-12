@@ -4,7 +4,6 @@ import (
 	// #import <stdlib.h>
 	// #import "menus.h"
 	"C"
-	"strings"
 	"unsafe"
 
 	"github.com/richardwilkes/webapp"
@@ -56,15 +55,12 @@ func (d *driver) MenuInsertSeparator(menu *webapp.Menu, beforeIndex int) {
 	C.insertMenuItem(menu.PlatformData.(C.CMenuPtr), C.newMenuSeparator(), C.int(beforeIndex))
 }
 
-func (d *driver) MenuInsertItem(menu *webapp.Menu, beforeIndex, id int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
-	var keyCodeStr string
-	if keyCode != 0 {
-		mapping := keys.MappingForKeyCode(keyCode)
-		if mapping.KeyChar != 0 {
-			keyCodeStr = strings.ToLower(string(mapping.KeyChar))
-		}
-	}
+func (d *driver) MenuInsertItem(menu *webapp.Menu, beforeIndex, id int, title string, key *keys.Key, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
 	cTitle := C.CString(title)
+	var keyCodeStr string
+	if key != nil {
+		keyCodeStr = key.MacEquiv
+	}
 	cKey := C.CString(keyCodeStr)
 	var needDelegate bool
 	var selector string

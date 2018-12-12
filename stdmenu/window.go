@@ -12,14 +12,14 @@ func NewWindowMenu() *webapp.Menu {
 	InsertMinimizeItem(menu, -1)
 	InsertZoomItem(menu, -1)
 	menu.InsertSeparator(-1)
-	menu.InsertItem(-1, webapp.MenuIDBringAllWindowsToFrontItem, i18n.Text("Bring All to Front"), 0, 0, nil, webapp.AllWindowsToFront)
+	menu.InsertItem(-1, webapp.MenuIDBringAllWindowsToFrontItem, i18n.Text("Bring All to Front"), nil, 0, nil, webapp.AllWindowsToFront)
 	return menu
 }
 
 // InsertMinimizeItem creates the standard "Minimize" menu item that will
 // issue the Minimize command to the current key window when chosen.
 func InsertMinimizeItem(menu *webapp.Menu, beforeIndex int) {
-	menu.InsertItem(-1, webapp.MenuIDMinimizeItem, i18n.Text("Minimize"), keys.VirtualKeyM, keys.PlatformMenuModifier(), MinimizeValidator, MinimizeHandler)
+	menu.InsertItem(-1, webapp.MenuIDMinimizeItem, i18n.Text("Minimize"), keys.M, keys.PlatformMenuModifier(), MinimizeValidator, MinimizeHandler)
 }
 
 // MinimizeValidator provides the standard validation function for the
@@ -40,7 +40,7 @@ func MinimizeHandler() {
 // InsertZoomItem creates the standard "Zoom" menu item that will issue the
 // Zoom command to the current key window when chosen.
 func InsertZoomItem(menu *webapp.Menu, beforeIndex int) {
-	menu.InsertItem(-1, webapp.MenuIDZoomItem, i18n.Text("Zoom"), keys.VirtualKeyZ, keys.ShiftModifier|keys.PlatformMenuModifier(), ZoomValidator, ZoomHandler)
+	menu.InsertItem(-1, webapp.MenuIDZoomItem, i18n.Text("Zoom"), keys.Z, keys.ShiftModifier|keys.PlatformMenuModifier(), ZoomValidator, ZoomHandler)
 }
 
 // ZoomValidator provides the standard validation function for the "Zoom" menu
