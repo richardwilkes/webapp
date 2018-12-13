@@ -183,6 +183,18 @@ func (d *driver) lookupMenuItem(menu HMENU, index int) *webapp.MenuItem {
 	return mi
 }
 
+func (d *driver) MenuItemAtIndexSetTitle(menu *webapp.Menu, index int, title string) {
+	cTitle := syscall.StringToUTF16(title)
+	info := &MENUITEMINFOW{
+		Size:     uint32(unsafe.Sizeof(MENUITEMINFOW{})),
+		Mask:     MIIM_STRING,
+		TypeData: uintptr(unsafe.Pointer(&cTitle[0])),
+	}
+	if err := SetMenuItemInfoW(menu.PlatformData.(HMENU), uint32(index), true, info); err != nil {
+		jot.Error(err)
+	}
+}
+
 func (d *driver) MenuInsertSeparator(menu *webapp.Menu, beforeIndex int) {
 	if err := InsertMenuItemW(menu.PlatformData.(HMENU), uint32(beforeIndex), true, &MENUITEMINFOW{
 		Size: uint32(unsafe.Sizeof(MENUITEMINFOW{})),
