@@ -1,6 +1,7 @@
 package windows
 
 import (
+	"strings"
 	"syscall"
 	"unsafe"
 
@@ -10,17 +11,22 @@ import (
 )
 
 type menuBar struct {
-	bar        HMENU
-	wnd        HWND
-	needRedraw bool
+	bar                HMENU
+	wnd                HWND
+	menuKeys           map[string]*menuItem
+	needMenuKeyRefresh bool
+	needRedraw         bool
 }
 
 type menuItem struct {
 	validator func() bool
 	handler   func()
+	key       *keys.Key
+	modifiers keys.Modifiers
 }
 
 func (bar *menuBar) markForUpdate() {
+	bar.needMenuKeyRefresh = true
 	if !bar.needRedraw {
 		bar.needRedraw = true
 		webapp.InvokeUITask(func() {
@@ -28,6 +34,49 @@ func (bar *menuBar) markForUpdate() {
 			DrawMenuBar(bar.wnd)
 		})
 	}
+}
+
+func (d *driver) markAllForMenuKeyRefresh() {
+	for _, bar := range d.menubars {
+		bar.PlatformData.(*menuBar).needMenuKeyRefresh = true
+	}
+}
+
+func (d *driver) refreshMenuKeyForWindow(wnd *webapp.Window) map[string]*menuItem {
+	if bar := d.menuBarForWindow(wnd); bar != nil {
+		b := bar.PlatformData.(*menuBar)
+		if b.needMenuKeyRefresh {
+			b.needMenuKeyRefresh = false
+			b.menuKeys = make(map[string]*menuItem)
+			for i := bar.Count() - 1; i >= 0; i-- {
+				d.refreshMenuKeysForMenu(bar, bar.MenuAtIndex(i))
+			}
+		}
+		return b.menuKeys
+	}
+	return nil
+}
+
+func (d *driver) refreshMenuKeysForMenu(bar *webapp.MenuBar, m *webapp.Menu) {
+	for i := m.Count() - 1; i >= 0; i-- {
+		mi := m.ItemAtIndex(i)
+		if mi.SubMenu != nil {
+			d.refreshMenuKeysForMenu(bar, mi.SubMenu)
+		} else if mi, exists := d.menuitems[mi.ID]; exists {
+			if mi.key != nil {
+				bar.PlatformData.(*menuBar).menuKeys[mi.modifiers.String()+mi.key.Name] = mi
+			}
+		}
+	}
+}
+
+func (d *driver) menuBarForWindow(wnd *webapp.Window) *webapp.MenuBar {
+	if wnd != nil {
+		if m := GetMenu(HWND(wnd.PlatformPtr)); m != NULL {
+			return d.menubars[m]
+		}
+	}
+	return nil
 }
 
 func (d *driver) MenuBarForWindow(wnd *webapp.Window) (*webapp.MenuBar, bool, bool) {
@@ -43,7 +92,10 @@ func (d *driver) MenuBarForWindow(wnd *webapp.Window) (*webapp.MenuBar, bool, bo
 			jot.Error(err)
 			return nil, false, false
 		}
-		b := &menuBar{bar: m}
+		b := &menuBar{
+			bar:      m,
+			menuKeys: make(map[string]*menuItem),
+		}
 		d.menubars[m] = &webapp.MenuBar{PlatformData: b}
 		b.markForUpdate()
 	}
@@ -156,7 +208,11 @@ func (d *driver) MenuInsertSeparator(menu *webapp.Menu, beforeIndex int) {
 	}
 }
 
-func (d *driver) MenuInsertItem(menu *webapp.Menu, beforeIndex, id int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
+func (d *driver) MenuInsertItem(menu *webapp.Menu, beforeIndex, id int, title string, key *keys.Key, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
+	title = strings.SplitN(title, "\t", 2)[0] // Remove any pre-existing key accelerator info
+	if key != nil {
+		title += "\t" + keyModifiers.String() + key.Name
+	}
 	if err := InsertMenuItemW(menu.PlatformData.(HMENU), uint32(beforeIndex), true, &MENUITEMINFOW{
 		Size:     uint32(unsafe.Sizeof(MENUITEMINFOW{})),
 		Mask:     MIIM_ID | MIIM_FTYPE | MIIM_STRING,
@@ -169,9 +225,10 @@ func (d *driver) MenuInsertItem(menu *webapp.Menu, beforeIndex, id int, title st
 	d.menuitems[id] = &menuItem{
 		validator: validator,
 		handler:   handler,
+		key:       key,
+		modifiers: keyModifiers,
 	}
-	// RAW: Implement key code support
-	// RAW: Implement validator support
+	d.markAllForMenuKeyRefresh()
 }
 
 func (d *driver) MenuInsertMenu(menu *webapp.Menu, beforeIndex, id int, title string) *webapp.Menu {
@@ -186,6 +243,7 @@ func (d *driver) MenuInsertMenu(menu *webapp.Menu, beforeIndex, id int, title st
 	}); err != nil {
 		jot.Error(err)
 	}
+	d.markAllForMenuKeyRefresh()
 	return subMenu
 }
 
@@ -193,6 +251,7 @@ func (d *driver) MenuRemove(menu *webapp.Menu, index int) {
 	if err := DeleteMenu(menu.PlatformData.(HMENU), uint32(index), MF_BYPOSITION); err != nil {
 		jot.Error(err)
 	}
+	d.markAllForMenuKeyRefresh()
 }
 
 func (d *driver) MenuCount(menu *webapp.Menu) int {
@@ -210,4 +269,5 @@ func (d *driver) MenuDispose(menu *webapp.Menu) {
 	if err := DestroyMenu(m); err != nil {
 		jot.Error(err)
 	}
+	d.markAllForMenuKeyRefresh()
 }
