@@ -3,6 +3,7 @@ package webapp
 import (
 	"unsafe"
 
+	"github.com/richardwilkes/cef/cef"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/webapp/keys"
 )
@@ -11,14 +12,17 @@ import (
 type Driver interface {
 	PrepareForStart() error
 	PrepareForEventLoop()
+	RunEventLoop()
+	OnPreKeyEvent(event *cef.KeyEvent, is_keyboard_shortcut *int32) int32
+	OnKeyEvent(event *cef.KeyEvent) int32
 
 	AttemptQuit()
 	MayQuitNow(quit bool)
 
 	MenuBarForWindow(wnd *Window) (bar *MenuBar, isGlobal, isFirst bool)
-	MenuBarMenu(bar *MenuBar, tag int) *Menu
+	MenuBarMenu(bar *MenuBar, id int) *Menu
 	MenuBarMenuAtIndex(bar *MenuBar, index int) *Menu
-	MenuBarMenuItem(bar *MenuBar, tag int) *MenuItem
+	MenuBarMenuItem(bar *MenuBar, id int) *MenuItem
 	MenuBarInsert(bar *MenuBar, beforeIndex int, menu *Menu)
 	MenuBarRemove(bar *MenuBar, index int)
 	MenuBarCount(bar *MenuBar) int
@@ -26,10 +30,10 @@ type Driver interface {
 
 	MenuInit(menu *Menu)
 	MenuItemAtIndex(menu *Menu, index int) *MenuItem
-	MenuItem(menu *Menu, tag int) *MenuItem
+	MenuItem(menu *Menu, id int) *MenuItem
 	MenuInsertSeparator(menu *Menu, beforeIndex int)
-	MenuInsertItem(menu *Menu, beforeIndex, tag int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func())
-	MenuInsert(menu *Menu, beforeIndex int, subMenu *Menu)
+	MenuInsertItem(menu *Menu, beforeIndex, id int, title string, key *keys.Key, keyModifiers keys.Modifiers, validator func() bool, handler func())
+	MenuInsertMenu(menu *Menu, beforeIndex, id int, title string) *Menu
 	MenuRemove(menu *Menu, index int)
 	MenuCount(menu *Menu) int
 	MenuDispose(menu *Menu)

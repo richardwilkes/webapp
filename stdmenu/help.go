@@ -11,9 +11,9 @@ import (
 
 // NewHelpMenu creates a standard 'Help' menu.
 func NewHelpMenu(aboutHandler func()) *webapp.Menu {
-	menu := webapp.NewMenu(webapp.MenuTagHelpMenu, i18n.Text("Help"))
+	menu := webapp.NewMenu(webapp.MenuIDHelpMenu, i18n.Text("Help"))
 	if runtime.GOOS != "darwin" {
-		menu.InsertItem(-1, webapp.MenuTagAboutItem, fmt.Sprintf(i18n.Text("About %s"), cmdline.AppName), 0, 0, nil, aboutHandler)
+		menu.InsertItem(-1, webapp.MenuIDAboutItem, fmt.Sprintf(i18n.Text("About %s"), cmdline.AppName), nil, 0, nil, aboutHandler)
 	}
 	return menu
 }

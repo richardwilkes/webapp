@@ -15,23 +15,19 @@ var (
 	handleMenuItemCStr = C.CString("handleMenuItem:")
 )
 
-type menuBar struct {
-	bar C.CMenuPtr
-}
-
 func (d *driver) MenuBarForWindow(_ *webapp.Window) (*webapp.MenuBar, bool, bool) {
 	first := false
 	if d.menubar == nil {
 		m := C.newMenu(emptyCStr)
-		d.menubar = &webapp.MenuBar{PlatformData: &menuBar{bar: m}}
+		d.menubar = &webapp.MenuBar{PlatformData: m}
 		C.setMenuBar(m)
 		first = true
 	}
 	return d.menubar, true, first
 }
 
-func (d *driver) MenuBarMenu(bar *webapp.MenuBar, tag int) *webapp.Menu {
-	if item := C.menuItemWithTag(bar.PlatformData.(*menuBar).bar, C.int(tag)); item != nil {
+func (d *driver) MenuBarMenu(bar *webapp.MenuBar, id int) *webapp.Menu {
+	if item := C.menuItemWithID(bar.PlatformData.(C.CMenuPtr), C.int(id)); item != nil {
 		if menu := C.subMenu(item); menu != nil {
 			if m, ok := d.menus[menu]; ok {
 				return m
@@ -42,7 +38,7 @@ func (d *driver) MenuBarMenu(bar *webapp.MenuBar, tag int) *webapp.Menu {
 }
 
 func (d *driver) MenuBarMenuAtIndex(bar *webapp.MenuBar, index int) *webapp.Menu {
-	if item := C.menuItemAtIndex(bar.PlatformData.(*menuBar).bar, C.int(index)); item != nil {
+	if item := C.menuItemAtIndex(bar.PlatformData.(C.CMenuPtr), C.int(index)); item != nil {
 		if menu := C.subMenu(item); menu != nil {
 			if m, ok := d.menus[menu]; ok {
 				return m
@@ -52,8 +48,8 @@ func (d *driver) MenuBarMenuAtIndex(bar *webapp.MenuBar, index int) *webapp.Menu
 	return nil
 }
 
-func (d *driver) MenuBarMenuItem(bar *webapp.MenuBar, tag int) *webapp.MenuItem {
-	if item := C.menuItemWithTag(bar.PlatformData.(*menuBar).bar, C.int(tag)); item != nil {
+func (d *driver) MenuBarMenuItem(bar *webapp.MenuBar, id int) *webapp.MenuItem {
+	if item := C.menuItemWithID(bar.PlatformData.(C.CMenuPtr), C.int(id)); item != nil {
 		return d.toMenuItem(item)
 	}
 	return nil
@@ -61,29 +57,29 @@ func (d *driver) MenuBarMenuItem(bar *webapp.MenuBar, tag int) *webapp.MenuItem 
 
 func (d *driver) MenuBarInsert(bar *webapp.MenuBar, beforeIndex int, menu *webapp.Menu) {
 	cTitle := C.CString(menu.Title)
-	mi := C.newMenuItem(C.int(menu.Tag), cTitle, handleMenuItemCStr, emptyCStr, 0, true)
+	mi := C.newMenuItem(C.int(menu.ID), cTitle, handleMenuItemCStr, emptyCStr, 0, true)
 	C.free(unsafe.Pointer(cTitle))
-	m := C.CMenuPtr(menu.PlatformPtr)
+	m := menu.PlatformData.(C.CMenuPtr)
 	C.setSubMenu(mi, m)
-	C.insertMenuItem(bar.PlatformData.(*menuBar).bar, mi, C.int(beforeIndex))
-	switch menu.Tag {
-	case webapp.MenuTagAppMenu:
-		if servicesMenu := d.MenuBarMenu(bar, webapp.MenuTagServicesMenu); servicesMenu != nil {
-			C.setServicesMenu(C.CMenuPtr(servicesMenu.PlatformPtr))
+	C.insertMenuItem(bar.PlatformData.(C.CMenuPtr), mi, C.int(beforeIndex))
+	switch menu.ID {
+	case webapp.MenuIDAppMenu:
+		if servicesMenu := d.MenuBarMenu(bar, webapp.MenuIDServicesMenu); servicesMenu != nil {
+			C.setServicesMenu(servicesMenu.PlatformData.(C.CMenuPtr))
 		}
-	case webapp.MenuTagWindowMenu:
+	case webapp.MenuIDWindowMenu:
 		C.setWindowMenu(m)
-	case webapp.MenuTagHelpMenu:
+	case webapp.MenuIDHelpMenu:
 		C.setHelpMenu(m)
 	}
 }
 
 func (d *driver) MenuBarRemove(bar *webapp.MenuBar, index int) {
-	C.removeMenuItem(bar.PlatformData.(*menuBar).bar, C.int(index))
+	C.removeMenuItem(bar.PlatformData.(C.CMenuPtr), C.int(index))
 }
 
 func (d *driver) MenuBarCount(bar *webapp.MenuBar) int {
-	return int(C.menuItemCount(bar.PlatformData.(*menuBar).bar))
+	return int(C.menuItemCount(bar.PlatformData.(C.CMenuPtr)))
 }
 
 func (d *driver) MenuBarHeightInWindow() float64 {

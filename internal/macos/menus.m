@@ -33,16 +33,16 @@ CMenuItemPtr menuItemAtIndex(CMenuPtr menu, int index) {
 	return (index < 0 || index >= menuItemCount(menu)) ?  nil : [(NSMenu *)menu itemAtIndex:index];
 }
 
-CMenuItemPtr menuItemWithTag(CMenuPtr menu, int tag) {
+CMenuItemPtr menuItemWithID(CMenuPtr menu, int cmdID) {
 	NSMenu *m = (NSMenu *)menu;
-	NSMenuItem *item = [m itemWithTag:tag];
+	NSMenuItem *item = [m itemWithTag:cmdID];
 	if (item != nil) {
 		return (CMenuItemPtr)item;
 	}
 	for (int i = [m numberOfItems]; --i >= 0;) {
 		item = [m itemAtIndex:i];
 		if ([item hasSubmenu]) {
-			CMenuItemPtr result = menuItemWithTag((CMenuPtr)[item submenu], tag);
+			CMenuItemPtr result = menuItemWithID((CMenuPtr)[item submenu], cmdID);
 			if (result != nil) {
 				return result;
 			}
@@ -69,9 +69,9 @@ CMenuItemPtr newMenuSeparator() {
 
 static MenuItemDelegate *menuItemDelegate = nil;
 
-CMenuItemPtr newMenuItem(int tag, const char *title, const char *selector, const char *key, int modifiers, bool needDelegate) {
+CMenuItemPtr newMenuItem(int id, const char *title, const char *selector, const char *key, int modifiers, bool needDelegate) {
 	NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:title] action:NSSelectorFromString([NSString stringWithUTF8String:selector]) keyEquivalent:[NSString stringWithUTF8String:key]] retain];
-	[item setTag:tag];
+	[item setTag:id];
 	// macOS uses the same modifier mask bit order as we do, but it is shifted up by 16 bits
 	[item setKeyEquivalentModifierMask:modifiers << 16];
 	if (needDelegate) {
@@ -102,7 +102,10 @@ void disposeMenuItem(CMenuItemPtr item) {
 CMenuItemInfo *menuItemInfo(CMenuItemPtr item) {
 	NSMenuItem *mitem = (NSMenuItem *)item;
 	CMenuItemInfo *info = (CMenuItemInfo *)calloc(1, sizeof(CMenuItemInfo));
-	info->tag = [mitem tag];
+	NSMenu *parent = [mitem menu];
+	info->owner = (CMenuPtr)parent;
+	info->index = [parent indexOfItem:mitem];
+	info->id = [mitem tag];
 	info->title = strdup([[mitem title] UTF8String]);
 	if ([mitem hasSubmenu]) {
 		info->subMenu = (CMenuPtr)[mitem submenu];

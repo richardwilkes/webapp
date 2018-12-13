@@ -5,44 +5,44 @@ import (
 	"github.com/richardwilkes/webapp/keys"
 )
 
-// Pre-defined menu tags. Apps should start their tags at MenuTagUserBase.
+// Pre-defined menu IDs. Apps should start their IDs at MenuIDUserBase.
 const (
-	MenuTagAppMenu = int(cef.MenuIDUserFirst) + iota
-	MenuTagFileMenu
-	MenuTagEditMenu
-	MenuTagWindowMenu
-	MenuTagHelpMenu
-	MenuTagServicesMenu
-	MenuTagAboutItem
-	MenuTagPreferencesItem
-	MenuTagQuitItem
-	MenuTagCutItem
-	MenuTagCopyItem
-	MenuTagPasteItem
-	MenuTagDeleteItem
-	MenuTagSelectAllItem
-	MenuTagMinimizeItem
-	MenuTagZoomItem
-	MenuTagBringAllWindowsToFrontItem
-	MenuTagCloseItem
-	MenuTagHideItem
-	MenuTagHideOthersItem
-	MenuTagShowAllItem
-	MenuTagUserBase = MenuTagAppMenu + 250
+	MenuIDAppMenu = int(cef.MenuIDUserFirst) + iota
+	MenuIDFileMenu
+	MenuIDEditMenu
+	MenuIDWindowMenu
+	MenuIDHelpMenu
+	MenuIDServicesMenu
+	MenuIDAboutItem
+	MenuIDPreferencesItem
+	MenuIDQuitItem
+	MenuIDCutItem
+	MenuIDCopyItem
+	MenuIDPasteItem
+	MenuIDDeleteItem
+	MenuIDSelectAllItem
+	MenuIDMinimizeItem
+	MenuIDZoomItem
+	MenuIDBringAllWindowsToFrontItem
+	MenuIDCloseItem
+	MenuIDHideItem
+	MenuIDHideOthersItem
+	MenuIDShowAllItem
+	MenuIDUserBase = MenuIDAppMenu + 250
 )
 
 // Menu represents a set of menu items.
 type Menu struct {
-	PlatformPtr uintptr
-	Tag         int
-	Title       string
+	PlatformData interface{}
+	ID           int
+	Title        string
 }
 
 // NewMenu creates a new menu.
-func NewMenu(tag int, title string) *Menu {
+func NewMenu(id int, title string) *Menu {
 	menu := &Menu{
 		Title: title,
-		Tag:   tag,
+		ID:    id,
 	}
 	driver.MenuInit(menu)
 	return menu
@@ -53,10 +53,10 @@ func (menu *Menu) ItemAtIndex(index int) *MenuItem {
 	return driver.MenuItemAtIndex(menu, index)
 }
 
-// Item returns the menu item with the specified tag anywhere in the menu and
+// Item returns the menu item with the specified id anywhere in the menu and
 // and its sub-menus.
-func (menu *Menu) Item(tag int) *MenuItem {
-	return driver.MenuItem(menu, tag)
+func (menu *Menu) Item(id int) *MenuItem {
+	return driver.MenuItem(menu, id)
 }
 
 // InsertSeparator inserts a menu separator at the specified item index within
@@ -68,20 +68,20 @@ func (menu *Menu) InsertSeparator(beforeIndex int) {
 // InsertItem inserts a menu item at the specified item index within this
 // menu. Pass in a negative index to append to the end. Both 'validator' and
 // 'handler' may be nil for default behavior.
-func (menu *Menu) InsertItem(beforeIndex, tag int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
+func (menu *Menu) InsertItem(beforeIndex, id int, title string, key *keys.Key, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
 	if validator == nil {
 		validator = func() bool { return true }
 	}
 	if handler == nil {
 		handler = func() {}
 	}
-	driver.MenuInsertItem(menu, beforeIndex, tag, title, keyCode, keyModifiers, validator, handler)
+	driver.MenuInsertItem(menu, beforeIndex, id, title, key, keyModifiers, validator, handler)
 }
 
-// InsertMenu inserts a sub-menu at the specified item index within this
+// InsertMenu inserts a new sub-menu at the specified item index within this
 // menu. Pass in a negative index to append to the end.
-func (menu *Menu) InsertMenu(beforeIndex int, subMenu *Menu) {
-	driver.MenuInsert(menu, beforeIndex, subMenu)
+func (menu *Menu) InsertMenu(beforeIndex, id int, title string) *Menu {
+	return driver.MenuInsertMenu(menu, beforeIndex, id, title)
 }
 
 // Remove the menu item at the specified index from this menu.

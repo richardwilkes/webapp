@@ -14,10 +14,10 @@ func MenuBarForWindow(window *Window) (bar *MenuBar, isGlobal, isFirst bool) {
 	return driver.MenuBarForWindow(window)
 }
 
-// Menu returns the menu with the specified tag anywhere in the menu bar and
+// Menu returns the menu with the specified id anywhere in the menu bar and
 // its sub-menus.
-func (bar *MenuBar) Menu(tag int) *Menu {
-	return driver.MenuBarMenu(bar, tag)
+func (bar *MenuBar) Menu(id int) *Menu {
+	return driver.MenuBarMenu(bar, id)
 }
 
 // MenuAtIndex returns the menu at the specified index within the menu bar.
@@ -25,16 +25,26 @@ func (bar *MenuBar) MenuAtIndex(index int) *Menu {
 	return driver.MenuBarMenuAtIndex(bar, index)
 }
 
-// MenuItem returns the menu item with the specified tag anywhere in the menu
+// MenuItem returns the menu item with the specified id anywhere in the menu
 // bar and its sub-menus.
-func (bar *MenuBar) MenuItem(tag int) *MenuItem {
-	return driver.MenuBarMenuItem(bar, tag)
+func (bar *MenuBar) MenuItem(id int) *MenuItem {
+	return driver.MenuBarMenuItem(bar, id)
 }
 
 // InsertMenu inserts a menu at the specified item index within this menu bar.
 // Pass in a negative index to append to the end.
 func (bar *MenuBar) InsertMenu(beforeIndex int, menu *Menu) {
 	driver.MenuBarInsert(bar, beforeIndex, menu)
+}
+
+// IndexOf returns the index of the menu within this menu bar, or -1.
+func (bar *MenuBar) IndexOf(menu *Menu) int {
+	for i := bar.Count() - 1; i >= 0; i-- {
+		if bar.MenuAtIndex(i) == menu {
+			return i
+		}
+	}
+	return -1
 }
 
 // Remove the menu at the specified index from this menu bar.

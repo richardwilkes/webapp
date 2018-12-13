@@ -12,6 +12,7 @@ import (
 	"C"
 
 	"github.com/richardwilkes/cef/cef"
+	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/webapp"
 )
@@ -48,6 +49,12 @@ func (d *driver) PrepareForStart() error {
 
 func (d *driver) PrepareForEventLoop() {
 	// Nothing to do
+}
+
+func (d *driver) RunEventLoop() {
+	cef.RunMessageLoop()
+	cef.Shutdown()
+	atexit.Exit(0)
 }
 
 func (d *driver) AttemptQuit() {

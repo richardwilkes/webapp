@@ -4,7 +4,6 @@ import (
 	// #import <stdlib.h>
 	// #import "menus.h"
 	"C"
-	"strings"
 	"unsafe"
 
 	"github.com/richardwilkes/webapp"
@@ -21,19 +20,19 @@ func (d *driver) MenuInit(menu *webapp.Menu) {
 	cTitle := C.CString(menu.Title)
 	m := C.newMenu(cTitle)
 	C.free(unsafe.Pointer(cTitle))
-	menu.PlatformPtr = uintptr(m)
+	menu.PlatformData = m
 	d.menus[m] = menu
 }
 
-func (d *driver) MenuItem(menu *webapp.Menu, tag int) *webapp.MenuItem {
-	if item := C.menuItemWithTag(C.CMenuPtr(menu.PlatformPtr), C.int(tag)); item != nil {
+func (d *driver) MenuItem(menu *webapp.Menu, id int) *webapp.MenuItem {
+	if item := C.menuItemWithID(menu.PlatformData.(C.CMenuPtr), C.int(id)); item != nil {
 		return d.toMenuItem(item)
 	}
 	return nil
 }
 
 func (d *driver) MenuItemAtIndex(menu *webapp.Menu, index int) *webapp.MenuItem {
-	if item := C.menuItemAtIndex(C.CMenuPtr(menu.PlatformPtr), C.int(index)); item != nil {
+	if item := C.menuItemAtIndex(menu.PlatformData.(C.CMenuPtr), C.int(index)); item != nil {
 		return d.toMenuItem(item)
 	}
 	return nil
@@ -42,7 +41,9 @@ func (d *driver) MenuItemAtIndex(menu *webapp.Menu, index int) *webapp.MenuItem 
 func (d *driver) toMenuItem(item C.CMenuItemPtr) *webapp.MenuItem {
 	info := C.menuItemInfo(item)
 	mi := &webapp.MenuItem{
-		Tag:     int(info.tag),
+		Owner:   d.menus[info.owner],
+		Index:   int(info.index),
+		ID:      int(info.id),
 		Title:   C.GoString(info.title),
 		SubMenu: d.menus[info.subMenu],
 	}
@@ -51,79 +52,78 @@ func (d *driver) toMenuItem(item C.CMenuItemPtr) *webapp.MenuItem {
 }
 
 func (d *driver) MenuInsertSeparator(menu *webapp.Menu, beforeIndex int) {
-	C.insertMenuItem(C.CMenuPtr(menu.PlatformPtr), C.newMenuSeparator(), C.int(beforeIndex))
+	C.insertMenuItem(menu.PlatformData.(C.CMenuPtr), C.newMenuSeparator(), C.int(beforeIndex))
 }
 
-func (d *driver) MenuInsertItem(menu *webapp.Menu, beforeIndex, tag int, title string, keyCode int, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
-	var keyCodeStr string
-	if keyCode != 0 {
-		mapping := keys.MappingForKeyCode(keyCode)
-		if mapping.KeyChar != 0 {
-			keyCodeStr = strings.ToLower(string(mapping.KeyChar))
-		}
-	}
+func (d *driver) MenuInsertItem(menu *webapp.Menu, beforeIndex, id int, title string, key *keys.Key, keyModifiers keys.Modifiers, validator func() bool, handler func()) {
 	cTitle := C.CString(title)
+	var keyCodeStr string
+	if key != nil {
+		keyCodeStr = key.MacEquiv
+	}
 	cKey := C.CString(keyCodeStr)
 	var needDelegate bool
 	var selector string
-	switch tag {
-	case webapp.MenuTagCutItem:
+	switch id {
+	case webapp.MenuIDCutItem:
 		selector = "cut:"
-	case webapp.MenuTagCopyItem:
+	case webapp.MenuIDCopyItem:
 		selector = "copy:"
-	case webapp.MenuTagPasteItem:
+	case webapp.MenuIDPasteItem:
 		selector = "paste:"
-	case webapp.MenuTagDeleteItem:
+	case webapp.MenuIDDeleteItem:
 		selector = "delete:"
-	case webapp.MenuTagSelectAllItem:
+	case webapp.MenuIDSelectAllItem:
 		selector = "selectAll:"
 	default:
 		selector = "handleMenuItem:"
 		needDelegate = true
 	}
 	cSelector := C.CString(selector)
-	mi := C.newMenuItem(C.int(tag), cTitle, cSelector, cKey, C.int(keyModifiers), C.bool(needDelegate))
+	mi := C.newMenuItem(C.int(id), cTitle, cSelector, cKey, C.int(keyModifiers), C.bool(needDelegate))
 	C.free(unsafe.Pointer(cSelector))
 	C.free(unsafe.Pointer(cKey))
 	C.free(unsafe.Pointer(cTitle))
-	C.insertMenuItem(C.CMenuPtr(menu.PlatformPtr), mi, C.int(beforeIndex))
-	d.menuItemValidators[tag] = validator
-	d.menuItemHandlers[tag] = handler
+	C.insertMenuItem(menu.PlatformData.(C.CMenuPtr), mi, C.int(beforeIndex))
+	d.menuItemValidators[id] = validator
+	d.menuItemHandlers[id] = handler
 }
 
-func (d *driver) MenuInsert(menu *webapp.Menu, beforeIndex int, subMenu *webapp.Menu) {
-	cTitle := C.CString(subMenu.Title)
-	mi := C.newMenuItem(C.int(subMenu.Tag), cTitle, handleMenuItemCStr, emptyCStr, 0, true)
+func (d *driver) MenuInsertMenu(menu *webapp.Menu, beforeIndex, id int, title string) *webapp.Menu {
+	cTitle := C.CString(title)
+	mi := C.newMenuItem(C.int(id), cTitle, handleMenuItemCStr, emptyCStr, 0, true)
 	C.free(unsafe.Pointer(cTitle))
-	C.setSubMenu(mi, C.CMenuPtr(subMenu.PlatformPtr))
-	C.insertMenuItem(C.CMenuPtr(menu.PlatformPtr), mi, C.int(beforeIndex))
+	subMenu := webapp.NewMenu(id, title)
+	C.setSubMenu(mi, subMenu.PlatformData.(C.CMenuPtr))
+	C.insertMenuItem(menu.PlatformData.(C.CMenuPtr), mi, C.int(beforeIndex))
+	return subMenu
 }
 
 func (d *driver) MenuRemove(menu *webapp.Menu, index int) {
-	C.removeMenuItem(C.CMenuPtr(menu.PlatformPtr), C.int(index))
+	C.removeMenuItem(menu.PlatformData.(C.CMenuPtr), C.int(index))
 }
 
 func (d *driver) MenuCount(menu *webapp.Menu) int {
-	return int(C.menuItemCount(C.CMenuPtr(menu.PlatformPtr)))
+	return int(C.menuItemCount(menu.PlatformData.(C.CMenuPtr)))
 }
 
 func (d *driver) MenuDispose(menu *webapp.Menu) {
-	p := C.CMenuPtr(menu.PlatformPtr)
+	p := menu.PlatformData.(C.CMenuPtr)
 	C.disposeMenu(p)
 	delete(d.menus, p)
 }
 
 //export validateMenuItemCallback
-func validateMenuItemCallback(tag int) bool {
-	if validator, ok := drv.menuItemValidators[tag]; ok && validator != nil {
+func validateMenuItemCallback(id int) bool {
+	if validator, ok := drv.menuItemValidators[id]; ok && validator != nil {
 		return validator()
 	}
 	return true
 }
 
 //export handleMenuItemCallback
-func handleMenuItemCallback(tag int) {
-	if handler, ok := drv.menuItemHandlers[tag]; ok && handler != nil {
+func handleMenuItemCallback(id int) {
+	if handler, ok := drv.menuItemHandlers[id]; ok && handler != nil {
 		handler()
 	}
 }
