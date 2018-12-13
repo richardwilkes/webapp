@@ -103,7 +103,7 @@ func (d *driver) MenuBarForWindow(wnd *webapp.Window) (*webapp.MenuBar, bool, bo
 }
 
 func (d *driver) MenuBarMenuAtIndex(bar *webapp.MenuBar, index int) *webapp.Menu {
-	if item := d.lookupMenuItem(bar.PlatformData.(*menuBar).bar, index, true); item != nil {
+	if item := d.lookupMenuItem(bar.PlatformData.(*menuBar).bar, index); item != nil {
 		return item.SubMenu
 	}
 	return nil
@@ -156,7 +156,7 @@ func (d *driver) MenuInit(menu *webapp.Menu) {
 }
 
 func (d *driver) MenuItemAtIndex(menu *webapp.Menu, index int) *webapp.MenuItem {
-	return d.lookupMenuItem(menu.PlatformData.(HMENU), index, true)
+	return d.lookupMenuItem(menu.PlatformData.(HMENU), index)
 }
 
 func (d *driver) lookupMenuItem(menu HMENU, index int) *webapp.MenuItem {
