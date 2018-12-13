@@ -24,13 +24,6 @@ func (d *driver) MenuInit(menu *webapp.Menu) {
 	d.menus[m] = menu
 }
 
-func (d *driver) MenuItem(menu *webapp.Menu, id int) *webapp.MenuItem {
-	if item := C.menuItemWithID(menu.PlatformData.(C.CMenuPtr), C.int(id)); item != nil {
-		return d.toMenuItem(item)
-	}
-	return nil
-}
-
 func (d *driver) MenuItemAtIndex(menu *webapp.Menu, index int) *webapp.MenuItem {
 	if item := C.menuItemAtIndex(menu.PlatformData.(C.CMenuPtr), C.int(index)); item != nil {
 		return d.toMenuItem(item)

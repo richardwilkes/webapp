@@ -33,24 +33,6 @@ CMenuItemPtr menuItemAtIndex(CMenuPtr menu, int index) {
 	return (index < 0 || index >= menuItemCount(menu)) ?  nil : [(NSMenu *)menu itemAtIndex:index];
 }
 
-CMenuItemPtr menuItemWithID(CMenuPtr menu, int cmdID) {
-	NSMenu *m = (NSMenu *)menu;
-	NSMenuItem *item = [m itemWithTag:cmdID];
-	if (item != nil) {
-		return (CMenuItemPtr)item;
-	}
-	for (int i = [m numberOfItems]; --i >= 0;) {
-		item = [m itemAtIndex:i];
-		if ([item hasSubmenu]) {
-			CMenuItemPtr result = menuItemWithID((CMenuPtr)[item submenu], cmdID);
-			if (result != nil) {
-				return result;
-			}
-		}
-	}
-	return nil;
-}
-
 void insertMenuItem(CMenuPtr menu, CMenuItemPtr item, int index) {
 	NSMenu *m = (NSMenu *)menu;
 	if (index < 0) {

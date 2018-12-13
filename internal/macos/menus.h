@@ -20,7 +20,6 @@ CMenuPtr newMenu(const char *title);
 void disposeMenu(CMenuPtr menu);
 int menuItemCount(CMenuPtr menu);
 CMenuItemPtr menuItemAtIndex(CMenuPtr menu, int index);
-CMenuItemPtr menuItemWithID(CMenuPtr menu, int cmdID);
 void insertMenuItem(CMenuPtr menu, CMenuItemPtr item, int index);
 void removeMenuItem(CMenuPtr menu, int index);
 

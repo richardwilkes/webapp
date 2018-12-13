@@ -17,7 +17,16 @@ func MenuBarForWindow(window *Window) (bar *MenuBar, isGlobal, isFirst bool) {
 // Menu returns the menu with the specified id anywhere in the menu bar and
 // its sub-menus.
 func (bar *MenuBar) Menu(id int) *Menu {
-	return driver.MenuBarMenu(bar, id)
+	for i := bar.Count() - 1; i >= 0; i-- {
+		menu := bar.MenuAtIndex(i)
+		if menu.ID == id {
+			return menu
+		}
+		if item := menu.Item(id); item != nil {
+			return item.SubMenu
+		}
+	}
+	return nil
 }
 
 // MenuAtIndex returns the menu at the specified index within the menu bar.
@@ -28,7 +37,21 @@ func (bar *MenuBar) MenuAtIndex(index int) *Menu {
 // MenuItem returns the menu item with the specified id anywhere in the menu
 // bar and its sub-menus.
 func (bar *MenuBar) MenuItem(id int) *MenuItem {
-	return driver.MenuBarMenuItem(bar, id)
+	for i := bar.Count() - 1; i >= 0; i-- {
+		menu := bar.MenuAtIndex(i)
+		if menu.ID == id {
+			return &MenuItem{
+				Index:   i,
+				ID:      id,
+				Title:   menu.Title,
+				SubMenu: menu,
+			}
+		}
+		if item := menu.Item(id); item != nil {
+			return item
+		}
+	}
+	return nil
 }
 
 // InsertMenu inserts a menu at the specified item index within this menu bar.

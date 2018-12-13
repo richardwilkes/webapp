@@ -26,17 +26,6 @@ func (d *driver) MenuBarForWindow(_ *webapp.Window) (*webapp.MenuBar, bool, bool
 	return d.menubar, true, first
 }
 
-func (d *driver) MenuBarMenu(bar *webapp.MenuBar, id int) *webapp.Menu {
-	if item := C.menuItemWithID(bar.PlatformData.(C.CMenuPtr), C.int(id)); item != nil {
-		if menu := C.subMenu(item); menu != nil {
-			if m, ok := d.menus[menu]; ok {
-				return m
-			}
-		}
-	}
-	return nil
-}
-
 func (d *driver) MenuBarMenuAtIndex(bar *webapp.MenuBar, index int) *webapp.Menu {
 	if item := C.menuItemAtIndex(bar.PlatformData.(C.CMenuPtr), C.int(index)); item != nil {
 		if menu := C.subMenu(item); menu != nil {
@@ -44,13 +33,6 @@ func (d *driver) MenuBarMenuAtIndex(bar *webapp.MenuBar, index int) *webapp.Menu
 				return m
 			}
 		}
-	}
-	return nil
-}
-
-func (d *driver) MenuBarMenuItem(bar *webapp.MenuBar, id int) *webapp.MenuItem {
-	if item := C.menuItemWithID(bar.PlatformData.(C.CMenuPtr), C.int(id)); item != nil {
-		return d.toMenuItem(item)
 	}
 	return nil
 }
@@ -64,7 +46,7 @@ func (d *driver) MenuBarInsert(bar *webapp.MenuBar, beforeIndex int, menu *webap
 	C.insertMenuItem(bar.PlatformData.(C.CMenuPtr), mi, C.int(beforeIndex))
 	switch menu.ID {
 	case webapp.MenuIDAppMenu:
-		if servicesMenu := d.MenuBarMenu(bar, webapp.MenuIDServicesMenu); servicesMenu != nil {
+		if servicesMenu := bar.Menu(webapp.MenuIDServicesMenu); servicesMenu != nil {
 			C.setServicesMenu(servicesMenu.PlatformData.(C.CMenuPtr))
 		}
 	case webapp.MenuIDWindowMenu:

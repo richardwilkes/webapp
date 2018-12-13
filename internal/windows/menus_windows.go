@@ -102,22 +102,11 @@ func (d *driver) MenuBarForWindow(wnd *webapp.Window) (*webapp.MenuBar, bool, bo
 	return d.menubars[m], false, false
 }
 
-func (d *driver) MenuBarMenu(bar *webapp.MenuBar, id int) *webapp.Menu {
-	if item := d.lookupMenuItem(bar.PlatformData.(*menuBar).bar, id, false); item != nil {
-		return item.SubMenu
-	}
-	return nil
-}
-
 func (d *driver) MenuBarMenuAtIndex(bar *webapp.MenuBar, index int) *webapp.Menu {
 	if item := d.lookupMenuItem(bar.PlatformData.(*menuBar).bar, index, true); item != nil {
 		return item.SubMenu
 	}
 	return nil
-}
-
-func (d *driver) MenuBarMenuItem(bar *webapp.MenuBar, id int) *webapp.MenuItem {
-	return d.lookupMenuItem(bar.PlatformData.(*menuBar).bar, id, false)
 }
 
 func (d *driver) MenuBarInsert(bar *webapp.MenuBar, beforeIndex int, menu *webapp.Menu) {
@@ -170,11 +159,7 @@ func (d *driver) MenuItemAtIndex(menu *webapp.Menu, index int) *webapp.MenuItem 
 	return d.lookupMenuItem(menu.PlatformData.(HMENU), index, true)
 }
 
-func (d *driver) MenuItem(menu *webapp.Menu, id int) *webapp.MenuItem {
-	return d.lookupMenuItem(menu.PlatformData.(HMENU), id, false)
-}
-
-func (d *driver) lookupMenuItem(menu HMENU, item int, byPosition bool) *webapp.MenuItem {
+func (d *driver) lookupMenuItem(menu HMENU, index int) *webapp.MenuItem {
 	var data [512]uint16
 	info := &MENUITEMINFOW{
 		Size:     uint32(unsafe.Sizeof(MENUITEMINFOW{})),
@@ -182,20 +167,20 @@ func (d *driver) lookupMenuItem(menu HMENU, item int, byPosition bool) *webapp.M
 		TypeData: uintptr(unsafe.Pointer(&data[0])),
 		CCH:      uint32(len(data) - 1),
 	}
-	if err := GetMenuItemInfoW(menu, uint32(item), byPosition, info); err != nil {
+	if err := GetMenuItemInfoW(menu, uint32(index), true, info); err != nil {
 		jot.Error(err)
 		return nil
 	}
-	switch info.Type {
-	case MFT_STRING:
-		return &webapp.MenuItem{
-			ID:      int(info.ID),
-			Title:   syscall.UTF16ToString(data[:info.CCH]),
-			SubMenu: d.menus[info.SubMenu],
-		}
-	default:
-		return &webapp.MenuItem{ID: int(info.ID)}
+	mi := &webapp.MenuItem{
+		Owner: d.menus[menu],
+		Index: index,
+		ID:    int(info.ID),
 	}
+	if info.Type == MFT_STRING {
+		mi.Title = strings.SplitN(syscall.UTF16ToString(data[:info.CCH]), "\t", 2)[0] // Remove any key accelerator info
+		mi.SubMenu = d.menus[info.SubMenu]
+	}
+	return mi
 }
 
 func (d *driver) MenuInsertSeparator(menu *webapp.Menu, beforeIndex int) {

@@ -56,7 +56,18 @@ func (menu *Menu) ItemAtIndex(index int) *MenuItem {
 // Item returns the menu item with the specified id anywhere in the menu and
 // and its sub-menus.
 func (menu *Menu) Item(id int) *MenuItem {
-	return driver.MenuItem(menu, id)
+	for i := menu.Count() - 1; i >= 0; i-- {
+		item := menu.ItemAtIndex(i)
+		if item.ID == id {
+			return item
+		}
+		if item.SubMenu != nil {
+			if item = item.SubMenu.Item(id); item != nil {
+				return item
+			}
+		}
+	}
+	return nil
 }
 
 // InsertSeparator inserts a menu separator at the specified item index within
