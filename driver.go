@@ -28,6 +28,7 @@ type Driver interface {
 
 	MenuInit(menu *Menu)
 	MenuItemAtIndex(menu *Menu, index int) *MenuItem
+	MenuItemAtIndexSetTitle(menu *Menu, index int, title string)
 	MenuInsertSeparator(menu *Menu, beforeIndex int)
 	MenuInsertItem(menu *Menu, beforeIndex, id int, title string, key *keys.Key, keyModifiers keys.Modifiers, validator func() bool, handler func())
 	MenuInsertMenu(menu *Menu, beforeIndex, id int, title string) *Menu

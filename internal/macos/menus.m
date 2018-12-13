@@ -81,6 +81,10 @@ void disposeMenuItem(CMenuItemPtr item) {
 	[(NSMenuItem *)item release];
 }
 
+void setMenuItemTitle(CMenuItemPtr item, const char *title) {
+	((NSMenuItem *)item).title = [NSString stringWithUTF8String:title];
+}
+
 CMenuItemInfo *menuItemInfo(CMenuItemPtr item) {
 	NSMenuItem *mitem = (NSMenuItem *)item;
 	CMenuItemInfo *info = (CMenuItemInfo *)calloc(1, sizeof(CMenuItemInfo));

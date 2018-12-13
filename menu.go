@@ -70,6 +70,20 @@ func (menu *Menu) Item(id int) *MenuItem {
 	return nil
 }
 
+// SetItemAtIndexTitle sets the title of the menu item at the specified index
+// within the menu.
+func (menu *Menu) SetItemAtIndexTitle(index int, title string) {
+	driver.MenuItemAtIndexSetTitle(menu, index, title)
+}
+
+// SetItemTitle sets the title of the menu item with the specified id anywhere
+// in the menu and its sub-menus.
+func (menu *Menu) SetItemTitle(id int, title string) {
+	if item := menu.Item(id); item != nil {
+		item.Owner.SetItemAtIndexTitle(item.Index, title)
+	}
+}
+
 // InsertSeparator inserts a menu separator at the specified item index within
 // this menu. Pass in a negative index to append to the end.
 func (menu *Menu) InsertSeparator(beforeIndex int) {

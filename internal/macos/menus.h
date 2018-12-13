@@ -28,6 +28,6 @@ CMenuItemPtr newMenuItem(int cmdID, const char *title, const char *selector, con
 CMenuPtr subMenu(CMenuItemPtr item);
 void setSubMenu(CMenuItemPtr item, CMenuPtr subMenu);
 void disposeMenuItem(CMenuItemPtr item);
-
+void setMenuItemTitle(CMenuItemPtr item, const char *title);
 CMenuItemInfo *menuItemInfo(CMenuItemPtr item);
 void disposeMenuItemInfo(CMenuItemInfo *info);

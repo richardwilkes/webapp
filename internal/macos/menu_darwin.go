@@ -31,6 +31,14 @@ func (d *driver) MenuItemAtIndex(menu *webapp.Menu, index int) *webapp.MenuItem 
 	return nil
 }
 
+func (d *driver) MenuItemAtIndexSetTitle(menu *webapp.Menu, index int, title string) {
+	if item := C.menuItemAtIndex(menu.PlatformData.(C.CMenuPtr), C.int(index)); item != nil {
+		cTitle := C.CString(title)
+		C.setMenuItemTitle(item, cTitle)
+		C.free(unsafe.Pointer(cTitle))
+	}
+}
+
 func (d *driver) toMenuItem(item C.CMenuItemPtr) *webapp.MenuItem {
 	info := C.menuItemInfo(item)
 	mi := &webapp.MenuItem{
