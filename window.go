@@ -66,6 +66,7 @@ func AllWindowsToFront() {
 func NewWindow(style StyleMask, bounds geom.Rect, title, url string) (*Window, error) {
 	window := &Window{
 		style:             style,
+		title:             title,
 		MayCloseCallback:  func() bool { return true },
 		WillCloseCallback: func() {},
 		GainedFocus:       func() {},
