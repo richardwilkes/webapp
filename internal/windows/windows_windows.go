@@ -36,6 +36,15 @@ func (d *driver) wndProc(wnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRE
 		}
 	case WM_DESTROY:
 		PostQuitMessage(0)
+	case WM_ACTIVATE:
+		if w, ok := d.windows[wnd]; ok {
+			if wparam&(WA_ACTIVE|WA_CLICKACTIVE) != 0 {
+				w.GainedFocus()
+			} else {
+				w.LostFocus()
+			}
+		}
+		return DefWindowProcW(wnd, msg, wparam, lparam)
 	default:
 		return DefWindowProcW(wnd, msg, wparam, lparam)
 	}

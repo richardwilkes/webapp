@@ -19,12 +19,14 @@ var (
 	destroyMenu                   = user32.NewProc("DestroyMenu")
 	destroyWindow                 = user32.NewProc("DestroyWindow")
 	drawMenuBar                   = user32.NewProc("DrawMenuBar")
+	enableWindow                  = user32.NewProc("EnableWindow")
 	enumDisplayDevicesW           = user32.NewProc("EnumDisplayDevicesW")
 	enumDisplayMonitors           = user32.NewProc("EnumDisplayMonitors")
 	enumDisplaySettingsExW        = user32.NewProc("EnumDisplaySettingsExW")
 	enumWindows                   = user32.NewProc("EnumWindows")
 	getClientRect                 = user32.NewProc("GetClientRect")
 	getDpiForSystem               = user32.NewProc("GetDpiForSystem")
+	getFocus                      = user32.NewProc("GetFocus")
 	getForegroundWindow           = user32.NewProc("GetForegroundWindow")
 	getMenu                       = user32.NewProc("GetMenu")
 	getMenuItemCount              = user32.NewProc("GetMenuItemCount")
@@ -32,6 +34,7 @@ var (
 	getMonitorInfoW               = user32.NewProc("GetMonitorInfoW")
 	getSystemMetrics              = user32.NewProc("GetSystemMetrics")
 	getWindowRect                 = user32.NewProc("GetWindowRect")
+	getWindowTextW                = user32.NewProc("GetWindowTextW")
 	insertMenuItemW               = user32.NewProc("InsertMenuItemW")
 	loadCursorW                   = user32.NewProc("LoadCursorW")
 	moveWindow                    = user32.NewProc("MoveWindow")
@@ -39,6 +42,8 @@ var (
 	registerClassExW              = user32.NewProc("RegisterClassExW")
 	registerWindowMessageW        = user32.NewProc("RegisterWindowMessageW")
 	setActiveWindow               = user32.NewProc("SetActiveWindow")
+	setFocus                      = user32.NewProc("SetFocus")
+	setForegroundWindow           = user32.NewProc("SetForegroundWindow")
 	setMenu                       = user32.NewProc("SetMenu")
 	setMenuItemInfoW              = user32.NewProc("SetMenuItemInfoW")
 	setProcessDpiAwarenessContext = user32.NewProc("SetProcessDpiAwarenessContext")
@@ -140,6 +145,12 @@ func DrawMenuBar(hwnd HWND) error {
 	return nil
 }
 
+// EnableWindow https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enablewindow
+func EnableWindow(hwnd HWND, enable bool) bool {
+	ret, _, _ := enableWindow.Call(uintptr(hwnd), uintptr(toBOOL(enable)))
+	return ret != 0
+}
+
 // EnumDisplayDevicesW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enumdisplaydevicesw
 func EnumDisplayDevicesW(device string, devNum DWORD, displayDevice *DISPLAY_DEVICEW, flags DWORD) error {
 	devstr, err := toUTF16PtrOrNilOnEmpty(device)
@@ -208,6 +219,12 @@ func GetDpiForSystem() int {
 	return int(ret)
 }
 
+// GetFocus https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getfocus
+func GetFocus() HWND {
+	ret, _, _ := getFocus.Call()
+	return HWND(ret)
+}
+
 // GetForegroundWindow https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getforegroundwindow
 func GetForegroundWindow() HWND {
 	ret, _, _ := getForegroundWindow.Call()
@@ -257,6 +274,13 @@ func GetWindowRect(hwnd HWND, rect *RECT) error {
 		return errs.NewWithCause(getWindowRect.Name, err)
 	}
 	return nil
+}
+
+// GetWindowTextW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getwindowtextw
+func GetWindowTextW(hwnd HWND) string {
+	var buffer [512]uint16
+	getWindowTextW.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&buffer[0])), uintptr(len(buffer)-1))
+	return syscall.UTF16ToString(buffer[:])
 }
 
 // LoadCursorW https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-loadcursorw
@@ -336,6 +360,21 @@ func SetActiveWindow(hwnd HWND) error {
 		return errs.NewWithCause(setActiveWindow.Name, err)
 	}
 	return nil
+}
+
+// SetFocus https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setfocus
+func SetFocus(hwnd HWND) (HWND, error) {
+	ret, _, err := setFocus.Call(uintptr(hwnd))
+	if ret == NULL {
+		return NULL, errs.NewWithCause(setFocus.Name, err)
+	}
+	return HWND(ret), nil
+}
+
+// SetForegroundWindow https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setforegroundwindow
+func SetForegroundWindow(hwnd HWND) bool {
+	ret, _, _ := setForegroundWindow.Call(uintptr(hwnd))
+	return ret != 0
 }
 
 // SetMenu https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setmenu

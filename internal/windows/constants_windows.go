@@ -563,3 +563,10 @@ const (
 	FALT      = 0x10
 	FLAST     = 0x80
 )
+
+// https://docs.microsoft.com/en-us/windows/desktop/inputdev/wm-activate
+const (
+	WA_INACTIVE    = 0
+	WA_ACTIVE      = 1
+	WA_CLICKACTIVE = 2
+)
