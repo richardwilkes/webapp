@@ -14,7 +14,7 @@ import (
 // although other platforms can use it if desired.
 func NewAppMenu(aboutHandler, prefsHandler func()) *webapp.Menu {
 	menu := webapp.NewMenu(webapp.MenuIDAppMenu, cmdline.AppName)
-	menu.InsertItem(-1, webapp.MenuIDAboutItem, fmt.Sprintf(i18n.Text("About %s"), cmdline.AppName), nil, 0, nil, aboutHandler)
+	menu.InsertItem(-1, webapp.MenuIDAboutItem, fmt.Sprintf(i18n.Text("About %s"), cmdline.AppName), nil, 0, func() bool { return aboutHandler != nil }, aboutHandler)
 	if prefsHandler != nil {
 		menu.InsertSeparator(-1)
 		menu.InsertItem(-1, webapp.MenuIDPreferencesItem, i18n.Text("Preferences…"), keys.Comma, keys.PlatformMenuModifier(), nil, prefsHandler)
