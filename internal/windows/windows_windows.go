@@ -18,11 +18,13 @@ func (d *driver) wndProc(wnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRE
 				mi.handler()
 			}
 		}
+		return 0
 	case WM_SIZE:
 		if w, ok := d.windows[wnd]; ok {
 			size := d.WindowContentSize(w)
-			SetWindowPos(HWND(unsafe.Pointer(w.Browser.GetHost().GetWindowHandle())), 0, 0, 0, int32(size.Width), int32(size.Height), SWP_NOZORDER)
+			SetWindowPos(HWND(w.Browser.GetHost().GetWindowHandle()), 0, 0, 0, int32(size.Width), int32(size.Height), SWP_NOZORDER)
 		}
+		return 0
 	case WM_CLOSE:
 		if w, ok := d.windows[wnd]; ok {
 			w.AttemptClose()
@@ -34,17 +36,22 @@ func (d *driver) wndProc(wnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRE
 		if len(d.windows) == 0 && webapp.QuitAfterLastWindowClosedCallback() {
 			webapp.AttemptQuit()
 		}
+		return 0
 	case WM_DESTROY:
 		PostQuitMessage(0)
+		return 0
 	case WM_ACTIVATE:
 		if w, ok := d.windows[wnd]; ok {
 			if wparam&(WA_ACTIVE|WA_CLICKACTIVE) != 0 {
 				w.GainedFocus()
+				if child := GetWindow(wnd, GW_CHILD); child != NULL {
+					SetFocus(child)
+				}
+				return 0
 			} else {
 				w.LostFocus()
 			}
 		}
-		return DefWindowProcW(wnd, msg, wparam, lparam)
 	case WM_INITMENUPOPUP:
 		if menu, ok := d.menus[HMENU(wparam)]; ok {
 			for i := menu.Count() - 1; i >= 0; i-- {
@@ -59,11 +66,8 @@ func (d *driver) wndProc(wnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRE
 				EnableMenuItem(HMENU(wparam), i, state|MF_BYPOSITION)
 			}
 		}
-		return DefWindowProcW(wnd, msg, wparam, lparam)
-	default:
-		return DefWindowProcW(wnd, msg, wparam, lparam)
 	}
-	return 0
+	return DefWindowProcW(wnd, msg, wparam, lparam)
 }
 
 func (d *driver) KeyWindow() *webapp.Window {
