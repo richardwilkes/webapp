@@ -19,11 +19,13 @@ var (
 	destroyMenu                   = user32.NewProc("DestroyMenu")
 	destroyWindow                 = user32.NewProc("DestroyWindow")
 	drawMenuBar                   = user32.NewProc("DrawMenuBar")
+	enableMenuItem                = user32.NewProc("EnableMenuItem")
 	enableWindow                  = user32.NewProc("EnableWindow")
 	enumDisplayDevicesW           = user32.NewProc("EnumDisplayDevicesW")
 	enumDisplayMonitors           = user32.NewProc("EnumDisplayMonitors")
 	enumDisplaySettingsExW        = user32.NewProc("EnumDisplaySettingsExW")
 	enumWindows                   = user32.NewProc("EnumWindows")
+	getActiveWindow               = user32.NewProc("GetActiveWindow")
 	getClientRect                 = user32.NewProc("GetClientRect")
 	getDpiForSystem               = user32.NewProc("GetDpiForSystem")
 	getFocus                      = user32.NewProc("GetFocus")
@@ -33,6 +35,7 @@ var (
 	getMenuItemInfoW              = user32.NewProc("GetMenuItemInfoW")
 	getMonitorInfoW               = user32.NewProc("GetMonitorInfoW")
 	getSystemMetrics              = user32.NewProc("GetSystemMetrics")
+	getWindow                     = user32.NewProc("GetWindow")
 	getWindowRect                 = user32.NewProc("GetWindowRect")
 	getWindowTextW                = user32.NewProc("GetWindowTextW")
 	insertMenuItemW               = user32.NewProc("InsertMenuItemW")
@@ -145,6 +148,12 @@ func DrawMenuBar(hwnd HWND) error {
 	return nil
 }
 
+// EnableMenuItem https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enablemenuitem
+func EnableMenuItem(hmenu HMENU, idEnableItem, enable int) int {
+	ret, _, _ := enableMenuItem.Call(uintptr(hmenu), uintptr(idEnableItem), uintptr(enable))
+	return int(ret)
+}
+
 // EnableWindow https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-enablewindow
 func EnableWindow(hwnd HWND, enable bool) bool {
 	ret, _, _ := enableWindow.Call(uintptr(hwnd), uintptr(toBOOL(enable)))
@@ -203,6 +212,12 @@ func EnumWindows(callback func(hwnd HWND, data LPARAM) BOOL, param LPARAM) error
 		return errs.NewWithCause(enumWindows.Name, err)
 	}
 	return nil
+}
+
+// GetActiveWindow https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getactivewindow
+func GetActiveWindow() HWND {
+	ret, _, _ := getActiveWindow.Call()
+	return HWND(ret)
 }
 
 // GetClientRect https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getclientrect
@@ -266,6 +281,12 @@ func GetMonitorInfoW(monitor HMONITOR, pmi *MONITORINFO) error {
 func GetSystemMetrics(index int) int {
 	ret, _, _ := getSystemMetrics.Call(uintptr(index))
 	return int(ret)
+}
+
+// GetWindow https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getwindow
+func GetWindow(hwnd HWND, cmd int) HWND {
+	ret, _, _ := getWindow.Call(uintptr(hwnd), uintptr(cmd))
+	return HWND(ret)
 }
 
 // GetWindowRect https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getwindowrect

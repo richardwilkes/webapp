@@ -45,6 +45,21 @@ func (d *driver) wndProc(wnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRE
 			}
 		}
 		return DefWindowProcW(wnd, msg, wparam, lparam)
+	case WM_INITMENUPOPUP:
+		if menu, ok := d.menus[HMENU(wparam)]; ok {
+			for i := menu.Count() - 1; i >= 0; i-- {
+				state := MF_ENABLED
+				if item := menu.ItemAtIndex(i); item.ID != 0 {
+					if info, exists := d.menuitems[item.ID]; exists && info.validator != nil {
+						if !info.validator() {
+							state = MF_DISABLED
+						}
+					}
+				}
+				EnableMenuItem(HMENU(wparam), i, state|MF_BYPOSITION)
+			}
+		}
+		return DefWindowProcW(wnd, msg, wparam, lparam)
 	default:
 		return DefWindowProcW(wnd, msg, wparam, lparam)
 	}

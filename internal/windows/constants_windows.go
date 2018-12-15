@@ -87,6 +87,9 @@ const (
 const (
 	MF_BYCOMMAND  = 0x00000000
 	MF_BYPOSITION = 0x00000400
+	MF_ENABLED    = 0x00000000
+	MF_GRAYED     = 0x00000001
+	MF_DISABLED   = 0x00000002
 )
 
 // https://docs.microsoft.com/en-us/windows/desktop/api/winuser/ns-winuser-tagmenuiteminfow
@@ -566,7 +569,18 @@ const (
 
 // https://docs.microsoft.com/en-us/windows/desktop/inputdev/wm-activate
 const (
-	WA_INACTIVE    = 0
-	WA_ACTIVE      = 1
-	WA_CLICKACTIVE = 2
+	WA_INACTIVE = iota
+	WA_ACTIVE
+	WA_CLICKACTIVE
+)
+
+// https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-getwindow
+const (
+	GW_HWNDFIRST = iota
+	GW_HWNDLAST
+	GW_HWNDNEXT
+	GW_HWNDPREV
+	GW_OWNER
+	GW_CHILD
+	GW_ENABLEDPOPUP
 )
