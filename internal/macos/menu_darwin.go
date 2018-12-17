@@ -109,9 +109,10 @@ func (d *driver) MenuCount(menu *webapp.Menu) int {
 }
 
 func (d *driver) MenuDispose(menu *webapp.Menu) {
-	p := menu.PlatformData.(C.CMenuPtr)
-	C.disposeMenu(p)
-	delete(d.menus, p)
+	if p, ok := menu.PlatformData.(C.CMenuPtr); ok {
+		C.disposeMenu(p)
+		delete(d.menus, p)
+	}
 }
 
 //export validateMenuItemCallback
