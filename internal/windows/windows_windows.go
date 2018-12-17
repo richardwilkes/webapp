@@ -48,9 +48,8 @@ func (d *driver) wndProc(wnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRE
 					SetFocus(child)
 				}
 				return 0
-			} else {
-				w.LostFocus()
 			}
+			w.LostFocus()
 		}
 	case WM_INITMENUPOPUP:
 		if menu, ok := d.menus[HMENU(wparam)]; ok {
