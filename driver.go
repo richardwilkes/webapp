@@ -13,7 +13,7 @@ type Driver interface {
 	PrepareForStart() error
 	PrepareForEventLoop()
 	RunEventLoop()
-	OnPreKeyEvent(event *cef.KeyEvent, is_keyboard_shortcut *int32) int32
+	OnPreKeyEvent(event *cef.KeyEvent, isKeyboardShortcut *int32) int32
 	OnKeyEvent(event *cef.KeyEvent) int32
 
 	AttemptQuit()
