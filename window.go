@@ -20,10 +20,10 @@ const (
 
 // Window holds window information.
 type Window struct {
-	PlatformPtr uintptr
-	Browser     *cef.Browser
-	style       StyleMask
-	title       string
+	PlatformData interface{}
+	Browser      *cef.Browser
+	style        StyleMask
+	title        string
 	// MayCloseCallback is called when the user has requested that the window
 	// be closed. Return true to permit it, false to cancel the operation.
 	// Defaults to always returning true.

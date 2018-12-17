@@ -72,34 +72,38 @@ func (d *driver) refreshMenuKeysForMenu(bar *webapp.MenuBar, m *webapp.Menu) {
 
 func (d *driver) menuBarForWindow(wnd *webapp.Window) *webapp.MenuBar {
 	if wnd != nil {
-		if m := GetMenu(HWND(wnd.PlatformPtr)); m != NULL {
-			return d.menubars[m]
+		if w, ok := wnd.PlatformData.(HWND); ok {
+			if m := GetMenu(w); m != NULL {
+				return d.menubars[m]
+			}
 		}
 	}
 	return nil
 }
 
 func (d *driver) MenuBarForWindow(wnd *webapp.Window) (*webapp.MenuBar, bool, bool) {
-	w := HWND(wnd.PlatformPtr)
-	m := GetMenu(w)
-	if m == NULL {
-		var err error
-		if m, err = CreateMenu(); err != nil {
-			jot.Error(err)
-			return nil, false, false
+	if w, ok := wnd.PlatformData.(HWND); ok {
+		m := GetMenu(w)
+		if m == NULL {
+			var err error
+			if m, err = CreateMenu(); err != nil {
+				jot.Error(err)
+				return nil, false, false
+			}
+			if err := SetMenu(w, m); err != nil {
+				jot.Error(err)
+				return nil, false, false
+			}
+			b := &menuBar{
+				bar:      m,
+				menuKeys: make(map[string]*menuItem),
+			}
+			d.menubars[m] = &webapp.MenuBar{PlatformData: b}
+			b.markForUpdate()
 		}
-		if err := SetMenu(w, m); err != nil {
-			jot.Error(err)
-			return nil, false, false
-		}
-		b := &menuBar{
-			bar:      m,
-			menuKeys: make(map[string]*menuItem),
-		}
-		d.menubars[m] = &webapp.MenuBar{PlatformData: b}
-		b.markForUpdate()
+		return d.menubars[m], false, false
 	}
-	return d.menubars[m], false, false
+	return nil, false, false
 }
 
 func (d *driver) MenuBarMenuAtIndex(bar *webapp.MenuBar, index int) *webapp.Menu {
