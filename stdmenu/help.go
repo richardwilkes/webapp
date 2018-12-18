@@ -15,10 +15,12 @@ func NewHelpMenu(aboutHandler func(), includeDevTools bool) *webapp.Menu {
 	if runtime.GOOS != "darwin" {
 		menu.InsertItem(-1, webapp.MenuIDAboutItem, fmt.Sprintf(i18n.Text("About %s"), cmdline.AppName), nil, 0, nil, aboutHandler)
 	}
-	if menu.Count() > 0 {
-		menu.InsertSeparator(-1)
+	if includeDevTools {
+		if menu.Count() > 0 {
+			menu.InsertSeparator(-1)
+		}
+		menu.InsertItem(-1, webapp.MenuIDDevToolsItem, i18n.Text("Toggle Development Tools"), nil, 0, validateToggleDevTools, toggleDevTools)
 	}
-	menu.InsertItem(-1, webapp.MenuIDDevToolsItem, i18n.Text("Toggle Development Tools"), nil, 0, validateToggleDevTools, toggleDevTools)
 	return menu
 }
 
