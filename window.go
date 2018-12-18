@@ -2,6 +2,8 @@ package webapp
 
 import (
 	"github.com/richardwilkes/cef/cef"
+	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 )
 
@@ -81,6 +83,35 @@ func NewWindow(style StyleMask, bounds geom.Rect, title, url string) (*Window, e
 	window.Browser = cef.BrowserHostCreateBrowserSync(cef.NewWindowInfo(driver.WindowBrowserParent(window), bounds), newClient(), url, cef.NewBrowserSettings(), nil)
 	windowList = append(windowList, window)
 	return window, nil
+}
+
+func (window *Window) ToggleDevTools() {
+	if window.Browser != nil {
+		host := window.Browser.GetHost()
+		if host.HasDevTools() != 0 {
+			host.CloseDevTools()
+		} else {
+			wnd := &Window{
+				style:             StdWindowMask,
+				title:             i18n.Text("Development Tools"),
+				MayCloseCallback:  func() bool { return true },
+				WillCloseCallback: func() {},
+				GainedFocus:       func() {},
+				LostFocus:         func() {},
+			}
+			bounds := MainDisplay().UsableBounds
+			bounds.Width /= 2
+			if err := driver.WindowInit(wnd, StdWindowMask, bounds, wnd.title); err != nil {
+				jot.Error(err)
+				return
+			}
+			bounds.Size = wnd.WindowContentSize()
+			bounds.X = 0
+			bounds.Y = 0
+			host.ShowDevTools(cef.NewWindowInfo(driver.WindowBrowserParent(wnd), bounds), newClient(), cef.NewBrowserSettings(), nil)
+			wnd.ToFront()
+		}
+	}
 }
 
 func (window *Window) String() string {

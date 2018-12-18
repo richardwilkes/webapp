@@ -3,7 +3,11 @@
 #import "windows.h"
 
 CWindowPtr getKeyWindow() {
-	return [NSApp keyWindow];
+	CWindowPtr wnd = [NSApp keyWindow];
+	if (!wnd) {
+		wnd = [NSApp mainWindow];
+	}
+	return wnd;
 }
 
 void bringAllWindowsToFront() {

@@ -14,6 +14,7 @@ const (
 	MenuIDHelpMenu
 	MenuIDServicesMenu
 	MenuIDAboutItem
+	MenuIDDevToolsItem
 	MenuIDPreferencesItem
 	MenuIDQuitItem
 	MenuIDCutItem

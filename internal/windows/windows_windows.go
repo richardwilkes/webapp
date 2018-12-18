@@ -20,7 +20,7 @@ func (d *driver) wndProc(wnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRE
 		}
 		return 0
 	case WM_SIZE:
-		if w, ok := d.windows[wnd]; ok {
+		if w, ok := d.windows[wnd]; ok && w.Browser != nil {
 			size := d.WindowContentSize(w)
 			SetWindowPos(HWND(w.Browser.GetHost().GetWindowHandle()), 0, 0, 0, int32(size.Width), int32(size.Height), SWP_NOZORDER)
 		}
