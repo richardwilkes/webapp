@@ -70,14 +70,14 @@ func (c *client) GetRequestHandler(self *cef.Client) *cef.RequestHandler {
 	return nil
 }
 
-func (c *client) OnProcessMessageReceived(self *cef.Client, browser *cef.Browser, source_process cef.ProcessID, message *cef.ProcessMessage) int32 {
+func (c *client) OnProcessMessageReceived(self *cef.Client, browser *cef.Browser, sourceProcess cef.ProcessID, message *cef.ProcessMessage) int32 {
 	return 0
 }
 
-func (c *client) OnPreKeyEvent(self *cef.KeyboardHandler, browser *cef.Browser, event *cef.KeyEvent, os_event unsafe.Pointer, is_keyboard_shortcut *int32) int32 {
-	return driver.OnPreKeyEvent(event, is_keyboard_shortcut)
+func (c *client) OnPreKeyEvent(self *cef.KeyboardHandler, browser *cef.Browser, event *cef.KeyEvent, osEvent unsafe.Pointer, isKeyboardShortcut *int32) int32 {
+	return driver.OnPreKeyEvent(event, isKeyboardShortcut)
 }
 
-func (c *client) OnKeyEvent(self *cef.KeyboardHandler, browser *cef.Browser, event *cef.KeyEvent, os_event unsafe.Pointer) int32 {
+func (c *client) OnKeyEvent(self *cef.KeyboardHandler, browser *cef.Browser, event *cef.KeyEvent, osEvent unsafe.Pointer) int32 {
 	return driver.OnKeyEvent(event)
 }

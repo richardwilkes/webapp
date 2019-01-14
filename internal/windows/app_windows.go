@@ -28,7 +28,7 @@ var drv = &driver{
 }
 
 // Driver returns the Windows implementation of the driver.
-func Driver() *driver {
+func Driver() webapp.Driver {
 	return drv
 }
 

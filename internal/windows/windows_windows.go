@@ -20,7 +20,7 @@ func (d *driver) wndProc(wnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRE
 		}
 		return 0
 	case WM_SIZE:
-		if w, ok := d.windows[wnd]; ok {
+		if w, ok := d.windows[wnd]; ok && w.Browser != nil {
 			size := d.WindowContentSize(w)
 			SetWindowPos(HWND(w.Browser.GetHost().GetWindowHandle()), 0, 0, 0, int32(size.Width), int32(size.Height), SWP_NOZORDER)
 		}
@@ -48,9 +48,8 @@ func (d *driver) wndProc(wnd HWND, msg uint32, wparam WPARAM, lparam LPARAM) LRE
 					SetFocus(child)
 				}
 				return 0
-			} else {
-				w.LostFocus()
 			}
+			w.LostFocus()
 		}
 	case WM_INITMENUPOPUP:
 		if menu, ok := d.menus[HMENU(wparam)]; ok {
@@ -89,11 +88,15 @@ func (d *driver) BringAllWindowsToFront() {
 		after := HWND_TOP
 		flags := uint32(SWP_NOMOVE | SWP_NOSIZE)
 		if i != 0 {
-			flags |= SWP_NOACTIVATE
-			after = HWND(list[i-1].PlatformPtr)
+			if w, ok := list[i-1].PlatformData.(HWND); ok {
+				flags |= SWP_NOACTIVATE
+				after = w
+			}
 		}
-		if err := SetWindowPos(HWND(one.PlatformPtr), after, 0, 0, 0, 0, flags); err != nil {
-			jot.Error(err)
+		if w, ok := one.PlatformData.(HWND); ok {
+			if err := SetWindowPos(w, after, 0, 0, 0, 0, flags); err != nil {
+				jot.Error(err)
+			}
 		}
 	}
 }
@@ -103,47 +106,57 @@ func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds g
 	if err != nil {
 		return err
 	}
-	wnd.PlatformPtr = uintptr(w)
+	wnd.PlatformData = w
 	d.windows[w] = wnd
 	return nil
 }
 
 func (d *driver) WindowBrowserParent(wnd *webapp.Window) unsafe.Pointer {
-	return unsafe.Pointer(wnd.PlatformPtr)
+	if w, ok := wnd.PlatformData.(HWND); ok {
+		return unsafe.Pointer(w)
+	}
+	return nil
 }
 
 func (d *driver) WindowClose(wnd *webapp.Window) {
 	wnd.WillCloseCallback()
-	hwnd := HWND(wnd.PlatformPtr)
-	if err := DestroyWindow(hwnd); err != nil {
-		jot.Error(err)
+	if w, ok := wnd.PlatformData.(HWND); ok {
+		if err := DestroyWindow(w); err != nil {
+			jot.Error(err)
+		}
+		delete(d.windows, w)
 	}
-	delete(d.windows, hwnd)
 }
 
 func (d *driver) WindowSetTitle(wnd *webapp.Window, title string) {
-	if err := SetWindowTextW(HWND(wnd.PlatformPtr), title); err != nil {
-		jot.Error(err)
+	if w, ok := wnd.PlatformData.(HWND); ok {
+		if err := SetWindowTextW(w, title); err != nil {
+			jot.Error(err)
+		}
 	}
 }
 
 func (d *driver) WindowBounds(wnd *webapp.Window) geom.Rect {
-	var rect RECT
-	if err := GetWindowRect(HWND(wnd.PlatformPtr), &rect); err != nil {
-		jot.Error(err)
-	}
 	var bounds geom.Rect
-	bounds.X = float64(rect.Left)
-	bounds.Y = float64(rect.Top)
-	bounds.Width = float64(rect.Right - rect.Left)
-	bounds.Height = float64(rect.Bottom - rect.Top)
+	if w, ok := wnd.PlatformData.(HWND); ok {
+		var rect RECT
+		if err := GetWindowRect(w, &rect); err != nil {
+			jot.Error(err)
+		}
+		bounds.X = float64(rect.Left)
+		bounds.Y = float64(rect.Top)
+		bounds.Width = float64(rect.Right - rect.Left)
+		bounds.Height = float64(rect.Bottom - rect.Top)
+	}
 	return bounds
 }
 
 func (d *driver) WindowContentSize(wnd *webapp.Window) geom.Size {
 	var rect RECT
-	if err := GetClientRect(HWND(wnd.PlatformPtr), &rect); err != nil {
-		jot.Error(err)
+	if w, ok := wnd.PlatformData.(HWND); ok {
+		if err := GetClientRect(w, &rect); err != nil {
+			jot.Error(err)
+		}
 	}
 	return geom.Size{
 		Width:  float64(rect.Right - rect.Left),
@@ -152,24 +165,31 @@ func (d *driver) WindowContentSize(wnd *webapp.Window) geom.Size {
 }
 
 func (d *driver) WindowSetBounds(wnd *webapp.Window, bounds geom.Rect) {
-	if err := MoveWindow(HWND(wnd.PlatformPtr), int32(bounds.X), int32(bounds.Y), int32(bounds.Width), int32(bounds.Height), true); err != nil {
-		jot.Error(err)
+	if w, ok := wnd.PlatformData.(HWND); ok {
+		if err := MoveWindow(w, int32(bounds.X), int32(bounds.Y), int32(bounds.Width), int32(bounds.Height), true); err != nil {
+			jot.Error(err)
+		}
 	}
 }
 
 func (d *driver) WindowToFront(wnd *webapp.Window) {
-	w := HWND(wnd.PlatformPtr)
-	ShowWindow(w, SW_SHOWNORMAL)
-	DrawMenuBar(w)
-	if err := SetActiveWindow(w); err != nil {
-		jot.Error(err)
+	if w, ok := wnd.PlatformData.(HWND); ok {
+		ShowWindow(w, SW_SHOWNORMAL)
+		DrawMenuBar(w)
+		if err := SetActiveWindow(w); err != nil {
+			jot.Error(err)
+		}
 	}
 }
 
 func (d *driver) WindowMinimize(wnd *webapp.Window) {
-	ShowWindow(HWND(wnd.PlatformPtr), SW_MINIMIZE)
+	if w, ok := wnd.PlatformData.(HWND); ok {
+		ShowWindow(w, SW_MINIMIZE)
+	}
 }
 
 func (d *driver) WindowZoom(wnd *webapp.Window) {
-	ShowWindow(HWND(wnd.PlatformPtr), SW_MAXIMIZE)
+	if w, ok := wnd.PlatformData.(HWND); ok {
+		ShowWindow(w, SW_MAXIMIZE)
+	}
 }

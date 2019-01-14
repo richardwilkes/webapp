@@ -18,7 +18,6 @@ import (
 )
 
 var (
-	_ webapp.Driver                  = &driver{}
 	_ webapp.AppVisibilityController = &driver{}
 )
 
@@ -38,7 +37,7 @@ var drv = &driver{
 }
 
 // Driver returns the macOS implementation of the driver.
-func Driver() *driver {
+func Driver() webapp.Driver {
 	return drv
 }
 

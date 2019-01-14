@@ -25,53 +25,71 @@ func (d *driver) WindowInit(wnd *webapp.Window, style webapp.StyleMask, bounds g
 	cTitle := C.CString(title)
 	w := C.newWindow(C.int(style), C.double(bounds.X), C.double(bounds.Y), C.double(bounds.Width), C.double(bounds.Height), cTitle)
 	C.free(unsafe.Pointer(cTitle))
-	wnd.PlatformPtr = uintptr(w)
+	wnd.PlatformData = w
 	d.windows[w] = wnd
 	return nil
 }
 
 func (d *driver) WindowBrowserParent(wnd *webapp.Window) unsafe.Pointer {
-	return unsafe.Pointer(C.contentView(C.CWindowPtr(wnd.PlatformPtr)))
+	if w, ok := wnd.PlatformData.(C.CWindowPtr); ok {
+		return unsafe.Pointer(C.contentView(w))
+	}
+	return nil
 }
 
 func (d *driver) WindowClose(wnd *webapp.Window) {
-	p := C.CWindowPtr(wnd.PlatformPtr)
-	C.closeWindow(p)
-	delete(d.windows, p)
+	if w, ok := wnd.PlatformData.(C.CWindowPtr); ok {
+		C.closeWindow(w)
+		delete(d.windows, w)
+	}
 }
 
 func (d *driver) WindowSetTitle(wnd *webapp.Window, title string) {
-	cTitle := C.CString(title)
-	C.setWindowTitle(C.CWindowPtr(wnd.PlatformPtr), cTitle)
-	C.free(unsafe.Pointer(cTitle))
+	if w, ok := wnd.PlatformData.(C.CWindowPtr); ok {
+		cTitle := C.CString(title)
+		C.setWindowTitle(w, cTitle)
+		C.free(unsafe.Pointer(cTitle))
+	}
 }
 
 func (d *driver) WindowBounds(wnd *webapp.Window) geom.Rect {
 	var bounds geom.Rect
-	C.getWindowBounds(C.CWindowPtr(wnd.PlatformPtr), (*C.double)(&bounds.X), (*C.double)(&bounds.Y), (*C.double)(&bounds.Width), (*C.double)(&bounds.Height))
+	if w, ok := wnd.PlatformData.(C.CWindowPtr); ok {
+		C.getWindowBounds(w, (*C.double)(&bounds.X), (*C.double)(&bounds.Y), (*C.double)(&bounds.Width), (*C.double)(&bounds.Height))
+	}
 	return bounds
 }
 
 func (d *driver) WindowContentSize(wnd *webapp.Window) geom.Size {
 	var size geom.Size
-	C.getWindowContentSize(C.CWindowPtr(wnd.PlatformPtr), (*C.double)(&size.Width), (*C.double)(&size.Height))
+	if w, ok := wnd.PlatformData.(C.CWindowPtr); ok {
+		C.getWindowContentSize(w, (*C.double)(&size.Width), (*C.double)(&size.Height))
+	}
 	return size
 }
 
 func (d *driver) WindowSetBounds(wnd *webapp.Window, bounds geom.Rect) {
-	C.setWindowBounds(C.CWindowPtr(wnd.PlatformPtr), C.double(bounds.X), C.double(bounds.Y), C.double(bounds.Width), C.double(bounds.Height))
+	if w, ok := wnd.PlatformData.(C.CWindowPtr); ok {
+		C.setWindowBounds(w, C.double(bounds.X), C.double(bounds.Y), C.double(bounds.Width), C.double(bounds.Height))
+	}
 }
 
 func (d *driver) WindowToFront(wnd *webapp.Window) {
-	C.bringWindowToFront(C.CWindowPtr(wnd.PlatformPtr))
+	if w, ok := wnd.PlatformData.(C.CWindowPtr); ok {
+		C.bringWindowToFront(w)
+	}
 }
 
 func (d *driver) WindowMinimize(wnd *webapp.Window) {
-	C.minimizeWindow(C.CWindowPtr(wnd.PlatformPtr))
+	if w, ok := wnd.PlatformData.(C.CWindowPtr); ok {
+		C.minimizeWindow(w)
+	}
 }
 
 func (d *driver) WindowZoom(wnd *webapp.Window) {
-	C.zoomWindow(C.CWindowPtr(wnd.PlatformPtr))
+	if w, ok := wnd.PlatformData.(C.CWindowPtr); ok {
+		C.zoomWindow(w)
+	}
 }
 
 //export windowGainedKey

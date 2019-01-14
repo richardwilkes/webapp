@@ -2,7 +2,7 @@ package macos
 
 import "github.com/richardwilkes/cef/cef"
 
-func (d *driver) OnPreKeyEvent(event *cef.KeyEvent, is_keyboard_shortcut *int32) int32 {
+func (d *driver) OnPreKeyEvent(event *cef.KeyEvent, isKeyboardShortcut *int32) int32 {
 	return 0
 }
 

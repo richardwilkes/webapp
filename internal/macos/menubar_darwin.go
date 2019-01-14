@@ -38,21 +38,22 @@ func (d *driver) MenuBarMenuAtIndex(bar *webapp.MenuBar, index int) *webapp.Menu
 }
 
 func (d *driver) MenuBarInsert(bar *webapp.MenuBar, beforeIndex int, menu *webapp.Menu) {
-	cTitle := C.CString(menu.Title)
-	mi := C.newMenuItem(C.int(menu.ID), cTitle, handleMenuItemCStr, emptyCStr, 0, true)
-	C.free(unsafe.Pointer(cTitle))
-	m := menu.PlatformData.(C.CMenuPtr)
-	C.setSubMenu(mi, m)
-	C.insertMenuItem(bar.PlatformData.(C.CMenuPtr), mi, C.int(beforeIndex))
-	switch menu.ID {
-	case webapp.MenuIDAppMenu:
-		if servicesMenu := bar.Menu(webapp.MenuIDServicesMenu); servicesMenu != nil {
-			C.setServicesMenu(servicesMenu.PlatformData.(C.CMenuPtr))
+	if m, ok := menu.PlatformData.(C.CMenuPtr); ok {
+		cTitle := C.CString(menu.Title)
+		mi := C.newMenuItem(C.int(menu.ID), cTitle, handleMenuItemCStr, emptyCStr, 0, true)
+		C.free(unsafe.Pointer(cTitle))
+		C.setSubMenu(mi, m)
+		C.insertMenuItem(bar.PlatformData.(C.CMenuPtr), mi, C.int(beforeIndex))
+		switch menu.ID {
+		case webapp.MenuIDAppMenu:
+			if servicesMenu := bar.Menu(webapp.MenuIDServicesMenu); servicesMenu != nil {
+				C.setServicesMenu(servicesMenu.PlatformData.(C.CMenuPtr))
+			}
+		case webapp.MenuIDWindowMenu:
+			C.setWindowMenu(m)
+		case webapp.MenuIDHelpMenu:
+			C.setHelpMenu(m)
 		}
-	case webapp.MenuIDWindowMenu:
-		C.setWindowMenu(m)
-	case webapp.MenuIDHelpMenu:
-		C.setHelpMenu(m)
 	}
 }
 

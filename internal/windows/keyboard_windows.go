@@ -8,12 +8,12 @@ import (
 type keyboardProxy struct {
 }
 
-func (d *driver) OnPreKeyEvent(event *cef.KeyEvent, is_keyboard_shortcut *int32) int32 {
+func (d *driver) OnPreKeyEvent(event *cef.KeyEvent, isKeyboardShortcut *int32) int32 {
 	lookup := d.refreshMenuKeyForWindow(d.KeyWindow())
 	mods := eventModifiers(event)
 	if k, ok := keys.ByWinCode[int(event.WindowsKeyCode)]; ok {
 		if _, ok := lookup[mods.String()+k.Name]; ok {
-			*is_keyboard_shortcut = 1
+			*isKeyboardShortcut = 1
 		}
 	}
 	return 0
