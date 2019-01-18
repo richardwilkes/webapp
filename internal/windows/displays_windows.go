@@ -18,20 +18,10 @@ func (d *driver) Displays() []*webapp.Display {
 		} else {
 			var dpiX, dpiY uint32
 			if err = GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY); err != nil {
-				jot.Error(err)
 				// Windows 7 fallback
-				overallX := 0
-				overallY := 0
+				overallX := GetDeviceCaps(dc, LOGPIXELSX)
+				overallY := GetDeviceCaps(dc, LOGPIXELSY)
 
-				_hdc, _, _ := getDC.Call(uintptr(dc))
-
-				hdc := HDC(_hdc)
-
-				if hdc > 0 {
-					overallX = GetDeviceCaps(hdc, LOGPIXELSX)
-					overallY = GetDeviceCaps(hdc, LOGPIXELSY)
-					releaseDC.Call(uintptr(hdc))
-				}
 				if overallX > 0 && overallY > 0 {
 					dpiX = uint32(overallX)
 					dpiY = uint32(overallY)

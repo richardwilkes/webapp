@@ -16,7 +16,7 @@ var (
 func GetDpiForMonitor(monitor HMONITOR, dpiType int32, dpiX, dpiY *uint32) error {
 	err := getDpiForMonitor.Find()
 	if err != nil {
-		return err
+		return errs.NewWithCause(getDpiForMonitor.Name, err)
 	}
 
 	ret, _, err := getDpiForMonitor.Call(uintptr(monitor), uintptr(dpiType), uintptr(unsafe.Pointer(dpiX)), uintptr(unsafe.Pointer(dpiY)))
