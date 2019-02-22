@@ -40,4 +40,8 @@
 	didDeactivateCallback();
 }
 
+- (void)themeChanged:(NSNotification *)aNotification {
+	themeChangedCallback();
+}
+
 @end

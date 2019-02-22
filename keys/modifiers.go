@@ -3,6 +3,8 @@ package keys
 import (
 	"bytes"
 	"runtime"
+
+	"github.com/richardwilkes/toolbox"
 )
 
 // Possible Modifiers values.
@@ -48,7 +50,7 @@ func (m Modifiers) CommandDown() bool {
 // PlatformMenuModifier returns the platform's standard menu command key
 // modifier.
 func PlatformMenuModifier() Modifiers {
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == toolbox.MacOS {
 		return CommandModifier
 	}
 	return ControlModifier
@@ -72,7 +74,7 @@ func (m Modifiers) String() string {
 		buffer.WriteString("Ctrl+")
 	}
 	if m&OptionModifier == OptionModifier {
-		if runtime.GOOS == "darwin" {
+		if runtime.GOOS == toolbox.MacOS {
 			buffer.WriteString("Opt+")
 		} else {
 			buffer.WriteString("Alt+")
@@ -85,7 +87,7 @@ func (m Modifiers) String() string {
 		buffer.WriteString("Caps+")
 	}
 	if m&CommandModifier == CommandModifier {
-		if runtime.GOOS == "darwin" {
+		if runtime.GOOS == toolbox.MacOS {
 			buffer.WriteString("Cmd+")
 		} else {
 			buffer.WriteString("Win+")
@@ -114,7 +116,7 @@ func (m Modifiers) SymbolString() string {
 		buffer.WriteString("\u21ea")
 	}
 	if m&CommandModifier == CommandModifier {
-		if runtime.GOOS == "darwin" {
+		if runtime.GOOS == toolbox.MacOS {
 			buffer.WriteString("\u2318")
 		} else {
 			buffer.WriteString("\u2756")

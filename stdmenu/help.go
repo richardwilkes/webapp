@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/webapp"
@@ -12,7 +13,7 @@ import (
 // NewHelpMenu creates a standard 'Help' menu.
 func NewHelpMenu(aboutHandler func(), includeDevTools bool) *webapp.Menu {
 	menu := webapp.NewMenu(webapp.MenuIDHelpMenu, i18n.Text("Help"))
-	if runtime.GOOS != "darwin" {
+	if runtime.GOOS != toolbox.MacOS {
 		menu.InsertItem(-1, webapp.MenuIDAboutItem, fmt.Sprintf(i18n.Text("About %s"), cmdline.AppName), nil, 0, nil, aboutHandler)
 	}
 	if includeDevTools {

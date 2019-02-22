@@ -193,3 +193,11 @@ func (d *driver) WindowZoom(wnd *webapp.Window) {
 		ShowWindow(w, SW_MAXIMIZE)
 	}
 }
+
+func (d *driver) WindowThemeIsDark(wnd *webapp.Window) bool {
+	// TODO: Implement
+	// if w, ok := wnd.PlatformData.(HWND); ok {
+	// 	return ...
+	// }
+	return false
+}

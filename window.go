@@ -85,6 +85,7 @@ func NewWindow(style StyleMask, bounds geom.Rect, title, url string) (*Window, e
 	return window, nil
 }
 
+// ToggleDevTools toggles display of the Chrome development tools window.
 func (window *Window) ToggleDevTools() {
 	if window.Browser != nil {
 		host := window.Browser.GetHost()
@@ -128,7 +129,7 @@ func (window *Window) AttemptClose() {
 // Dispose of the window.
 func (window *Window) Dispose() {
 	for i, wnd := range windowList {
-		if wnd == window {
+		if wnd == window { //nolint:gocritic
 			copy(windowList[i:], windowList[i+1:])
 			count := len(windowList) - 1
 			windowList[count] = nil
@@ -204,4 +205,9 @@ func (window *Window) Minimizable() bool {
 // ResizableWindowMask.
 func (window *Window) Resizable() bool {
 	return window.style&ResizableWindowMask != 0
+}
+
+// ThemeIsDark returns true if the window theme is a dark one.
+func (window *Window) ThemeIsDark() bool {
+	return driver.WindowThemeIsDark(window)
 }

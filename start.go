@@ -82,3 +82,6 @@ var WillDeactivateCallback = func() {}
 
 // DidDeactivateCallback is called once the application is deactivated.
 var DidDeactivateCallback = func() {}
+
+// ThemeChangedCallback is called when the theme is changed.
+var ThemeChangedCallback = func() {}

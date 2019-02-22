@@ -127,3 +127,8 @@ func quittingCallback() {
 	cef.Shutdown()
 	jot.Flush()
 }
+
+//export themeChangedCallback
+func themeChangedCallback() {
+	webapp.ThemeChangedCallback()
+}

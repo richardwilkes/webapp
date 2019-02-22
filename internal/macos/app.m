@@ -2,7 +2,9 @@
 #import "app.h"
 
 void prepareForStart() {
-	[NSApp setDelegate:[AppDelegate new]];
+	AppDelegate *delegate = [AppDelegate new];
+	[NSApp setDelegate:delegate];
+	[NSDistributedNotificationCenter.defaultCenter addObserver:delegate selector:@selector(themeChanged:) name:@"AppleInterfaceThemeChangedNotification" object: nil];
 }
 
 void attemptQuit() {

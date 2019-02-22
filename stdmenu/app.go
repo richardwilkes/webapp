@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/webapp"
@@ -19,7 +20,7 @@ func NewAppMenu(aboutHandler, prefsHandler func()) *webapp.Menu {
 		menu.InsertSeparator(-1)
 		menu.InsertItem(-1, webapp.MenuIDPreferencesItem, i18n.Text("Preferences…"), keys.Comma, keys.PlatformMenuModifier(), nil, prefsHandler)
 	}
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == toolbox.MacOS {
 		menu.InsertSeparator(-1)
 		menu.InsertMenu(-1, webapp.MenuIDServicesMenu, i18n.Text("Services"))
 	}

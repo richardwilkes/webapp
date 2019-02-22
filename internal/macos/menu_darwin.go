@@ -10,12 +10,6 @@ import (
 	"github.com/richardwilkes/webapp/keys"
 )
 
-type menuItem struct {
-	validator func() bool
-	handler   func()
-	item      C.CMenuItemPtr
-}
-
 func (d *driver) MenuInit(menu *webapp.Menu) {
 	cTitle := C.CString(menu.Title)
 	m := C.newMenu(cTitle)

@@ -66,3 +66,12 @@ void minimizeWindow(CWindowPtr wnd) {
 void zoomWindow(CWindowPtr wnd) {
 	[(NSWindow *)wnd performZoom:nil];
 }
+
+int themeIsDark(CWindowPtr wnd) {
+	if (@available(macOS 10.14, *)) {
+		NSAppearanceName basicAppearance = [[(NSWindow *)wnd contentView].effectiveAppearance bestMatchFromAppearancesWithNames:@[ NSAppearanceNameAqua, NSAppearanceNameDarkAqua ]];
+		return [basicAppearance isEqualToString:NSAppearanceNameDarkAqua];
+	} else {
+		return 0;
+	}
+}

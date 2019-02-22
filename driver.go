@@ -50,6 +50,7 @@ type Driver interface {
 	WindowToFront(wnd *Window)
 	WindowMinimize(wnd *Window)
 	WindowZoom(wnd *Window)
+	WindowThemeIsDark(wnd *Window) bool
 }
 
 // AppVisibilityController defines optional APIs a platform can provide for

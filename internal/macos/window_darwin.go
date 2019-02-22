@@ -92,6 +92,13 @@ func (d *driver) WindowZoom(wnd *webapp.Window) {
 	}
 }
 
+func (d *driver) WindowThemeIsDark(wnd *webapp.Window) bool {
+	if w, ok := wnd.PlatformData.(C.CWindowPtr); ok {
+		return C.themeIsDark(w) != 0
+	}
+	return false
+}
+
 //export windowGainedKey
 func windowGainedKey(wnd C.CWindowPtr) {
 	if w, ok := drv.windows[wnd]; ok {

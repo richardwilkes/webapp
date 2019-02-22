@@ -3,6 +3,7 @@ package stdmenu
 import (
 	"runtime"
 
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/webapp"
 	"github.com/richardwilkes/webapp/keys"
@@ -16,7 +17,7 @@ func NewEditMenu(prefsHandler func()) *webapp.Menu {
 	InsertPasteItem(menu, -1)
 	InsertDeleteItem(menu, -1)
 	InsertSelectAllItem(menu, -1)
-	if runtime.GOOS != "darwin" && prefsHandler != nil {
+	if runtime.GOOS != toolbox.MacOS && prefsHandler != nil {
 		menu.InsertSeparator(-1)
 		menu.InsertItem(-1, webapp.MenuIDPreferencesItem, i18n.Text("Preferences…"), keys.Comma, keys.PlatformMenuModifier(), nil, prefsHandler)
 	}

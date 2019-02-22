@@ -3,6 +3,7 @@ package stdmenu
 import (
 	"runtime"
 
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/webapp"
 	"github.com/richardwilkes/webapp/keys"
@@ -12,7 +13,7 @@ import (
 func NewFileMenu() *webapp.Menu {
 	menu := webapp.NewMenu(webapp.MenuIDFileMenu, i18n.Text("File"))
 	InsertCloseKeyWindowItem(menu, -1)
-	if runtime.GOOS != "darwin" {
+	if runtime.GOOS != toolbox.MacOS {
 		menu.InsertSeparator(-1)
 		InsertQuitItem(menu, -1)
 	}
@@ -44,7 +45,7 @@ func CloseKeyWindowHandler() {
 // issue the Quit command when chosen.
 func InsertQuitItem(menu *webapp.Menu, beforeIndex int) {
 	var title string
-	if runtime.GOOS == "darwin" {
+	if runtime.GOOS == toolbox.MacOS {
 		title = i18n.Text("Quit")
 	} else {
 		title = i18n.Text("Exit")

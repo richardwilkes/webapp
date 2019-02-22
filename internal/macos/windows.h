@@ -13,3 +13,4 @@ void getWindowContentSize(CWindowPtr wnd, double *width, double *height);
 void bringWindowToFront(CWindowPtr wnd);
 void minimizeWindow(CWindowPtr wnd);
 void zoomWindow(CWindowPtr wnd);
+int themeIsDark(CWindowPtr wnd);
