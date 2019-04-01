@@ -17,6 +17,10 @@ func newClient() *cef.Client {
 	return cef.NewClient(c)
 }
 
+func (c *client) GetAudioHandler(self *cef.Client) *cef.AudioHandler {
+	return nil
+}
+
 func (c *client) GetContextMenuHandler(self *cef.Client) *cef.ContextMenuHandler {
 	return nil
 }

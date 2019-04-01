@@ -12,10 +12,8 @@ github.com/pkg/term v0.0.0-20190109203006-aa71e9d9e942 h1:A7GG7zcGjl3jqAqGPmcNjd
 github.com/pkg/term v0.0.0-20190109203006-aa71e9d9e942/go.mod h1:eCbImbZ95eXtAUIbLAuAVnBnwf83mjf6QIVH8SHYwqQ=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/richardwilkes/cef v0.2.3 h1:s4kFPrtIu08CcRzEU9qRyKSujhcHAADRJX6eZOgWlOw=
-github.com/richardwilkes/cef v0.2.3/go.mod h1:ZF8UITbRH2tumGdMbEa903o5Cn7Ne4R3r155V33BfF4=
-github.com/richardwilkes/toolbox v1.2.0 h1:kfiHB72AM1qSTo5pFHpMvQISBML/HRs/hY/+Hesv+0M=
-github.com/richardwilkes/toolbox v1.2.0/go.mod h1:h2U7mFBRIvD5YCq5mRu1m9tc1mLFbszcyD1Qdur/07g=
+github.com/richardwilkes/cef v0.3.0 h1:IlFSDGxHd01ZtNGUw1JZ6qvrbWX+cdTfiZvcaRNlX20=
+github.com/richardwilkes/cef v0.3.0/go.mod h1:A20cGsTahRTVSl638WMo0xkWkJ7gwG+e/fU0V5nRmmE=
 github.com/richardwilkes/toolbox v1.5.0 h1:8HkK68pUD20ZYiSFUWing23bSPkJHuMTkR8TdUzoobA=
 github.com/richardwilkes/toolbox v1.5.0/go.mod h1:BhrbXd529SOF8vK4ve7ABji9fvItLH7+5sVpnqVQCvs=
 github.com/richardwilkes/win32 v0.0.0-20190401005726-5902906751b6 h1:QJKaz2RvkAS4o3ySLn6tzokhZAImq/BuOPEYemN4em8=
@@ -23,8 +21,6 @@ github.com/richardwilkes/win32 v0.0.0-20190401005726-5902906751b6/go.mod h1:aftn
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0Q=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
-golang.org/x/sys v0.0.0-20190226215855-775f8194d0f9 h1:N26gncmS+iqc/W/SKhX3ElI5pkt72XYoRLgi5Z70LSc=
-golang.org/x/sys v0.0.0-20190226215855-775f8194d0f9/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190322080309-f49334f85ddc h1:4gbWbmmPFp4ySWICouJl6emP0MyS31yy9SrTlAGFT+g=
 golang.org/x/sys v0.0.0-20190322080309-f49334f85ddc/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
