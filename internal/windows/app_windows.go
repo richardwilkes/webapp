@@ -9,21 +9,23 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/webapp"
+	"github.com/richardwilkes/win32"
 )
 
 type driver struct {
-	instance             HINSTANCE
-	windows              map[HWND]*webapp.Window
-	menubars             map[HMENU]*webapp.MenuBar
-	menus                map[HMENU]*webapp.Menu
+	instance             win32.HINSTANCE
+	windows              map[win32.HWND]*webapp.Window
+	menubars             map[win32.HMENU]*webapp.MenuBar
+	menus                map[win32.HMENU]*webapp.Menu
 	menuitems            map[int]*menuItem
+	windowClass          win32.ATOM
 	awaitingQuitDecision bool
 }
 
 var drv = &driver{
-	windows:   make(map[HWND]*webapp.Window),
-	menubars:  make(map[HMENU]*webapp.MenuBar),
-	menus:     make(map[HMENU]*webapp.Menu),
+	windows:   make(map[win32.HWND]*webapp.Window),
+	menubars:  make(map[win32.HMENU]*webapp.MenuBar),
+	menus:     make(map[win32.HMENU]*webapp.Menu),
 	menuitems: make(map[int]*menuItem),
 }
 
@@ -33,28 +35,24 @@ func Driver() webapp.Driver {
 }
 
 func (d *driver) PrepareForStart() error {
-	var err error
-	if d.instance, err = GetModuleHandleW(); err != nil {
-		return err
-	}
-	wcx := WNDCLASSEXW{
-		Style:    CS_HREDRAW | CS_VREDRAW,
+	d.instance = win32.GetModuleHandleS("")
+	wcx := win32.WNDCLASSEX{
+		Size:     uint32(unsafe.Sizeof(win32.WNDCLASSEX{})),
+		Style:    win32.CS_HREDRAW | win32.CS_VREDRAW,
 		WndProc:  syscall.NewCallback(d.wndProc),
 		Instance: d.instance,
+		Cursor:   win32.LoadSystemCursor(win32.IDC_ARROW),
 		// Icon: LoadIcon(hInstance, MAKEINTRESOURCE(IDI_CEFCLIENT)),
 		// Background: cCOLOR_WINDOW + 1,
 		// MenuName: MAKEINTRESOURCE(IDC_CEFCLIENT),
 		// IconSm: LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL)),
 	}
-	wcx.Size = uint32(unsafe.Sizeof(wcx))
-	if wcx.Cursor, err = LoadCursorW__(NULL, IDC_ARROW); err != nil {
-		return err
-	}
+	var err error
 	if wcx.ClassName, err = syscall.UTF16PtrFromString(windowClassName); err != nil {
-		return errs.NewWithCause("Unable to convert className to UTF16", err)
+		return errs.NewWithCause("unable to convert className to utf-16", err)
 	}
-	_, err = RegisterClassExW(&wcx)
-	return err
+	d.windowClass = win32.RegisterClassEx(&wcx)
+	return nil
 }
 
 func (d *driver) PrepareForEventLoop() {
@@ -92,6 +90,6 @@ func (d *driver) MayQuitNow(quit bool) {
 
 func (d *driver) quit() {
 	webapp.QuittingCallback()
-	PostQuitMessage(0)
+	win32.PostQuitMessage(0)
 	cef.QuitMessageLoop()
 }
