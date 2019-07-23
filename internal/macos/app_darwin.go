@@ -80,46 +80,55 @@ func (d *driver) ShowAllApps() {
 	C.showAllApps()
 }
 
+//nolint:gocritic
 //export willFinishStartupCallback
 func willFinishStartupCallback() {
 	webapp.WillFinishStartupCallback()
 }
 
+//nolint:gocritic
 //export didFinishStartupCallback
 func didFinishStartupCallback() {
 	webapp.DidFinishStartupCallback()
 }
 
+//nolint:gocritic
 //export willActivateCallback
 func willActivateCallback() {
 	webapp.WillActivateCallback()
 }
 
+//nolint:gocritic
 //export didActivateCallback
 func didActivateCallback() {
 	webapp.DidActivateCallback()
 }
 
+//nolint:gocritic
 //export willDeactivateCallback
 func willDeactivateCallback() {
 	webapp.WillDeactivateCallback()
 }
 
+//nolint:gocritic
 //export didDeactivateCallback
 func didDeactivateCallback() {
 	webapp.DidDeactivateCallback()
 }
 
+//nolint:gocritic
 //export quitAfterLastWindowClosedCallback
 func quitAfterLastWindowClosedCallback() bool {
 	return webapp.QuitAfterLastWindowClosedCallback()
 }
 
+//nolint:gocritic
 //export checkQuitCallback
 func checkQuitCallback() int {
 	return int(webapp.CheckQuitCallback())
 }
 
+//nolint:gocritic
 //export quittingCallback
 func quittingCallback() {
 	webapp.QuittingCallback()
@@ -128,6 +137,7 @@ func quittingCallback() {
 	jot.Flush()
 }
 
+//nolint:gocritic
 //export themeChangedCallback
 func themeChangedCallback() {
 	webapp.ThemeChangedCallback()

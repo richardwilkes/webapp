@@ -80,7 +80,7 @@ func NewWindow(style StyleMask, bounds geom.Rect, title, url string) (*Window, e
 	bounds.Size = window.WindowContentSize()
 	bounds.X = 0
 	bounds.Y = 0
-	window.Browser = cef.BrowserHostCreateBrowserSync(cef.NewWindowInfo(driver.WindowBrowserParent(window), bounds), newClient(), url, cef.NewBrowserSettings(), nil)
+	window.Browser = cef.BrowserHostCreateBrowserSync(cef.NewWindowInfo(driver.WindowBrowserParent(window), bounds), newClient(), url, cef.NewBrowserSettings(), nil, nil)
 	windowList = append(windowList, window)
 	return window, nil
 }

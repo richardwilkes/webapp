@@ -81,3 +81,4 @@ issues:
     - "G304: Potential file inclusion via variable"
     - "G104: Errors unhandled"
     - "G204: Subprocess launched with variable"
+    - "dupImport: "

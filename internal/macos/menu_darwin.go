@@ -127,6 +127,7 @@ func (d *driver) MenuDispose(menu *webapp.Menu) {
 	}
 }
 
+//nolint:gocritic
 //export validateMenuItemCallback
 func validateMenuItemCallback(id int) bool {
 	if validator, ok := drv.menuItemValidators[id]; ok && validator != nil {
@@ -135,6 +136,7 @@ func validateMenuItemCallback(id int) bool {
 	return true
 }
 
+//nolint:gocritic
 //export handleMenuItemCallback
 func handleMenuItemCallback(id int) {
 	if handler, ok := drv.menuItemHandlers[id]; ok && handler != nil {

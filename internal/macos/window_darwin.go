@@ -99,6 +99,7 @@ func (d *driver) WindowThemeIsDark(wnd *webapp.Window) bool {
 	return false
 }
 
+//nolint:gocritic
 //export windowGainedKey
 func windowGainedKey(wnd C.CWindowPtr) {
 	if w, ok := drv.windows[wnd]; ok {
@@ -106,6 +107,7 @@ func windowGainedKey(wnd C.CWindowPtr) {
 	}
 }
 
+//nolint:gocritic
 //export windowLostKey
 func windowLostKey(wnd C.CWindowPtr) {
 	if w, ok := drv.windows[wnd]; ok {
@@ -113,6 +115,7 @@ func windowLostKey(wnd C.CWindowPtr) {
 	}
 }
 
+//nolint:gocritic
 //export windowShouldClose
 func windowShouldClose(wnd C.CWindowPtr) bool {
 	if w, ok := drv.windows[wnd]; ok {
@@ -121,6 +124,7 @@ func windowShouldClose(wnd C.CWindowPtr) bool {
 	return true
 }
 
+//nolint:gocritic
 //export windowWillClose
 func windowWillClose(wnd C.CWindowPtr) {
 	if w, ok := drv.windows[wnd]; ok {

@@ -74,7 +74,7 @@ func (c *client) GetRequestHandler(self *cef.Client) *cef.RequestHandler {
 	return nil
 }
 
-func (c *client) OnProcessMessageReceived(self *cef.Client, browser *cef.Browser, sourceProcess cef.ProcessID, message *cef.ProcessMessage) int32 {
+func (c *client) OnProcessMessageReceived(self *cef.Client, browser *cef.Browser, frame *cef.Frame, sourceProcess cef.ProcessID, message *cef.ProcessMessage) int32 {
 	return 0
 }
 

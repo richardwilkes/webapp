@@ -6,8 +6,8 @@ github.com/pkg/term v0.0.0-20190109203006-aa71e9d9e942 h1:A7GG7zcGjl3jqAqGPmcNjd
 github.com/pkg/term v0.0.0-20190109203006-aa71e9d9e942/go.mod h1:eCbImbZ95eXtAUIbLAuAVnBnwf83mjf6QIVH8SHYwqQ=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/richardwilkes/cef v0.5.0 h1:fOac8fyDO6SKwAiSbg21YEzchxDXgCqen5u26grZ3L0=
-github.com/richardwilkes/cef v0.5.0/go.mod h1:UtzgNyYCut/56bAgLrx3fZ5KxjJn5N6L8igW9viu3Ss=
+github.com/richardwilkes/cef v0.5.2 h1:EX4TyK0TNsiK+UTg1Zpu44dlOM4os2me20z3Xbdzulc=
+github.com/richardwilkes/cef v0.5.2/go.mod h1:UtzgNyYCut/56bAgLrx3fZ5KxjJn5N6L8igW9viu3Ss=
 github.com/richardwilkes/toolbox v1.9.3 h1:G9muaw+Ck30Md2PPiEDiemMMmN2yMaB4G67ViZEW6mw=
 github.com/richardwilkes/toolbox v1.9.3/go.mod h1:lmtR34kHPv+/xe9ctPnnEuBrBE2ViIcFNSzOCMbHKWo=
 github.com/richardwilkes/win32 v0.0.0-20190428175257-646fcc5380f6 h1:5WQK/z0xgYffAAnjAdLmrx6Xr2jyBQzHxyF8f5xtDj0=
