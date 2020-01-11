@@ -1,13 +1,25 @@
+// Copyright ©2018-2020 by Richard A. Wilkes. All rights reserved.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, version 2.0. If a copy of the MPL was not distributed with
+// this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+// This Source Code Form is "Incompatible With Secondary Licenses", as
+// defined by the Mozilla Public License, version 2.0.
+
 package macos
+
+import (
+	"unsafe"
+
+	"github.com/richardwilkes/webapp"
+	"github.com/richardwilkes/webapp/keys"
+)
 
 import (
 	// #import <stdlib.h>
 	// #import "menus.h"
 	"C"
-	"unsafe"
-
-	"github.com/richardwilkes/webapp"
-	"github.com/richardwilkes/webapp/keys"
 )
 
 func (d *driver) MenuInit(menu *webapp.Menu) {
@@ -98,7 +110,7 @@ func (d *driver) MenuInsertMenu(menu *webapp.Menu, beforeIndex, id int, title st
 		mi := C.newMenuItem(C.int(id), cTitle, handleMenuItemCStr, emptyCStr, 0, true)
 		C.free(unsafe.Pointer(cTitle))
 		subMenu := webapp.NewMenu(id, title)
-		if sp, ok := subMenu.PlatformData.(C.CMenuPtr); ok {
+		if sp, ok2 := subMenu.PlatformData.(C.CMenuPtr); ok2 {
 			C.setSubMenu(mi, sp)
 			C.insertMenuItem(p, mi, C.int(beforeIndex))
 			return subMenu
